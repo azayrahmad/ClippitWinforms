@@ -1,4 +1,5 @@
 using System.Drawing.Imaging;
+using System.Text.Json;
 
 namespace ClippitWinforms
 {
@@ -13,8 +14,10 @@ namespace ClippitWinforms
         private int currentFrame = 0;
         private int currentRow = 0;
 
-        private record AnimationState(int StartRow, int StartColumn, int FramesToAnimate);
-        private AnimationState currentAnimationState = new AnimationState(0, 0, 20);
+        private int currentFrameIndex = 0;
+        private long lastFrameTime;
+        private Dictionary<string, Animation> animations;
+        private Animation currentAnimation;
 
         public Clippy()
         {
@@ -23,6 +26,10 @@ namespace ClippitWinforms
             Rectangle workingArea = Screen.GetWorkingArea(this);
             this.Location = new Point(workingArea.Right - this.Width, workingArea.Bottom - this.Height);
             LoadSprites();
+
+            LoadAnimations();
+            SetAnimation("Congratulate");  // Set default animation
+            lastFrameTime = Environment.TickCount64;
             animationTimer.Start();
         }
 
@@ -66,77 +73,290 @@ namespace ClippitWinforms
             }
         }
 
+        private void LoadAnimations()
+        {
+            animations = new Dictionary<string, Animation>();
+            string animationsJson = @"{
+                ""Congratulate"": {
+                  ""frames"": [
+                    {
+                      ""duration"": 100,
+                      ""images"": [
+                        [
+                          0,
+                          0
+                        ]
+                      ],
+                      ""sound"": ""15""
+                    },
+                    {
+                      ""duration"": 10,
+                      ""images"": [
+                        [
+                          124,
+                          0
+                        ]
+                      ]
+                    },
+                    {
+                      ""duration"": 10,
+                      ""images"": [
+                        [
+                          248,
+                          0
+                        ]
+                      ]
+                    },
+                    {
+                      ""duration"": 10,
+                      ""images"": [
+                        [
+                          372,
+                          0
+                        ]
+                      ],
+                      ""sound"": ""14""
+                    },
+                    {
+                      ""duration"": 10,
+                      ""images"": [
+                        [
+                          496,
+                          0
+                        ]
+                      ]
+                    },
+                    {
+                      ""duration"": 10,
+                      ""images"": [
+                        [
+                          620,
+                          0
+                        ]
+                      ]
+                    },
+                    {
+                      ""duration"": 10,
+                      ""images"": [
+                        [
+                          744,
+                          0
+                        ]
+                      ]
+                    },
+                    {
+                      ""duration"": 10,
+                      ""images"": [
+                        [
+                          868,
+                          0
+                        ]
+                      ]
+                    },
+                    {
+                      ""duration"": 10,
+                      ""images"": [
+                        [
+                          992,
+                          0
+                        ]
+                      ],
+                      ""sound"": ""1""
+                    },
+                    {
+                      ""duration"": 100,
+                      ""images"": [
+                        [
+                          1116,
+                          0
+                        ]
+                      ]
+                    },
+                    {
+                      ""duration"": 100,
+                      ""images"": [
+                        [
+                          1240,
+                          0
+                        ]
+                      ]
+                    },
+                    {
+                      ""duration"": 100,
+                      ""images"": [
+                        [
+                          1364,
+                          0
+                        ]
+                      ]
+                    },
+                    {
+                      ""duration"": 1200,
+                      ""images"": [
+                        [
+                          1488,
+                          0
+                        ]
+                      ]
+                    },
+                    {
+                      ""duration"": 100,
+                      ""images"": [
+                        [
+                          1612,
+                          0
+                        ]
+                      ],
+                      ""sound"": ""10""
+                    },
+                    {
+                      ""duration"": 100,
+                      ""images"": [
+                        [
+                          1736,
+                          0
+                        ]
+                      ]
+                    },
+                    {
+                      ""duration"": 1200,
+                      ""images"": [
+                        [
+                          1488,
+                          0
+                        ]
+                      ]
+                    },
+                    {
+                      ""duration"": 100,
+                      ""images"": [
+                        [
+                          1860,
+                          0
+                        ]
+                      ]
+                    },
+                    {
+                      ""duration"": 100,
+                      ""images"": [
+                        [
+                          1984,
+                          0
+                        ]
+                      ]
+                    },
+                    {
+                      ""duration"": 100,
+                      ""images"": [
+                        [
+                          2108,
+                          0
+                        ]
+                      ]
+                    },
+                    {
+                      ""duration"": 100,
+                      ""images"": [
+                        [
+                          2232,
+                          0
+                        ]
+                      ]
+                    },
+                    {
+                      ""duration"": 100,
+                      ""images"": [
+                        [
+                          2356,
+                          0
+                        ]
+                      ],
+                      ""exitBranch"": 21
+                    },
+                    {
+                      ""duration"": 100,
+                      ""images"": [
+                        [
+                          0,
+                          0
+                        ]
+                      ]
+                    }
+                  ]
+                }
+            }";
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+
+            var animationsDict = JsonSerializer.Deserialize<Dictionary<string, Animation>>(animationsJson, options);
+            animations = animationsDict;
+        }
+
+        private void SetAnimation(string animationName)
+        {
+            if (animations.TryGetValue(animationName, out var animation))
+            {
+                currentAnimation = animation;
+                currentFrameIndex = 0;
+                lastFrameTime = Environment.TickCount64;
+            }
+        }
+
         private void animationTimer_Tick(object sender, EventArgs e)
         {
-            // Use values from currentAnimationState instead of reading controls directly
-            int startRow = currentAnimationState.StartRow;
-            int startColumn = currentAnimationState.StartColumn;
-            int framesToAnimate = currentAnimationState.FramesToAnimate;
+            if (currentAnimation == null || currentAnimation.Frames == null ||
+                currentAnimation.Frames.Count == 0) return;
 
-            // Sprite sheet dimensions
-            const int totalColumns = framesPerRow;
-            const int totalFrames = totalColumns * totalRows;
+            var currentTime = Environment.TickCount64;
+            var currentFrame = currentAnimation.Frames[currentFrameIndex];
 
-            // Calculate the starting position in the sprite sheet
-            int startIndex = startRow * totalColumns + startColumn;
-
-            // Calculate which frame in the sequence we're on
-            int currentOffset = currentFrame + (currentRow - startRow) * totalColumns - startColumn;
-            int nextOffset = (currentOffset + 1) % framesToAnimate;
-
-            // Calculate the actual frame position
-            int currentFrameIndex = startIndex + nextOffset;
-
-            // Handle wrapping across rows and total frames
-            if (currentFrameIndex >= totalFrames)
+            if (currentTime - lastFrameTime >= currentFrame.Duration)
             {
-                currentFrameIndex = startIndex + (nextOffset % (totalFrames - startIndex));
+                currentFrameIndex = (currentFrameIndex + 1) % currentAnimation.Frames.Count;
+                lastFrameTime = currentTime;
+                this.Invalidate();
             }
-
-            // Update row and frame
-            currentRow = currentFrameIndex / totalColumns;
-            currentFrame = currentFrameIndex % totalColumns;
-
-            this.Invalidate();
         }
 
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
 
-            if (spriteSheet != null)
+            if (spriteSheet != null && currentAnimation?.Frames != null &&
+                currentFrameIndex < currentAnimation.Frames.Count)
             {
-                // Calculate the source rectangle based on the current frame and row
-                int sourceX = currentFrame * frameWidth; // Frame index in the current row
-                int sourceY = currentRow * frameHeight; // Row index in the sprite sheet
+                var frame = currentAnimation.Frames[currentFrameIndex];
+                if (frame.Images != null && frame.Images.Count > 0)
+                {
+                    var position = frame.Images[0]; // Get first image position
+                    int sourceX = position[0];
+                    int sourceY = position[1];
 
-                Rectangle sourceRect = new Rectangle(sourceX, sourceY, frameWidth, frameHeight);
+                    Rectangle sourceRect = new Rectangle(sourceX, sourceY, frameWidth, frameHeight);
 
-                e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
-                e.Graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
+                    e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+                    e.Graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
 
-                // Draw the sprite
-                e.Graphics.DrawImage(
-                    spriteSheet,
-                    new Rectangle(0, 0, frameWidth * scale, frameHeight * scale), // Scale up rendering
-                    sourceRect,
-                    GraphicsUnit.Pixel
-                );
+                    e.Graphics.DrawImage(
+                        spriteSheet,
+                        new Rectangle(0, 0, frameWidth * scale, frameHeight * scale),
+                        sourceRect,
+                        GraphicsUnit.Pixel
+                    );
 
-                // Display current frame and row index
-#if DEBUG
-
-                string debugText = $"Row: {currentRow}, Column: {currentFrame}";
-                Font debugFont = new Font("Arial", 12, FontStyle.Bold);
-                Brush debugBrush = Brushes.White;
-
-                e.Graphics.DrawString(
-                    debugText,
-                    debugFont,
-                    debugBrush,
-                    new PointF(10, 10) // Top-left corner of the form
-                );
-#endif
+                    // Debug information
+                    string debugText = $"Frame: {currentFrameIndex}, Position: [{sourceX}, {sourceY}]";
+                    Font debugFont = new Font("Arial", 12, FontStyle.Bold);
+                    e.Graphics.DrawString(
+                        debugText,
+                        debugFont,
+                        Brushes.White,
+                        new PointF(10, 10)
+                    );
+                }
             }
         }
 
