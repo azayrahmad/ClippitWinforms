@@ -106,6 +106,7 @@
             // 
             // animationTimer
             // 
+            animationTimer.Interval = 16;
             animationTimer.Tick += animationTimer_Tick;
             // 
             // Clippy

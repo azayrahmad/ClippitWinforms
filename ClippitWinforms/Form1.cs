@@ -1,4 +1,8 @@
+using NAudio.Wave;
+using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Drawing.Imaging;
+using System.Media;
 using System.Text.Json;
 
 namespace ClippitWinforms
@@ -9,26 +13,31 @@ namespace ClippitWinforms
         const int scale = 2;
         const int frameWidth = 124;
         const int frameHeight = 93;
-        const int framesPerRow = 27;
-        const int totalRows = 34;
-        private int currentFrame = 0;
-        private int currentRow = 0;
+        //const int framesPerRow = 27;
+        //const int totalRows = 34;
+        //private int currentFrame = 0;
+        //private int currentRow = 0;
 
         private int currentFrameIndex = 0;
         private long lastFrameTime;
         private Dictionary<string, Animation> animations;
         private Animation currentAnimation;
+        private Dictionary<string, byte[]> soundBuffers;
+        private ConcurrentDictionary<string, WaveOutEvent> activeOutputs;
 
         public Clippy()
         {
             InitializeComponent();
-            this.StartPosition = FormStartPosition.Manual; // Set to manual
+
+            soundBuffers = new Dictionary<string, byte[]>();
+            activeOutputs = new ConcurrentDictionary<string, WaveOutEvent>();
+            this.StartPosition = FormStartPosition.Manual; 
             Rectangle workingArea = Screen.GetWorkingArea(this);
             this.Location = new Point(workingArea.Right - this.Width, workingArea.Bottom - this.Height);
             LoadSprites();
-
+            LoadSounds();
             LoadAnimations();
-            SetAnimation("Congratulate");  // Set default animation
+            SetAnimation("Alert");  // Set default animation
             lastFrameTime = Environment.TickCount64;
             animationTimer.Start();
         }
@@ -72,219 +81,53 @@ namespace ClippitWinforms
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+        private byte[] ConvertMp3ToWav(byte[] mp3Data)
+        {
+            using (var mp3Stream = new MemoryStream(mp3Data))
+            using (var mp3Reader = new Mp3FileReader(mp3Stream))
+            using (var wavStream = new MemoryStream())
+            {
+                WaveFileWriter.WriteWavFileToStream(wavStream, mp3Reader);
+                return wavStream.ToArray();
+            }
+        }
+
+        private void LoadSounds()
+        {
+            //string soundsJson = @"{
+            //    '1':'data:audio/mpeg;base64,SUQzBAAAAAAAGFRTU0UAAAAOAAADTGF2ZjU0LjUuMTAwAP...'
+            //    // Add more sounds here
+            //}";
+            string soundsJson = File.ReadAllText("C:\\Users\\azayr\\OneDrive\\Documents\\GitHub\\ClippitWinforms\\ClippitWinforms\\sounds-mp3.json");
+
+            var sounds = JsonSerializer.Deserialize<Dictionary<string, string>>(soundsJson);
+
+            foreach (var sound in sounds)
+            {
+                try
+                {
+                    string base64Data = sound.Value.Split(',')[1];
+                    byte[] mp3Bytes = Convert.FromBase64String(base64Data);
+
+                    using (var mp3Stream = new MemoryStream(mp3Bytes))
+                    using (var mp3Reader = new Mp3FileReader(mp3Stream))
+                    using (var wavStream = new MemoryStream())
+                    {
+                        WaveFileWriter.WriteWavFileToStream(wavStream, mp3Reader);
+                        soundBuffers[sound.Key] = wavStream.ToArray();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error loading sound {sound.Key}: {ex.Message}");
+                }
+            }
+        }
 
         private void LoadAnimations()
         {
             animations = new Dictionary<string, Animation>();
-            string animationsJson = @"{
-                ""Congratulate"": {
-                  ""frames"": [
-                    {
-                      ""duration"": 100,
-                      ""images"": [
-                        [
-                          0,
-                          0
-                        ]
-                      ],
-                      ""sound"": ""15""
-                    },
-                    {
-                      ""duration"": 10,
-                      ""images"": [
-                        [
-                          124,
-                          0
-                        ]
-                      ]
-                    },
-                    {
-                      ""duration"": 10,
-                      ""images"": [
-                        [
-                          248,
-                          0
-                        ]
-                      ]
-                    },
-                    {
-                      ""duration"": 10,
-                      ""images"": [
-                        [
-                          372,
-                          0
-                        ]
-                      ],
-                      ""sound"": ""14""
-                    },
-                    {
-                      ""duration"": 10,
-                      ""images"": [
-                        [
-                          496,
-                          0
-                        ]
-                      ]
-                    },
-                    {
-                      ""duration"": 10,
-                      ""images"": [
-                        [
-                          620,
-                          0
-                        ]
-                      ]
-                    },
-                    {
-                      ""duration"": 10,
-                      ""images"": [
-                        [
-                          744,
-                          0
-                        ]
-                      ]
-                    },
-                    {
-                      ""duration"": 10,
-                      ""images"": [
-                        [
-                          868,
-                          0
-                        ]
-                      ]
-                    },
-                    {
-                      ""duration"": 10,
-                      ""images"": [
-                        [
-                          992,
-                          0
-                        ]
-                      ],
-                      ""sound"": ""1""
-                    },
-                    {
-                      ""duration"": 100,
-                      ""images"": [
-                        [
-                          1116,
-                          0
-                        ]
-                      ]
-                    },
-                    {
-                      ""duration"": 100,
-                      ""images"": [
-                        [
-                          1240,
-                          0
-                        ]
-                      ]
-                    },
-                    {
-                      ""duration"": 100,
-                      ""images"": [
-                        [
-                          1364,
-                          0
-                        ]
-                      ]
-                    },
-                    {
-                      ""duration"": 1200,
-                      ""images"": [
-                        [
-                          1488,
-                          0
-                        ]
-                      ]
-                    },
-                    {
-                      ""duration"": 100,
-                      ""images"": [
-                        [
-                          1612,
-                          0
-                        ]
-                      ],
-                      ""sound"": ""10""
-                    },
-                    {
-                      ""duration"": 100,
-                      ""images"": [
-                        [
-                          1736,
-                          0
-                        ]
-                      ]
-                    },
-                    {
-                      ""duration"": 1200,
-                      ""images"": [
-                        [
-                          1488,
-                          0
-                        ]
-                      ]
-                    },
-                    {
-                      ""duration"": 100,
-                      ""images"": [
-                        [
-                          1860,
-                          0
-                        ]
-                      ]
-                    },
-                    {
-                      ""duration"": 100,
-                      ""images"": [
-                        [
-                          1984,
-                          0
-                        ]
-                      ]
-                    },
-                    {
-                      ""duration"": 100,
-                      ""images"": [
-                        [
-                          2108,
-                          0
-                        ]
-                      ]
-                    },
-                    {
-                      ""duration"": 100,
-                      ""images"": [
-                        [
-                          2232,
-                          0
-                        ]
-                      ]
-                    },
-                    {
-                      ""duration"": 100,
-                      ""images"": [
-                        [
-                          2356,
-                          0
-                        ]
-                      ],
-                      ""exitBranch"": 21
-                    },
-                    {
-                      ""duration"": 100,
-                      ""images"": [
-                        [
-                          0,
-                          0
-                        ]
-                      ]
-                    }
-                  ]
-                }
-            }";
+            string animationsJson = File.ReadAllText("C:\\Users\\azayr\\OneDrive\\Documents\\GitHub\\ClippitWinforms\\ClippitWinforms\\animation.json");
 
             var options = new JsonSerializerOptions
             {
@@ -294,6 +137,42 @@ namespace ClippitWinforms
             var animationsDict = JsonSerializer.Deserialize<Dictionary<string, Animation>>(animationsJson, options);
             animations = animationsDict;
         }
+        private void PlayFrameSound(string soundId)
+        {
+            if (string.IsNullOrEmpty(soundId) || !soundBuffers.ContainsKey(soundId)) return;
+
+            Task.Run(() =>
+            {
+                try
+                {
+                    var waveOut = new WaveOutEvent();
+                    var soundStream = new MemoryStream(soundBuffers[soundId]);
+                    var waveReader = new WaveFileReader(soundStream);
+
+                    waveOut.Init(waveReader);
+                    activeOutputs[soundId + "_" + Guid.NewGuid()] = waveOut;
+
+                    waveOut.PlaybackStopped += (s, e) =>
+                    {
+                        waveOut.Dispose();
+                        waveReader.Dispose();
+                        soundStream.Dispose();
+                        // Remove from active outputs
+                        var keyToRemove = activeOutputs.FirstOrDefault(x => x.Value == waveOut).Key;
+                        if (keyToRemove != null)
+                        {
+                            activeOutputs.TryRemove(keyToRemove, out _);
+                        }
+                    };
+
+                    waveOut.Play();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error playing sound {soundId}: {ex.Message}");
+                }
+            });
+        }
 
         private void SetAnimation(string animationName)
         {
@@ -302,6 +181,12 @@ namespace ClippitWinforms
                 currentAnimation = animation;
                 currentFrameIndex = 0;
                 lastFrameTime = Environment.TickCount64;
+
+                // Play initial frame sound if it exists
+                if (animation.Frames[0].Sound != null)
+                {
+                    PlayFrameSound(animation.Frames[0].Sound);
+                }
             }
         }
 
@@ -317,6 +202,13 @@ namespace ClippitWinforms
             {
                 currentFrameIndex = (currentFrameIndex + 1) % currentAnimation.Frames.Count;
                 lastFrameTime = currentTime;
+
+                // Play sound for the new frame if it exists
+                var nextFrame = currentAnimation.Frames[currentFrameIndex];
+                if (nextFrame.Sound != null)
+                {
+                    PlayFrameSound(nextFrame.Sound);
+                }
                 this.Invalidate();
             }
         }
@@ -363,6 +255,17 @@ namespace ClippitWinforms
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             base.OnFormClosing(e);
+            // Stop and dispose all active sounds
+            foreach (var output in activeOutputs.Values)
+            {
+                try
+                {
+                    output.Stop();
+                    output.Dispose();
+                }
+                catch { }
+            }
+            activeOutputs.Clear();
             trayIcon.Dispose();
             animationTimer?.Dispose();
             spriteSheet?.Dispose();

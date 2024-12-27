@@ -5,6 +5,7 @@ namespace ClippitWinforms
     {
         public int Duration { get; set; }
         public List<int[]> Images { get; set; }
+        public string Sound { get; set; }
     }
 
     public class Animation
