@@ -1,8 +1,4 @@
-using NAudio.Wave;
-using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Drawing.Imaging;
-using System.Media;
 using System.Text.Json;
 
 namespace ClippitWinforms
@@ -26,23 +22,19 @@ namespace ClippitWinforms
         private bool isClosing = false;
         private TaskCompletionSource<bool> animationComplete;
 
-        private Dictionary<string, byte[]> soundBuffers;
-        private ConcurrentDictionary<string, WaveOutEvent> activeOutputs;
-
         private Random random = new Random();
         private bool isExiting = false;
+
+        private AudioManager audioManager = new AudioManager("C:\\Users\\azayr\\OneDrive\\Documents\\GitHub\\ClippitWinforms\\ClippitWinforms\\sounds-mp3.json");
 
         public Clippy()
         {
             InitializeComponent();
 
-            soundBuffers = new Dictionary<string, byte[]>();
-            activeOutputs = new ConcurrentDictionary<string, WaveOutEvent>();
             this.StartPosition = FormStartPosition.Manual; 
             Rectangle workingArea = Screen.GetWorkingArea(this);
             this.Location = new Point(workingArea.Right - this.Width, workingArea.Bottom - this.Height);
             LoadSprites();
-            LoadSounds();
             LoadAnimations();
             // Start with the appearance animation
             PlayStartupAnimation();
@@ -145,7 +137,7 @@ namespace ClippitWinforms
                 // Play initial frame sound if it exists
                 if (animation.Frames[0].Sound != null)
                 {
-                    PlayFrameSound(animation.Frames[0].Sound);
+                    audioManager.PlayFrameSound(animation.Frames[0].Sound);
                 }
             }
         }
@@ -192,7 +184,7 @@ namespace ClippitWinforms
                 var nextFrame = currentAnimation.Frames[currentFrameIndex];
                 if (nextFrame.Sound != null)
                 {
-                    PlayFrameSound(nextFrame.Sound);
+                    audioManager.PlayFrameSound(nextFrame.Sound);
                 }
                 // Check if regular animation sequence is complete
                 if (!isExiting && currentFrameIndex == 0 && animationComplete != null)
@@ -244,76 +236,6 @@ namespace ClippitWinforms
         }
         #endregion
 
-        #region Sounds
-        private void LoadSounds()
-        {
-            //string soundsJson = @"{
-            //    '1':'data:audio/mpeg;base64,SUQzBAAAAAAAGFRTU0UAAAAOAAADTGF2ZjU0LjUuMTAwAP...'
-            //    // Add more sounds here
-            //}";
-            string soundsJson = File.ReadAllText("C:\\Users\\azayr\\OneDrive\\Documents\\GitHub\\ClippitWinforms\\ClippitWinforms\\sounds-mp3.json");
-
-            var sounds = JsonSerializer.Deserialize<Dictionary<string, string>>(soundsJson);
-
-            foreach (var sound in sounds)
-            {
-                try
-                {
-                    string base64Data = sound.Value.Split(',')[1];
-                    byte[] mp3Bytes = Convert.FromBase64String(base64Data);
-
-                    using (var mp3Stream = new MemoryStream(mp3Bytes))
-                    using (var mp3Reader = new Mp3FileReader(mp3Stream))
-                    using (var wavStream = new MemoryStream())
-                    {
-                        WaveFileWriter.WriteWavFileToStream(wavStream, mp3Reader);
-                        soundBuffers[sound.Key] = wavStream.ToArray();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Error loading sound {sound.Key}: {ex.Message}");
-                }
-            }
-        }
-        private void PlayFrameSound(string soundId)
-        {
-            if (string.IsNullOrEmpty(soundId) || !soundBuffers.ContainsKey(soundId)) return;
-
-            Task.Run(() =>
-            {
-                try
-                {
-                    var waveOut = new WaveOutEvent();
-                    var soundStream = new MemoryStream(soundBuffers[soundId]);
-                    var waveReader = new WaveFileReader(soundStream);
-
-                    waveOut.Init(waveReader);
-                    activeOutputs[soundId + "_" + Guid.NewGuid()] = waveOut;
-
-                    waveOut.PlaybackStopped += (s, e) =>
-                    {
-                        waveOut.Dispose();
-                        waveReader.Dispose();
-                        soundStream.Dispose();
-                        // Remove from active outputs
-                        var keyToRemove = activeOutputs.FirstOrDefault(x => x.Value == waveOut).Key;
-                        if (keyToRemove != null)
-                        {
-                            activeOutputs.TryRemove(keyToRemove, out _);
-                        }
-                    };
-
-                    waveOut.Play();
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Error playing sound {soundId}: {ex.Message}");
-                }
-            });
-        }
-        #endregion
-
         protected override async void OnFormClosing(FormClosingEventArgs e)
         {
             if (!isClosing)
@@ -325,16 +247,7 @@ namespace ClippitWinforms
                 await PlayClosingAnimation();
 
                 // Clean up and close
-                foreach (var output in activeOutputs.Values)
-                {
-                    try
-                    {
-                        output.Stop();
-                        output.Dispose();
-                    }
-                    catch { }
-                }
-                activeOutputs.Clear();
+                audioManager.Dispose();
 
                 trayIcon.Dispose();
                 animationTimer?.Dispose();
