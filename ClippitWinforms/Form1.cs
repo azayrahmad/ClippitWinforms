@@ -53,6 +53,7 @@ namespace ClippitWinforms
             else Show();
         }
 
+        #region Graphics
         private void LoadSprites()
         {
             string spritePath = @"D:\Exercises\ClippitWinforms\ClippitWinforms\map.png";
@@ -81,48 +82,8 @@ namespace ClippitWinforms
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        private byte[] ConvertMp3ToWav(byte[] mp3Data)
-        {
-            using (var mp3Stream = new MemoryStream(mp3Data))
-            using (var mp3Reader = new Mp3FileReader(mp3Stream))
-            using (var wavStream = new MemoryStream())
-            {
-                WaveFileWriter.WriteWavFileToStream(wavStream, mp3Reader);
-                return wavStream.ToArray();
-            }
-        }
 
-        private void LoadSounds()
-        {
-            //string soundsJson = @"{
-            //    '1':'data:audio/mpeg;base64,SUQzBAAAAAAAGFRTU0UAAAAOAAADTGF2ZjU0LjUuMTAwAP...'
-            //    // Add more sounds here
-            //}";
-            string soundsJson = File.ReadAllText("C:\\Users\\azayr\\OneDrive\\Documents\\GitHub\\ClippitWinforms\\ClippitWinforms\\sounds-mp3.json");
-
-            var sounds = JsonSerializer.Deserialize<Dictionary<string, string>>(soundsJson);
-
-            foreach (var sound in sounds)
-            {
-                try
-                {
-                    string base64Data = sound.Value.Split(',')[1];
-                    byte[] mp3Bytes = Convert.FromBase64String(base64Data);
-
-                    using (var mp3Stream = new MemoryStream(mp3Bytes))
-                    using (var mp3Reader = new Mp3FileReader(mp3Stream))
-                    using (var wavStream = new MemoryStream())
-                    {
-                        WaveFileWriter.WriteWavFileToStream(wavStream, mp3Reader);
-                        soundBuffers[sound.Key] = wavStream.ToArray();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Error loading sound {sound.Key}: {ex.Message}");
-                }
-            }
-        }
+        
 
         private void LoadAnimations()
         {
@@ -136,42 +97,6 @@ namespace ClippitWinforms
 
             var animationsDict = JsonSerializer.Deserialize<Dictionary<string, Animation>>(animationsJson, options);
             animations = animationsDict;
-        }
-        private void PlayFrameSound(string soundId)
-        {
-            if (string.IsNullOrEmpty(soundId) || !soundBuffers.ContainsKey(soundId)) return;
-
-            Task.Run(() =>
-            {
-                try
-                {
-                    var waveOut = new WaveOutEvent();
-                    var soundStream = new MemoryStream(soundBuffers[soundId]);
-                    var waveReader = new WaveFileReader(soundStream);
-
-                    waveOut.Init(waveReader);
-                    activeOutputs[soundId + "_" + Guid.NewGuid()] = waveOut;
-
-                    waveOut.PlaybackStopped += (s, e) =>
-                    {
-                        waveOut.Dispose();
-                        waveReader.Dispose();
-                        soundStream.Dispose();
-                        // Remove from active outputs
-                        var keyToRemove = activeOutputs.FirstOrDefault(x => x.Value == waveOut).Key;
-                        if (keyToRemove != null)
-                        {
-                            activeOutputs.TryRemove(keyToRemove, out _);
-                        }
-                    };
-
-                    waveOut.Play();
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Error playing sound {soundId}: {ex.Message}");
-                }
-            });
         }
 
         private void SetAnimation(string animationName)
@@ -251,6 +176,77 @@ namespace ClippitWinforms
                 }
             }
         }
+        #endregion
+
+        #region Sounds
+        private void LoadSounds()
+        {
+            //string soundsJson = @"{
+            //    '1':'data:audio/mpeg;base64,SUQzBAAAAAAAGFRTU0UAAAAOAAADTGF2ZjU0LjUuMTAwAP...'
+            //    // Add more sounds here
+            //}";
+            string soundsJson = File.ReadAllText("C:\\Users\\azayr\\OneDrive\\Documents\\GitHub\\ClippitWinforms\\ClippitWinforms\\sounds-mp3.json");
+
+            var sounds = JsonSerializer.Deserialize<Dictionary<string, string>>(soundsJson);
+
+            foreach (var sound in sounds)
+            {
+                try
+                {
+                    string base64Data = sound.Value.Split(',')[1];
+                    byte[] mp3Bytes = Convert.FromBase64String(base64Data);
+
+                    using (var mp3Stream = new MemoryStream(mp3Bytes))
+                    using (var mp3Reader = new Mp3FileReader(mp3Stream))
+                    using (var wavStream = new MemoryStream())
+                    {
+                        WaveFileWriter.WriteWavFileToStream(wavStream, mp3Reader);
+                        soundBuffers[sound.Key] = wavStream.ToArray();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error loading sound {sound.Key}: {ex.Message}");
+                }
+            }
+        }
+        private void PlayFrameSound(string soundId)
+        {
+            if (string.IsNullOrEmpty(soundId) || !soundBuffers.ContainsKey(soundId)) return;
+
+            Task.Run(() =>
+            {
+                try
+                {
+                    var waveOut = new WaveOutEvent();
+                    var soundStream = new MemoryStream(soundBuffers[soundId]);
+                    var waveReader = new WaveFileReader(soundStream);
+
+                    waveOut.Init(waveReader);
+                    activeOutputs[soundId + "_" + Guid.NewGuid()] = waveOut;
+
+                    waveOut.PlaybackStopped += (s, e) =>
+                    {
+                        waveOut.Dispose();
+                        waveReader.Dispose();
+                        soundStream.Dispose();
+                        // Remove from active outputs
+                        var keyToRemove = activeOutputs.FirstOrDefault(x => x.Value == waveOut).Key;
+                        if (keyToRemove != null)
+                        {
+                            activeOutputs.TryRemove(keyToRemove, out _);
+                        }
+                    };
+
+                    waveOut.Play();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error playing sound {soundId}: {ex.Message}");
+                }
+            });
+        }
+        #endregion
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
