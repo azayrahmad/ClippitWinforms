@@ -29,6 +29,9 @@ namespace ClippitWinforms
         private Dictionary<string, byte[]> soundBuffers;
         private ConcurrentDictionary<string, WaveOutEvent> activeOutputs;
 
+        private Random random = new Random();
+        private bool isExiting = false;
+
         public Clippy()
         {
             InitializeComponent();
@@ -102,11 +105,39 @@ namespace ClippitWinforms
             var animationsDict = JsonSerializer.Deserialize<Dictionary<string, Animation>>(animationsJson, options);
             animations = animationsDict;
         }
+        private int GetNextFrameIndex(AnimationFrame currentFrame)
+        {
+            // If we're exiting and there's an exit branch, use it
+            if (isExiting && currentFrame.ExitBranch.HasValue)
+            {
+                return currentFrame.ExitBranch.Value;
+            }
 
-        private void SetAnimation(string animationName)
+            // Handle branching if present
+            if (currentFrame.Branching?.Branches != null && currentFrame.Branching.Branches.Any())
+            {
+                int randomValue = random.Next(100); // 0-99
+                int cumulative = 0;
+
+                foreach (var branch in currentFrame.Branching.Branches)
+                {
+                    cumulative += branch.Weight;
+                    if (randomValue < cumulative)
+                    {
+                        return branch.FrameIndex;
+                    }
+                }
+            }
+
+            // Default to next sequential frame
+            return (currentFrameIndex + 1) % currentAnimation.Frames.Count;
+        }
+
+        private void SetAnimation(string animationName, bool useExitBranch = false)
         {
             if (animations.TryGetValue(animationName, out var animation))
             {
+                isExiting = useExitBranch;
                 currentAnimation = animation;
                 currentFrameIndex = 0;
                 lastFrameTime = Environment.TickCount64;
@@ -130,7 +161,7 @@ namespace ClippitWinforms
         private async Task PlayClosingAnimation()
         {
             animationComplete = new TaskCompletionSource<bool>();
-            SetAnimation("GoodBye");
+            SetAnimation("GoodBye", true); // Use exit branch
             await animationComplete.Task;
         }
 
@@ -144,7 +175,17 @@ namespace ClippitWinforms
 
             if (currentTime - lastFrameTime >= currentFrame.Duration)
             {
-                currentFrameIndex = (currentFrameIndex + 1) % currentAnimation.Frames.Count;
+                // Get next frame index based on branching logic
+                int nextFrameIndex = GetNextFrameIndex(currentFrame);
+
+                // If we're exiting and have completed the exit branch sequence
+                if (isExiting && currentFrame.ExitBranch == null && nextFrameIndex == 0)
+                {
+                    animationComplete?.TrySetResult(true);
+                    return;
+                }
+
+                currentFrameIndex = nextFrameIndex;
                 lastFrameTime = currentTime;
 
                 // Play sound for the new frame if it exists
@@ -153,8 +194,8 @@ namespace ClippitWinforms
                 {
                     PlayFrameSound(nextFrame.Sound);
                 }
-                // Check if animation sequence is complete
-                if (currentFrameIndex == 0 && animationComplete != null)
+                // Check if regular animation sequence is complete
+                if (!isExiting && currentFrameIndex == 0 && animationComplete != null)
                 {
                     animationComplete.TrySetResult(true);
                     animationComplete = null;
