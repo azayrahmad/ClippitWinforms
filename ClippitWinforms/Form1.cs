@@ -22,6 +22,10 @@ namespace ClippitWinforms
         private long lastFrameTime;
         private Dictionary<string, Animation> animations;
         private Animation currentAnimation;
+
+        private bool isClosing = false;
+        private TaskCompletionSource<bool> animationComplete;
+
         private Dictionary<string, byte[]> soundBuffers;
         private ConcurrentDictionary<string, WaveOutEvent> activeOutputs;
 
@@ -37,7 +41,9 @@ namespace ClippitWinforms
             LoadSprites();
             LoadSounds();
             LoadAnimations();
-            SetAnimation("Alert");  // Set default animation
+            // Start with the appearance animation
+            PlayStartupAnimation();
+            // SetAnimation("Alert");  // Set default animation
             lastFrameTime = Environment.TickCount64;
             animationTimer.Start();
         }
@@ -83,8 +89,6 @@ namespace ClippitWinforms
             }
         }
 
-        
-
         private void LoadAnimations()
         {
             animations = new Dictionary<string, Animation>();
@@ -115,6 +119,21 @@ namespace ClippitWinforms
             }
         }
 
+        private async Task PlayStartupAnimation()
+        {
+            animationComplete = new TaskCompletionSource<bool>();
+            SetAnimation("Greeting");
+            await animationComplete.Task;
+            SetAnimation("Idle1_1");
+        }
+
+        private async Task PlayClosingAnimation()
+        {
+            animationComplete = new TaskCompletionSource<bool>();
+            SetAnimation("GoodBye");
+            await animationComplete.Task;
+        }
+
         private void animationTimer_Tick(object sender, EventArgs e)
         {
             if (currentAnimation == null || currentAnimation.Frames == null ||
@@ -133,6 +152,12 @@ namespace ClippitWinforms
                 if (nextFrame.Sound != null)
                 {
                     PlayFrameSound(nextFrame.Sound);
+                }
+                // Check if animation sequence is complete
+                if (currentFrameIndex == 0 && animationComplete != null)
+                {
+                    animationComplete.TrySetResult(true);
+                    animationComplete = null;
                 }
                 this.Invalidate();
             }
@@ -248,24 +273,34 @@ namespace ClippitWinforms
         }
         #endregion
 
-        protected override void OnFormClosing(FormClosingEventArgs e)
+        protected override async void OnFormClosing(FormClosingEventArgs e)
         {
-            base.OnFormClosing(e);
-            // Stop and dispose all active sounds
-            foreach (var output in activeOutputs.Values)
+            if (!isClosing)
             {
-                try
+                e.Cancel = true;
+                isClosing = true;
+
+                // Play closing animation
+                await PlayClosingAnimation();
+
+                // Clean up and close
+                foreach (var output in activeOutputs.Values)
                 {
-                    output.Stop();
-                    output.Dispose();
+                    try
+                    {
+                        output.Stop();
+                        output.Dispose();
+                    }
+                    catch { }
                 }
-                catch { }
+                activeOutputs.Clear();
+
+                trayIcon.Dispose();
+                animationTimer?.Dispose();
+                spriteSheet?.Dispose();
+
+                Application.Exit();
             }
-            activeOutputs.Clear();
-            trayIcon.Dispose();
-            animationTimer?.Dispose();
-            spriteSheet?.Dispose();
-            // controlsForm?.Dispose();
         }
     }
 }
