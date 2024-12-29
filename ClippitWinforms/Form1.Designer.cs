@@ -40,6 +40,7 @@
             controlsToolStripMenuItem1 = new ToolStripMenuItem();
             exitToolStripMenuItem1 = new ToolStripMenuItem();
             animationTimer = new System.Windows.Forms.Timer(components);
+            selectAnimationToolStripMenuItem = new ToolStripMenuItem();
             contextMenu.SuspendLayout();
             trayMenu.SuspendLayout();
             SuspendLayout();
@@ -47,20 +48,20 @@
             // contextMenu
             // 
             contextMenu.ImageScalingSize = new Size(20, 20);
-            contextMenu.Items.AddRange(new ToolStripItem[] { controlsToolStripMenuItem, exitToolStripMenuItem });
+            contextMenu.Items.AddRange(new ToolStripItem[] { selectAnimationToolStripMenuItem, controlsToolStripMenuItem, exitToolStripMenuItem });
             contextMenu.Name = "contextMenuStrip1";
-            contextMenu.Size = new Size(134, 52);
+            contextMenu.Size = new Size(211, 104);
             // 
             // controlsToolStripMenuItem
             // 
             controlsToolStripMenuItem.Name = "controlsToolStripMenuItem";
-            controlsToolStripMenuItem.Size = new Size(133, 24);
+            controlsToolStripMenuItem.Size = new Size(210, 24);
             controlsToolStripMenuItem.Text = "Controls";
             // 
             // exitToolStripMenuItem
             // 
             exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            exitToolStripMenuItem.Size = new Size(133, 24);
+            exitToolStripMenuItem.Size = new Size(210, 24);
             exitToolStripMenuItem.Text = "Exit";
             exitToolStripMenuItem.Click += exitToolStripMenuItem_Click;
             // 
@@ -109,6 +110,12 @@
             animationTimer.Interval = 16;
             animationTimer.Tick += animationTimer_Tick;
             // 
+            // selectAnimationToolStripMenuItem
+            // 
+            selectAnimationToolStripMenuItem.Name = "selectAnimationToolStripMenuItem";
+            selectAnimationToolStripMenuItem.Size = new Size(210, 24);
+            selectAnimationToolStripMenuItem.Text = "Select Animation";
+            // 
             // Clippy
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -141,5 +148,6 @@
         private ToolStripMenuItem controlsToolStripMenuItem1;
         private ToolStripMenuItem exitToolStripMenuItem1;
         private System.Windows.Forms.Timer animationTimer;
+        private ToolStripMenuItem selectAnimationToolStripMenuItem;
     }
 }

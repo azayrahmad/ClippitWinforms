@@ -22,6 +22,7 @@ namespace ClippitWinforms
 
     public class Animation
     {
+        public string Name { get; set; }
         public List<AnimationFrame> Frames { get; set; }
     }
 }

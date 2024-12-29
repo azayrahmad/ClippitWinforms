@@ -32,6 +32,24 @@ namespace ClippitWinforms
             audioManager = new AudioManager(soundsJsonPath);
 
             animationManager.FrameChanged += AnimationManager_FrameChanged;
+            animationManager.AnimationCompleted += AnimationManager_AnimationCompleted;
+
+            var animations = animationManager.GetAvailableAnimations().OrderBy(a => a);
+
+            foreach (var animation in animations)
+            {
+                // Skip internal animations like Idle sequences
+                if (animation.StartsWith("Idle", StringComparison.OrdinalIgnoreCase) ||
+                    animation.Equals("Greeting", StringComparison.OrdinalIgnoreCase) ||
+                    animation.Equals("GoodBye", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var menuItem = new ToolStripMenuItem(animation);
+                menuItem.Click += async (sender, e) => await PlaySelectedAnimation(animation);
+                selectAnimationToolStripMenuItem.DropDownItems.Add(menuItem);
+            }
 
             // Start with the appearance animation
             PlayStartupAnimation();
@@ -70,7 +88,33 @@ namespace ClippitWinforms
 
         private async Task PlayClosingAnimation()
         {
-            await animationManager.PlayAnimation("GoodBye", true);
+            await animationManager.InterruptAndPlayAnimation("GoodBye");
+        }
+
+        private async Task PlaySelectedAnimation(string animationName)
+        {
+            try
+            {
+                await animationManager.InterruptAndPlayAnimation(animationName);
+            }
+            finally
+            {
+                // Return to idle animation after any animation completes
+                if (!isClosing)
+                {
+                    animationManager.SetAnimation("Idle1_1");
+                }
+            }
+        }
+
+        private async void AnimationManager_AnimationCompleted(object sender, string animationName)
+        {
+            // If we're not in a custom animation and not closing, maintain idle state
+            if (!isClosing &&
+                !animationName.Equals("Idle1_1", StringComparison.OrdinalIgnoreCase))
+            {
+                animationManager.SetAnimation("Idle1_1");
+            }
         }
 
         private void animationTimer_Tick(object sender, EventArgs e)
