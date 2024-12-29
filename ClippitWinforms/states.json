@@ -1,0 +1,51 @@
+{
+  "IdlingLevel1": {
+    "Animation": [
+      "IdleSideToSide",
+      "IdleEyeBrowRaise",
+      "IdleHeadScratch"
+    ]
+  },
+  "IdlingLevel2": {
+    "Animation": [
+      "IdleSideToSide",
+      "IdleFingerTap",
+      "IdleEyeBrowRaise",
+      "IdleHeadScratch"
+    ]
+  },
+  "IdlingLevel3": {
+    "Animation": [
+      "IdleFingerTap",
+      "IdleEyeBrowRaise",
+      "IdleHeadScratch",
+      "IdleRopePile",
+      "IdleSnooze",
+      "IdleAtom"
+    ]
+  },
+  "Hiding": {
+    "Animation": [ "Hide" ]
+  },
+  "GesturingLeft": {
+    "Animation": [ "GestureLeft" ]
+  },
+  "GesturingRight": {
+    "Animation": [ "GestureRight" ]
+  },
+  "GesturingUp": {
+    "Animation": [ "GestureUp" ]
+  },
+  "GesturingDown": {
+    "Animation": [ "GestureDown" ]
+  },
+  "Listening": {
+    "Animation": [ "Alert" ]
+  },
+  "Hearing": {
+    "Animation": [ "Hearing_1" ]
+  },
+  "Showing": {
+    "Animation": [ "Show" ]
+  }
+}

@@ -7,6 +7,7 @@ namespace ClippitWinforms
     {
         private AnimationManager animationManager;
         private AudioManager audioManager;
+        private StateManager stateManager;
         private bool isClosing = false;
 
         public Clippy()
@@ -20,6 +21,9 @@ namespace ClippitWinforms
             string spritePath = @"D:\Exercises\ClippitWinforms\ClippitWinforms\map.png";
             string animationJsonPath = @"C:\Users\azayr\OneDrive\Documents\GitHub\ClippitWinforms\ClippitWinforms\animation.json";
             string soundsJsonPath = @"C:\Users\azayr\OneDrive\Documents\GitHub\ClippitWinforms\ClippitWinforms\sounds-mp3.json";
+            string stateJsonPath = @"C:\Users\azayr\OneDrive\Documents\GitHub\ClippitWinforms\ClippitWinforms\states.json";
+
+
             // Create sprite manager with transparency key
             var spriteManager = new BitmapSpriteManager(
                 spritePath,
@@ -33,7 +37,7 @@ namespace ClippitWinforms
 
             animationManager.FrameChanged += AnimationManager_FrameChanged;
             animationManager.AnimationCompleted += AnimationManager_AnimationCompleted;
-
+            stateManager = new StateManager(stateJsonPath, animationManager);
             var animations = animationManager.GetAvailableAnimations().OrderBy(a => a);
 
             foreach (var animation in animations)
@@ -83,7 +87,7 @@ namespace ClippitWinforms
         private async Task PlayStartupAnimation()
         {
             await animationManager.PlayAnimation("Greeting");
-            animationManager.SetAnimation("Idle1_1");
+            await stateManager.SetState("IdlingLevel1"); // Set initial state instead of direct animation
         }
 
         private async Task PlayClosingAnimation()
@@ -145,6 +149,7 @@ namespace ClippitWinforms
 
                 audioManager.Dispose();
                 animationManager.Dispose();
+                stateManager.Dispose();
                 trayIcon.Dispose();
                 animationTimer?.Dispose();
 
