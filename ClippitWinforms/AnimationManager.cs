@@ -5,7 +5,7 @@ namespace ClippitWinforms
 {
     public class AnimationManager : IDisposable
     {
-        private readonly Bitmap spriteSheet;
+        private readonly ISpriteManager spriteManager;
         private Dictionary<string, Animation> animations;
         private Animation currentAnimation;
         private int currentFrameIndex = 0;
@@ -13,48 +13,17 @@ namespace ClippitWinforms
         private bool isExiting = false;
         private Random random = new Random();
         private TaskCompletionSource<bool> animationComplete;
-
-        public const int FrameWidth = 124;
-        public const int FrameHeight = 93;
         public const int Scale = 2;
 
         public event EventHandler FrameChanged;
         public Animation CurrentAnimation => currentAnimation;
         public int CurrentFrameIndex => currentFrameIndex;
 
-        public AnimationManager(string spritePath, string animationJsonPath)
+        public AnimationManager(ISpriteManager spriteManager, string animationJsonPath)
         {
-            spriteSheet = LoadSpriteSheet(spritePath);
+            this.spriteManager = spriteManager;
             LoadAnimations(animationJsonPath);
             lastFrameTime = Environment.TickCount64;
-        }
-
-        private Bitmap LoadSpriteSheet(string spritePath)
-        {
-            try
-            {
-                using (Bitmap originalImage = new(spritePath))
-                {
-                    var sprite = new Bitmap(originalImage.Width, originalImage.Height, PixelFormat.Format32bppArgb);
-
-                    using (Graphics g = Graphics.FromImage(sprite))
-                    {
-                        ImageAttributes imageAttributes = new();
-                        imageAttributes.SetColorKey(Color.FromArgb(255, 0, 255), Color.FromArgb(255, 0, 255));
-
-                        g.DrawImage(originalImage,
-                            new Rectangle(0, 0, originalImage.Width, originalImage.Height),
-                            0, 0, originalImage.Width, originalImage.Height,
-                            GraphicsUnit.Pixel,
-                            imageAttributes);
-                    }
-                    return sprite;
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new ApplicationException($"Error loading sprite sheet: {ex.Message}", ex);
-            }
         }
 
         private void LoadAnimations(string animationJsonPath)
@@ -143,7 +112,7 @@ namespace ClippitWinforms
 
         public void DrawCurrentFrame(Graphics graphics)
         {
-            if (spriteSheet == null || currentAnimation?.Frames == null ||
+            if (currentAnimation?.Frames == null ||
                 currentFrameIndex >= currentAnimation.Frames.Count) return;
 
             var frame = currentAnimation.Frames[currentFrameIndex];
@@ -153,16 +122,19 @@ namespace ClippitWinforms
                 int sourceX = position[0];
                 int sourceY = position[1];
 
-                Rectangle sourceRect = new Rectangle(sourceX, sourceY, FrameWidth, FrameHeight);
+                Rectangle destRect = new Rectangle(
+                    0, 0,
+                    spriteManager.SpriteWidth * Scale,
+                    spriteManager.SpriteHeight * Scale
+                );
 
-                graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
-                graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
-
-                graphics.DrawImage(
-                    spriteSheet,
-                    new Rectangle(0, 0, FrameWidth * Scale, FrameHeight * Scale),
-                    sourceRect,
-                    GraphicsUnit.Pixel
+                spriteManager.DrawSprite(
+                    graphics,
+                    sourceX,
+                    sourceY,
+                    spriteManager.SpriteWidth,
+                    spriteManager.SpriteHeight,
+                    destRect
                 );
             }
         }
@@ -174,7 +146,7 @@ namespace ClippitWinforms
 
         public void Dispose()
         {
-            spriteSheet?.Dispose();
+            spriteManager?.Dispose();
         }
     }
 }

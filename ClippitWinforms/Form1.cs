@@ -20,8 +20,15 @@ namespace ClippitWinforms
             string spritePath = @"D:\Exercises\ClippitWinforms\ClippitWinforms\map.png";
             string animationJsonPath = @"C:\Users\azayr\OneDrive\Documents\GitHub\ClippitWinforms\ClippitWinforms\animation.json";
             string soundsJsonPath = @"C:\Users\azayr\OneDrive\Documents\GitHub\ClippitWinforms\ClippitWinforms\sounds-mp3.json";
+            // Create sprite manager with transparency key
+            var spriteManager = new BitmapSpriteManager(
+                spritePath,
+                124, // sprite width
+                93,  // sprite height
+                Color.FromArgb(255, 0, 255) // transparency key
+            );
 
-            animationManager = new AnimationManager(spritePath, animationJsonPath);
+            animationManager = new AnimationManager(spriteManager, animationJsonPath);
             audioManager = new AudioManager(soundsJsonPath);
 
             animationManager.FrameChanged += AnimationManager_FrameChanged;
@@ -58,7 +65,7 @@ namespace ClippitWinforms
         private async Task PlayStartupAnimation()
         {
             await animationManager.PlayAnimation("Greeting");
-            await animationManager.PlayAnimation("Idle1_1");
+            animationManager.SetAnimation("Idle1_1");
         }
 
         private async Task PlayClosingAnimation()
@@ -74,11 +81,12 @@ namespace ClippitWinforms
         {
             base.OnPaint(e);
             animationManager.DrawCurrentFrame(e.Graphics);
-
+#if DEBUG
             // Debug information
             string debugText = $"Frame: {animationManager.CurrentFrameIndex}";
             Font debugFont = new Font("Arial", 12, FontStyle.Bold);
             e.Graphics.DrawString(debugText, debugFont, Brushes.White, new PointF(10, 10));
+#endif
         }
         #endregion
 
