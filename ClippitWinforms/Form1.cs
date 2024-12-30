@@ -158,6 +158,8 @@ namespace ClippitWinforms
             string debugText = $"Frame: {animationManager.CurrentFrameIndex}";
             Font debugFont = new Font("Arial", 12, FontStyle.Bold);
             e.Graphics.DrawString(debugText, debugFont, Brushes.White, new PointF(10, 10));
+            e.Graphics.DrawString($"State: {stateManager.GetCurrentState()}", debugFont, Brushes.White, new PointF(10, 25));
+            e.Graphics.DrawString($"Anim: {animationManager.CurrentAnimation.Name}", debugFont, Brushes.White, new PointF(10, 40));
 #endif
         }
         #endregion
