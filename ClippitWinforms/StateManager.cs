@@ -37,7 +37,8 @@ namespace ClippitWinforms
 
         private async void StateTimer_Tick(object sender, EventArgs e)
         {
-            await UpdateStateAnimation();
+            if (!currentState.StartsWith("Idling"))
+                await UpdateStateAnimation();
         }
 
         public async Task SetState(string stateName)
@@ -72,6 +73,24 @@ namespace ClippitWinforms
                     var randomAnimation = animations[random.Next(animations.Length)];
                     await animationManager.InterruptAndPlayAnimation(randomAnimation);
                 }
+            }
+        }
+
+        public async Task HandleVisibilityChange(bool showing)
+        {
+            // Pause the state timer during visibility transitions
+            stateTimer.Stop();
+
+            string visibilityState = showing ? "Showing" : "Hiding";
+
+            // Play the visibility animation
+            await SetState(visibilityState);
+
+            // If showing, return to idle state
+            if (showing)
+            {
+                currentState = "IdlingLevel1";
+                stateTimer.Start();
             }
         }
 

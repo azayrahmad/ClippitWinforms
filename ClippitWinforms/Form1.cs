@@ -13,33 +13,28 @@ namespace ClippitWinforms
         public Clippy()
         {
             InitializeComponent();
+            InitializePosition();
+            InitializeManagers();
+            InitializeSelectionMenu();
 
+            PlayStartupAnimation();
+            animationTimer.Start();
+        }
+
+        #region Initializations
+        private void InitializePosition()
+        {
             this.StartPosition = FormStartPosition.Manual;
             Rectangle workingArea = Screen.GetWorkingArea(this);
+
+            // Agent is positioned on bottom right of the screen
             this.Location = new Point(workingArea.Right - this.Width, workingArea.Bottom - this.Height);
+        }
 
-            string spritePath = @"D:\Exercises\ClippitWinforms\ClippitWinforms\map.png";
-            string animationJsonPath = @"C:\Users\azayr\OneDrive\Documents\GitHub\ClippitWinforms\ClippitWinforms\animation.json";
-            string soundsJsonPath = @"C:\Users\azayr\OneDrive\Documents\GitHub\ClippitWinforms\ClippitWinforms\sounds-mp3.json";
-            string stateJsonPath = @"C:\Users\azayr\OneDrive\Documents\GitHub\ClippitWinforms\ClippitWinforms\states.json";
-
-
-            // Create sprite manager with transparency key
-            var spriteManager = new BitmapSpriteManager(
-                spritePath,
-                124, // sprite width
-                93,  // sprite height
-                Color.FromArgb(255, 0, 255) // transparency key
-            );
-
-            animationManager = new AnimationManager(spriteManager, animationJsonPath);
-            audioManager = new AudioManager(soundsJsonPath);
-
-            animationManager.FrameChanged += AnimationManager_FrameChanged;
-            animationManager.AnimationCompleted += AnimationManager_AnimationCompleted;
-            stateManager = new StateManager(stateJsonPath, animationManager);
+        private void InitializeSelectionMenu()
+        {
+            // Populate Select Animation
             var animations = animationManager.GetAvailableAnimations().OrderBy(a => a);
-
             foreach (var animation in animations)
             {
                 // Skip internal animations like Idle sequences
@@ -55,10 +50,39 @@ namespace ClippitWinforms
                 selectAnimationToolStripMenuItem.DropDownItems.Add(menuItem);
             }
 
-            // Start with the appearance animation
-            PlayStartupAnimation();
-            animationTimer.Start();
+            // Populate Select State
+            var availableStates = stateManager.GetAvailableStates();
+            foreach (var state in availableStates)
+            {
+                var menuItem = new ToolStripMenuItem(state);
+                menuItem.Click += async (sender, e) => await stateManager.SetState(state);
+                selectStateToolStripMenuItem.DropDownItems.Add(menuItem);
+            }
         }
+
+        private void InitializeManagers()
+        {
+            string spritePath = @"D:\Exercises\ClippitWinforms\ClippitWinforms\map.png";
+            string animationJsonPath = @"C:\Users\azayr\OneDrive\Documents\GitHub\ClippitWinforms\ClippitWinforms\animation.json";
+            string soundsJsonPath = @"C:\Users\azayr\OneDrive\Documents\GitHub\ClippitWinforms\ClippitWinforms\sounds-mp3.json";
+            string stateJsonPath = @"C:\Users\azayr\OneDrive\Documents\GitHub\ClippitWinforms\ClippitWinforms\states.json";
+
+            // Create sprite manager with transparency key
+            var spriteManager = new BitmapSpriteManager(
+                spritePath,
+                124, // sprite width
+                93,  // sprite height
+                Color.FromArgb(255, 0, 255) // transparency key
+            );
+
+            animationManager = new AnimationManager(spriteManager, animationJsonPath);
+            audioManager = new AudioManager(soundsJsonPath);
+
+            animationManager.FrameChanged += AnimationManager_FrameChanged;
+            animationManager.AnimationCompleted += AnimationManager_AnimationCompleted;
+            stateManager = new StateManager(stateJsonPath, animationManager);
+        }
+        #endregion
 
         private void AnimationManager_FrameChanged(object sender, EventArgs e)
         {
@@ -154,6 +178,23 @@ namespace ClippitWinforms
                 animationTimer?.Dispose();
 
                 Application.Exit();
+            }
+        }
+
+        private async void hideToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            var menu = (ToolStripMenuItem)sender;
+            if (Visible)
+            {
+                menu.Text = "Show";
+                await stateManager.HandleVisibilityChange(false);
+                Hide();
+            }
+            else
+            {
+                menu.Text = "Hide";
+                Show();
+                await stateManager.HandleVisibilityChange(true);
             }
         }
     }
