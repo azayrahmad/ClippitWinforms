@@ -119,30 +119,24 @@ namespace ClippitWinforms
             await animationManager.InterruptAndPlayAnimation("GoodBye");
         }
 
-        private async Task PlaySelectedAnimation(string animationName)
+        private async Task PlaySelectedAnimation(string animationName, int? timeoutMs = null)
         {
-            //try
-            //{
-                await animationManager.InterruptAndPlayAnimation(animationName);
-            //}
-            //finally
-            //{
-            //    // Return to idle animation after any animation completes
-            //    if (!isClosing)
-            //    {
-            //        animationManager.SetAnimation("Idle1_1");
-            //    }
-            //}
+            try
+            {
+                // Start continuous playback of the selected animation
+                await stateManager.StartContinuousAnimation(animationName, timeoutMs);
+                // await animationManager.InterruptAndPlayAnimation(animationName);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error playing animation: {ex.Message}");
+            }
         }
 
         private async void AnimationManager_AnimationCompleted(object sender, string animationName)
         {
-            // If we're not in a custom animation and not closing, maintain idle state
-            //if (!isClosing &&
-            //    !animationName.Equals("Idle1_1", StringComparison.OrdinalIgnoreCase))
-            //{
-            //    animationManager.SetAnimation("Idle1_1");
-            //}
+            // Let the state manager handle animation completion
+            await stateManager.HandleAnimationCompleted();
         }
 
         private void animationTimer_Tick(object sender, EventArgs e)
