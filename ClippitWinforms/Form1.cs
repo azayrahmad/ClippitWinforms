@@ -121,28 +121,28 @@ namespace ClippitWinforms
 
         private async Task PlaySelectedAnimation(string animationName)
         {
-            try
-            {
+            //try
+            //{
                 await animationManager.InterruptAndPlayAnimation(animationName);
-            }
-            finally
-            {
-                // Return to idle animation after any animation completes
-                if (!isClosing)
-                {
-                    animationManager.SetAnimation("Idle1_1");
-                }
-            }
+            //}
+            //finally
+            //{
+            //    // Return to idle animation after any animation completes
+            //    if (!isClosing)
+            //    {
+            //        animationManager.SetAnimation("Idle1_1");
+            //    }
+            //}
         }
 
         private async void AnimationManager_AnimationCompleted(object sender, string animationName)
         {
             // If we're not in a custom animation and not closing, maintain idle state
-            if (!isClosing &&
-                !animationName.Equals("Idle1_1", StringComparison.OrdinalIgnoreCase))
-            {
-                animationManager.SetAnimation("Idle1_1");
-            }
+            //if (!isClosing &&
+            //    !animationName.Equals("Idle1_1", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    animationManager.SetAnimation("Idle1_1");
+            //}
         }
 
         private void animationTimer_Tick(object sender, EventArgs e)

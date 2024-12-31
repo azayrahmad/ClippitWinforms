@@ -8,8 +8,16 @@ namespace ClippitWinforms
         private readonly Dictionary<string, AgentState> states;
         private readonly Random random = new Random();
         private readonly AnimationManager animationManager;
+        private readonly Timer stateTimer;
+
         private string currentState = "IdlingLevel1";
-        private Timer stateTimer;
+        private int currentIdleLevel = 1;
+        private int idleTickCount = 0;
+
+        private const string IdlePrefix = "IdlingLevel";
+        private const int MaxIdleLevel = 3;
+        private const int TicksPerLevel = 12;
+        private const int TimerInterval = 10000; // 10 seconds
 
         public class AgentState
         {
@@ -20,25 +28,60 @@ namespace ClippitWinforms
         {
             this.animationManager = animationManager;
 
-            // Load and parse the state configuration
-            var jsonString = File.ReadAllText(stateJsonPath);
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            };
-            states = JsonSerializer.Deserialize<Dictionary<string, AgentState>>(jsonString);
+            states = LoadStates(stateJsonPath);
 
-            // Initialize the state timer
-            stateTimer = new Timer();
-            stateTimer.Interval = 10000; // 10 seconds between state checks
-            stateTimer.Tick += StateTimer_Tick;
-            stateTimer.Start();
+            stateTimer = InitializeTimer();
+        }
+
+        private static Dictionary<string, AgentState> LoadStates(string stateJsonPath)
+        {
+            var jsonString = File.ReadAllText(stateJsonPath);
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            return JsonSerializer.Deserialize<Dictionary<string, AgentState>>(jsonString);
+        }
+
+        private Timer InitializeTimer()
+        {
+            var timer = new Timer { Interval = TimerInterval };
+            timer.Tick += StateTimer_Tick;
+            timer.Start();
+            return timer;
         }
 
         private async void StateTimer_Tick(object sender, EventArgs e)
         {
-            if (!currentState.StartsWith("Idling"))
+            if (IsIdleState(currentState))
+            {
+                idleTickCount++;
+
+                if (idleTickCount >= TicksPerLevel && currentIdleLevel < MaxIdleLevel)
+                {
+                    currentIdleLevel++;
+                    idleTickCount = 0;
+                    await SetIdleState(currentIdleLevel);
+                }
+                else
+                {
+                    await UpdateStateAnimation();
+                }
+            }
+            else
+            {
                 await UpdateStateAnimation();
+            }
+        }
+
+        private static bool IsIdleState(string state) =>
+            state.StartsWith(IdlePrefix, StringComparison.OrdinalIgnoreCase);
+
+        private async Task SetIdleState(int level)
+        {
+            string newState = $"{IdlePrefix}{level}";
+            if (states.ContainsKey(newState))
+            {
+                currentState = newState;
+                await UpdateStateAnimation();
+            }
         }
 
         public async Task SetState(string stateName)
@@ -48,27 +91,25 @@ namespace ClippitWinforms
                 throw new ArgumentException($"Invalid state name: {stateName}");
             }
 
+            if (!IsIdleState(stateName))
+            {
+                ResetIdleProgression();
+            }
+
             currentState = stateName;
             await UpdateStateAnimation();
         }
 
-        public string GetCurrentState()
-        {
-            return currentState;
-        }
+        public string GetCurrentState() => currentState;
 
-        public IEnumerable<string> GetAvailableStates()
-        {
-            return states.Keys;
-        }
+        public IEnumerable<string> GetAvailableStates() => states.Keys;
 
         private async Task UpdateStateAnimation()
         {
             if (states.TryGetValue(currentState, out var state))
             {
-                // Select a random animation from the current state
                 var animations = state.Animation;
-                if (animations != null && animations.Length > 0)
+                if (animations?.Length > 0)
                 {
                     var randomAnimation = animations[random.Next(animations.Length)];
                     await animationManager.InterruptAndPlayAnimation(randomAnimation);
@@ -78,25 +119,29 @@ namespace ClippitWinforms
 
         public async Task HandleVisibilityChange(bool showing)
         {
-            // Pause the state timer during visibility transitions
             stateTimer.Stop();
 
             string visibilityState = showing ? "Showing" : "Hiding";
-
-            // Play the visibility animation
             await SetState(visibilityState);
 
-            // If showing, return to idle state
             if (showing)
             {
+                ResetIdleProgression();
                 currentState = "IdlingLevel1";
                 stateTimer.Start();
             }
         }
 
+        public void ResetIdleProgression()
+        {
+            currentIdleLevel = 1;
+            idleTickCount = 0;
+        }
+
         public void Dispose()
         {
             stateTimer?.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }
