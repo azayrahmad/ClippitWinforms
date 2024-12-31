@@ -152,11 +152,11 @@ namespace ClippitWinforms
 
         public async Task HandleAnimationCompleted()
         {
-            if (currentState == "Playing" && !string.IsNullOrEmpty(continuousAnimation))
-            {
-                // If we're still in Playing state, start the animation again
-                await PlayContinuousAnimation();
-            }
+            //if (currentState == "Playing" && !string.IsNullOrEmpty(continuousAnimation))
+            //{
+            //    // If we're still in Playing state, start the animation again
+            //    await PlayContinuousAnimation();
+            //}
         }
 
         private async Task ReturnToIdle()
