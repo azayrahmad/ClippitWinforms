@@ -187,9 +187,11 @@ namespace ClippitWinforms
                 menu.Text = "Show";
                 await stateManager.HandleVisibilityChange(false);
                 Hide();
+                animationTimer.Stop();
             }
             else
             {
+                animationTimer.Start();
                 menu.Text = "Hide";
                 Show();
                 await stateManager.HandleVisibilityChange(true);
