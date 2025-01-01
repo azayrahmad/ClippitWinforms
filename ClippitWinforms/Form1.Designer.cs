@@ -43,6 +43,7 @@
             controlsToolStripMenuItem1 = new ToolStripMenuItem();
             exitToolStripMenuItem1 = new ToolStripMenuItem();
             animationTimer = new System.Windows.Forms.Timer(components);
+            animateToolStripMenuItem = new ToolStripMenuItem();
             contextMenu.SuspendLayout();
             trayMenu.SuspendLayout();
             SuspendLayout();
@@ -50,39 +51,39 @@
             // contextMenu
             // 
             contextMenu.ImageScalingSize = new Size(20, 20);
-            contextMenu.Items.AddRange(new ToolStripItem[] { hideToolStripMenuItem1, selectAnimationToolStripMenuItem, selectStateToolStripMenuItem, controlsToolStripMenuItem, exitToolStripMenuItem });
+            contextMenu.Items.AddRange(new ToolStripItem[] { hideToolStripMenuItem1, animateToolStripMenuItem, selectAnimationToolStripMenuItem, selectStateToolStripMenuItem, controlsToolStripMenuItem, exitToolStripMenuItem });
             contextMenu.Name = "contextMenuStrip1";
-            contextMenu.Size = new Size(192, 124);
+            contextMenu.Size = new Size(211, 176);
             // 
             // hideToolStripMenuItem1
             // 
             hideToolStripMenuItem1.Name = "hideToolStripMenuItem1";
-            hideToolStripMenuItem1.Size = new Size(191, 24);
+            hideToolStripMenuItem1.Size = new Size(210, 24);
             hideToolStripMenuItem1.Text = "Hide";
             hideToolStripMenuItem1.Click += hideToolStripMenuItem1_Click;
             // 
             // selectAnimationToolStripMenuItem
             // 
             selectAnimationToolStripMenuItem.Name = "selectAnimationToolStripMenuItem";
-            selectAnimationToolStripMenuItem.Size = new Size(191, 24);
+            selectAnimationToolStripMenuItem.Size = new Size(210, 24);
             selectAnimationToolStripMenuItem.Text = "Select Animation";
             // 
             // selectStateToolStripMenuItem
             // 
             selectStateToolStripMenuItem.Name = "selectStateToolStripMenuItem";
-            selectStateToolStripMenuItem.Size = new Size(191, 24);
+            selectStateToolStripMenuItem.Size = new Size(210, 24);
             selectStateToolStripMenuItem.Text = "Select State";
             // 
             // controlsToolStripMenuItem
             // 
             controlsToolStripMenuItem.Name = "controlsToolStripMenuItem";
-            controlsToolStripMenuItem.Size = new Size(191, 24);
+            controlsToolStripMenuItem.Size = new Size(210, 24);
             controlsToolStripMenuItem.Text = "Controls";
             // 
             // exitToolStripMenuItem
             // 
             exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            exitToolStripMenuItem.Size = new Size(191, 24);
+            exitToolStripMenuItem.Size = new Size(210, 24);
             exitToolStripMenuItem.Text = "Exit";
             exitToolStripMenuItem.Click += exitToolStripMenuItem_Click;
             // 
@@ -131,6 +132,13 @@
             animationTimer.Interval = 16;
             animationTimer.Tick += animationTimer_Tick;
             // 
+            // animateToolStripMenuItem
+            // 
+            animateToolStripMenuItem.Name = "animateToolStripMenuItem";
+            animateToolStripMenuItem.Size = new Size(210, 24);
+            animateToolStripMenuItem.Text = "Animate!";
+            animateToolStripMenuItem.Click += animateToolStripMenuItem_Click;
+            // 
             // Clippy
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -166,5 +174,6 @@
         private ToolStripMenuItem selectAnimationToolStripMenuItem;
         private ToolStripMenuItem selectStateToolStripMenuItem;
         private ToolStripMenuItem hideToolStripMenuItem1;
+        private ToolStripMenuItem animateToolStripMenuItem;
     }
 }

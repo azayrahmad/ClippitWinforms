@@ -9,6 +9,7 @@ namespace ClippitWinforms
         private AudioManager audioManager;
         private StateManager stateManager;
         private bool isClosing = false;
+        private IEnumerable<string> Animations;
 
         public Clippy()
         {
@@ -34,8 +35,8 @@ namespace ClippitWinforms
         private void InitializeSelectionMenu()
         {
             // Populate Select Animation
-            var animations = animationManager.GetAvailableAnimations().OrderBy(a => a);
-            foreach (var animation in animations)
+            Animations = animationManager.GetAvailableAnimations().OrderBy(a => a);
+            foreach (var animation in Animations)
             {
                 // Skip internal animations like Idle sequences
                 if (animation.StartsWith("Idle", StringComparison.OrdinalIgnoreCase) ||
@@ -124,8 +125,9 @@ namespace ClippitWinforms
             try
             {
                 // Start continuous playback of the selected animation
-                await stateManager.StartContinuousAnimation(animationName, timeoutMs);
+                // await stateManager.StartContinuousAnimation(animationName, timeoutMs);
                 // await animationManager.InterruptAndPlayAnimation(animationName);
+                await stateManager.PlayAnimationOnce(animationName);
             }
             catch (Exception ex)
             {
@@ -192,6 +194,11 @@ namespace ClippitWinforms
                 Show();
                 await stateManager.HandleVisibilityChange(true);
             }
+        }
+
+        private async void animateToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            await stateManager.PlayRandomAnimation();
         }
     }
 }

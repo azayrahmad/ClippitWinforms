@@ -6,7 +6,7 @@ namespace ClippitWinforms
     public class StateManager : IDisposable
     {
         private readonly Dictionary<string, AgentState> states;
-        private readonly Random random = new Random();
+        private readonly Random random = new();
         private readonly AnimationManager animationManager;
         private readonly Timer stateTimer;
         private Timer playbackTimer;
@@ -20,7 +20,8 @@ namespace ClippitWinforms
         private const int MaxIdleLevel = 3;
         private const int TicksPerLevel = 12;
         private const int TimerInterval = 10000; // 10 seconds
-
+        private CancellationTokenSource animationCancellation;
+        private bool isExiting = false;
         public class AgentState
         {
             public string[] Animation { get; set; }
@@ -109,6 +110,51 @@ namespace ClippitWinforms
                 await UpdateStateAnimation();
             }
         }
+        public async Task PlayAnimationOnce(string animationName, int? timeoutMs = null)
+        {
+            // Cancel any existing animation
+            StopContinuousAnimation();
+
+            // Create new cancellation token source
+            animationCancellation?.Cancel();
+            animationCancellation?.Dispose();
+            animationCancellation = new CancellationTokenSource();
+
+            try
+            {
+                currentState = "Playing";
+                continuousAnimation = null; // We don't want continuous playback
+                isExiting = false;
+
+                // Create a task to play the animation
+                var animationTask = animationManager.PlayAnimation(animationName);
+
+                if (timeoutMs.HasValue)
+                {
+                    // Create a timeout task
+                    var timeoutTask = Task.Delay(timeoutMs.Value, animationCancellation.Token);
+
+                    // Wait for either the animation to complete or timeout
+                    var completedTask = await Task.WhenAny(animationTask, timeoutTask);
+
+                    if (completedTask == timeoutTask)
+                    {
+                        // If timeout occurred, stop the animation
+                        isExiting = true;
+                    }
+                }
+                else
+                {
+                    // Just wait for the animation to complete
+                    await animationTask;
+                }
+            }
+            finally
+            {
+                // Return to idle state
+                await ReturnToIdle();
+            }
+        }
 
         public async Task StartContinuousAnimation(string animationName, int? timeoutMs = null)
         {
@@ -144,10 +190,15 @@ namespace ClippitWinforms
 
         public void StopContinuousAnimation()
         {
+            isExiting = true;
             playbackTimer?.Stop();
             playbackTimer?.Dispose();
             playbackTimer = null;
             continuousAnimation = null;
+
+            animationCancellation?.Cancel();
+            animationCancellation?.Dispose();
+            animationCancellation = null;
         }
 
         public async Task HandleAnimationCompleted()
@@ -157,6 +208,11 @@ namespace ClippitWinforms
             //    // If we're still in Playing state, start the animation again
             //    await PlayContinuousAnimation();
             //}
+            if (isExiting)
+            {
+                isExiting = false;
+                await ReturnToIdle();
+            }
         }
 
         private async Task ReturnToIdle()
@@ -178,6 +234,16 @@ namespace ClippitWinforms
                     var randomAnimation = animations[random.Next(animations.Length)];
                     await animationManager.InterruptAndPlayAnimation(randomAnimation);
                 }
+            }
+        }
+
+        public async Task PlayRandomAnimation()
+        {
+            var animations = animationManager.GetAvailableAnimations().ToList();
+            if (animations.Count > 0)
+            {
+                var randomAnimation = animations[random.Next(animations.Count)];
+                await PlayAnimationOnce(randomAnimation, 5000);
             }
         }
 
@@ -207,6 +273,7 @@ namespace ClippitWinforms
         {
             stateTimer?.Dispose();
             playbackTimer?.Dispose();
+            animationCancellation?.Dispose();
             GC.SuppressFinalize(this);
         }
     }
