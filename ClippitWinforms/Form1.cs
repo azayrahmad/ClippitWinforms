@@ -10,17 +10,44 @@ namespace ClippitWinforms
         private StateManager stateManager;
         private bool isClosing = false;
         private IEnumerable<string> Animations;
+        private Balloon speechBalloon;
 
         public Clippy()
         {
             InitializeComponent();
-            InitializePosition();
+            // InitializePosition();
             InitializeManagers();
             InitializeSelectionMenu();
 
             PlayStartupAnimation();
             animationTimer.Start();
-        }
+
+            // Create the speech balloon
+            speechBalloon = new Balloon(this);
+
+            // Load settings from JSON
+            string jsonSettings = @"{
+            ""Balloon"": [
+                {
+                    ""NumLines"": 2,
+                    ""CharsPerLine"": 28,
+                    ""FontName"": ""MS W98 UI"",
+                    ""FontHeight"": 13,
+                    ""ForeColor"": ""00000000"",
+                    ""BackColor"": ""00e1ffff"",
+                    ""BorderColor"": ""00000000""
+                }
+            ]
+        }";
+
+            // Extract the first balloon settings
+            using (JsonDocument doc = JsonDocument.Parse(jsonSettings))
+            {
+                JsonElement firstBalloon = doc.RootElement.GetProperty("Balloon")[0];
+                speechBalloon.LoadSettings(firstBalloon.ToString());
+            }
+
+            }
 
         #region Initializations
         private void InitializePosition()
@@ -112,6 +139,11 @@ namespace ClippitWinforms
         private async Task PlayStartupAnimation()
         {
             await animationManager.PlayAnimation("Greeting");
+            // Show the balloon
+            speechBalloon.ShowBalloon(
+                "Hello",
+                "How may I help you?");
+
             await stateManager.SetState("IdlingLevel1"); // Set initial state instead of direct animation
         }
 
