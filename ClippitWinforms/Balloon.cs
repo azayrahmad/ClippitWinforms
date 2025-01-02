@@ -300,11 +300,13 @@ public class Balloon : Form
         // Transition to the tail
         int tailWidth = 12;
         int centerX = Width / 2;
+        int parentCenterX = parentForm.Left + (parentForm.Width / 2);
+        int parentCenterXRelative = parentCenterX - this.Left; // Adjust for the balloon's position
 
         // Create the tail
         path.AddLine(bounds.Right - cornerRadius, bounds.Bottom, centerX + tailWidth, bounds.Bottom); // Line to tail's right base
-        path.AddLine(centerX + tailWidth, bounds.Bottom, centerX, Height - 1); // Tail's tip
-        path.AddLine(centerX, Height - 1, centerX - tailWidth, bounds.Bottom); // Tail's left base
+        path.AddLine(centerX + tailWidth, bounds.Bottom, parentCenterXRelative, Height - 1); // Tail's tip // Tail's tip
+        path.AddLine(parentCenterXRelative, Height - 1, centerX - tailWidth, bounds.Bottom); // Tail's left base
 
         //// Continue drawing the bottom-left corner
         path.AddLine(centerX - tailWidth, bounds.Bottom, bounds.X + cornerRadius, bounds.Bottom); // Line to bottom-left arc
