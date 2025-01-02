@@ -12,13 +12,14 @@ namespace ClippitWinforms
         private IEnumerable<string> Animations;
         private Balloon speechBalloon;
 
+        private Point lastPoint;
+
         public Clippy()
         {
             InitializeComponent();
-            // InitializePosition();
+            InitializePosition();
             InitializeManagers();
             InitializeSelectionMenu();
-
             PlayStartupAnimation();
             animationTimer.Start();
 
@@ -57,6 +58,10 @@ namespace ClippitWinforms
 
             // Agent is positioned on bottom right of the screen
             this.Location = new Point(workingArea.Right - this.Width, workingArea.Bottom - this.Height);
+
+            // Enable dragging
+            this.MouseDown += OnMouseDown;
+            this.MouseMove += OnMouseMove;
         }
 
         private void InitializeSelectionMenu()
@@ -191,6 +196,22 @@ namespace ClippitWinforms
 #endif
         }
         #endregion
+        private void OnMouseDown(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                lastPoint = new Point(e.X, e.Y);
+            }
+        }
+
+        private void OnMouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                Left += e.X - lastPoint.X;
+                Top += e.Y - lastPoint.Y;
+            }
+        }
 
         protected override async void OnFormClosing(FormClosingEventArgs e)
         {
