@@ -7,7 +7,7 @@ public class BalloonSettings
 {
     public int NumLines { get; set; } = 2;
     public int CharsPerLine { get; set; } = 28;
-    public string FontName { get; set; } = "MS Sans Serif";
+    public string FontName { get; set; } = "Windows XP Tahoma";
     public int FontHeight { get; set; } = 13;
     public string ForeColor { get; set; } = "00000000";
     public string BackColor { get; set; } = "00e1ffff";
@@ -27,7 +27,14 @@ public class Balloon : Form
     private readonly int padding = 10;
     private BalloonSettings settings;
     private Form parentForm;
-    
+    private enum TailDirection
+    {
+        Bottom,
+        Left,
+        Right
+    }
+
+    private TailDirection tailDirection = TailDirection.Bottom;
     public Balloon(Form parent)
     {
         parentForm = parent;
@@ -44,7 +51,7 @@ public class Balloon : Form
         {
             Location = new Point(padding, padding),
             AutoSize = false,
-            Font = new Font("MS Sans Serif", 10, FontStyle.Bold),
+            Font = new Font("Windows XP Tahoma", 10, FontStyle.Bold),
             TextAlign = ContentAlignment.MiddleLeft,
             UseMnemonic = false // Prevents & from being interpreted as an underline marker
         };
@@ -141,11 +148,70 @@ public class Balloon : Form
     {
         if (parentForm == null) return;
 
-        Location = new Point(
-            parentForm.Location.X + (parentForm.Width / 2) - (Width / 2),
-            parentForm.Location.Y - Height + tailHeight - 20
+        // Get the working area of the screen containing the parent form
+        Screen currentScreen = Screen.FromControl(parentForm);
+        Rectangle workArea = currentScreen.WorkingArea;
+
+        // Calculate parent form's center point
+        Point parentCenter = new Point(
+            parentForm.Left + (parentForm.Width / 2),
+            parentForm.Top + (parentForm.Height / 2)
         );
+
+        // Initial position (centered above parent)
+        Point initialPos = new Point(
+            parentCenter.X - (Width / 2),
+            parentForm.Location.Y - Height + tailHeight
+        );
+
+        // Check horizontal bounds
+        if (initialPos.X < workArea.Left)
+            initialPos.X = workArea.Left + 10;
+        else if (initialPos.X + Width > workArea.Right)
+            initialPos.X = workArea.Right - Width - 10;
+
+        // Check if balloon would be above screen top
+        if (initialPos.Y < workArea.Top)
+        {
+            // Try positioning to the right of the parent form first
+            if (parentForm.Right + Width + 10 <= workArea.Right)
+            {
+                initialPos = new Point(
+                    parentForm.Right,
+                    parentCenter.Y - (Height / 2)
+                );
+                tailDirection = TailDirection.Left;
+            }
+            // If not enough space on right, try left side
+            else if (parentForm.Left - Width - 10 >= workArea.Left)
+            {
+                initialPos = new Point(
+                    parentForm.Left - Width - 10,
+                    parentCenter.Y - (Height / 2)
+                );
+                tailDirection = TailDirection.Right;
+            }
+            // If no space on sides, place at top of screen
+            else
+            {
+                initialPos = new Point(
+                    Math.Min(Math.Max(parentCenter.X - (Width / 2), workArea.Left), workArea.Right - Width),
+                    workArea.Top + 10
+                );
+                tailDirection = TailDirection.Bottom;
+            }
+        }
+        else
+        {
+            tailDirection = TailDirection.Bottom;
+        }
+
+        Location = initialPos;
+        Invalidate();
     }
+
+
+
 
     public void LoadSettings(string jsonSettings)
     {
@@ -164,8 +230,8 @@ public class Balloon : Form
     {
         if (settings == null) return;
 
-        titleLabel.Font = new Font(settings.FontName, settings.FontHeight + 2, FontStyle.Bold);
-        contentLabel.Font = new Font(settings.FontName, settings.FontHeight);
+        titleLabel.Font = new Font("Tahoma 8pt Bold Windows XP", settings.FontHeight, FontStyle.Bold);
+        contentLabel.Font = new Font("Windows XP Tahoma", settings.FontHeight);
         
         titleLabel.ForeColor = settings.GetForeColor();
         contentLabel.ForeColor = settings.GetForeColor();
@@ -201,22 +267,87 @@ public class Balloon : Form
     private GraphicsPath CreateBalloonPath()
     {
         GraphicsPath path = new GraphicsPath();
-        Rectangle bounds = new Rectangle(0, 0, Width - 1, Height - tailHeight - 1);
+        Rectangle bounds;
+        
+        switch (tailDirection)
+        {
+            case TailDirection.Bottom:
+                bounds = new Rectangle(0, 0, Width - 1, Height - tailHeight - 1);
+                CreateBottomTailPath(path, bounds);
+                break;
 
+            case TailDirection.Left:
+                bounds = new Rectangle(0, 0, Width - 1, Height - tailHeight - 1);
+                CreateLeftTailPath(path, bounds);
+                break;
+
+            case TailDirection.Right:
+                bounds = new Rectangle(0, 0, Width - 1, Height - tailHeight - 1);
+                CreateRightTailPath(path, bounds);
+                break;
+        }
+
+        return path;
+    }
+
+    private void CreateBottomTailPath(GraphicsPath path, Rectangle bounds)
+    {
+        // Draw the top and side arcs of the rounded rectangle
+        path.AddArc(bounds.X, bounds.Y, cornerRadius * 2, cornerRadius * 2, 180, 90); // Top-left corner
+        path.AddArc(bounds.Right - cornerRadius * 2, bounds.Y, cornerRadius * 2, cornerRadius * 2, 270, 90); // Top-right corner
+        path.AddArc(bounds.Right - cornerRadius * 2, bounds.Bottom - cornerRadius * 2, cornerRadius * 2, cornerRadius * 2, 0, 45); // Bottom-right corner (partial)
+
+        // Transition to the tail
+        int tailWidth = 12;
+        int centerX = Width / 2;
+
+        // Create the tail
+        path.AddLine(bounds.Right - cornerRadius, bounds.Bottom, centerX + tailWidth, bounds.Bottom); // Line to tail's right base
+        path.AddLine(centerX + tailWidth, bounds.Bottom, centerX, Height - 1); // Tail's tip
+        path.AddLine(centerX, Height - 1, centerX - tailWidth, bounds.Bottom); // Tail's left base
+
+        //// Continue drawing the bottom-left corner
+        path.AddLine(centerX - tailWidth, bounds.Bottom, bounds.X + cornerRadius, bounds.Bottom); // Line to bottom-left arc
+        path.AddArc(bounds.X, bounds.Bottom - cornerRadius * 2, cornerRadius * 2, cornerRadius * 2, 135, 45); // Bottom-left corner
+
+        path.CloseFigure();
+    }
+
+
+    private void CreateLeftTailPath(GraphicsPath path, Rectangle bounds)
+    {
         // Draw the rounded rectangle
         path.AddArc(bounds.X, bounds.Y, cornerRadius * 2, cornerRadius * 2, 180, 90);
         path.AddArc(bounds.Right - cornerRadius * 2, bounds.Y, cornerRadius * 2, cornerRadius * 2, 270, 90);
         path.AddArc(bounds.Right - cornerRadius * 2, bounds.Bottom - cornerRadius * 2, cornerRadius * 2, cornerRadius * 2, 0, 90);
-        
-        // Add tail
-        int tailWidth = 12;
-        int centerX = Width / 2;
-        path.AddLine(centerX - tailWidth, bounds.Bottom, centerX, Height - 1);
-        path.AddLine(centerX, Height - 1, centerX + tailWidth, bounds.Bottom);
-        
         path.AddArc(bounds.X, bounds.Bottom - cornerRadius * 2, cornerRadius * 2, cornerRadius * 2, 90, 90);
-        path.CloseFigure();
 
-        return path;
+        //// Add left-pointing tail
+        int tailWidth = 12;
+        int centerY = Height / 2;
+        //path.AddLine(bounds.X, bounds.Bottom - cornerRadius, bounds.X, centerY + tailWidth); // left side from bottom
+        //path.AddLine(bounds.X, centerY - tailWidth, bounds.X, bounds.Y + cornerRadius); // left side from top
+        ////path.AddLine(bounds.X, centerY + tailWidth, bounds.X - tailHeight, centerY);
+        ////path.AddLine(bounds.X, centerY + tailWidth, 0, centerY);
+        ////path.AddLine(0, centerY, bounds.X, centerY + tailWidth);
+
+        //path.CloseFigure();
+    }
+
+    private void CreateRightTailPath(GraphicsPath path, Rectangle bounds)
+    {
+        // Draw the rounded rectangle
+        path.AddArc(bounds.X, bounds.Y, cornerRadius * 2, cornerRadius * 2, 180, 90);
+        path.AddArc(bounds.Right - cornerRadius * 2, bounds.Y, cornerRadius * 2, cornerRadius * 2, 270, 90);
+        path.AddArc(bounds.Right - cornerRadius * 2, bounds.Bottom - cornerRadius * 2, cornerRadius * 2, cornerRadius * 2, 0, 90);
+        path.AddArc(bounds.X, bounds.Bottom - cornerRadius * 2, cornerRadius * 2, cornerRadius * 2, 90, 90);
+
+        // Add right-pointing tail
+        int tailWidth = 12;
+        int centerY = Height / 2;
+        //path.AddLine(bounds.Right, centerY - tailWidth, Width - 1, centerY);
+        //path.AddLine(Width - 1, centerY, bounds.Right, centerY + tailWidth);
+
+        // path.CloseFigure();
     }
 }
