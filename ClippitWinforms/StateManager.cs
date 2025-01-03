@@ -216,7 +216,7 @@ namespace ClippitWinforms
             //    // If we're still in Playing state, start the animation again
             //    await PlayContinuousAnimation();
             //}
-            if (isExiting)
+            if (isExiting && currentState != "Hiding")
             {
                 isExiting = false;
                 await ReturnToIdle();

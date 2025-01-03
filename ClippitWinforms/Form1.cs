@@ -163,7 +163,7 @@ namespace ClippitWinforms
                 // Start continuous playback of the selected animation
                 // await stateManager.StartContinuousAnimation(animationName, timeoutMs);
                 // await animationManager.InterruptAndPlayAnimation(animationName);
-                await stateManager.PlayAnimationOnce(animationName);
+                await stateManager.PlayAnimationOnce(animationName, timeoutMs);
             }
             catch (Exception ex)
             {
