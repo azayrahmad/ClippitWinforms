@@ -50,7 +50,11 @@
             // contextMenu
             // 
             contextMenu.ImageScalingSize = new Size(20, 20);
-            contextMenu.Items.AddRange(new ToolStripItem[] { hideToolStripMenuItem1, animateToolStripMenuItem, selectAnimationToolStripMenuItem, selectStateToolStripMenuItem, controlsToolStripMenuItem, exitToolStripMenuItem });
+            contextMenu.Items.AddRange(new ToolStripItem[] { hideToolStripMenuItem1, animateToolStripMenuItem });
+            #if DEBUG
+            contextMenu.Items.AddRange(new ToolStripItem[] { selectAnimationToolStripMenuItem, selectStateToolStripMenuItem, controlsToolStripMenuItem });
+            #endif
+            contextMenu.Items.AddRange(new ToolStripItem[] { exitToolStripMenuItem });
             contextMenu.Name = "contextMenuStrip1";
             contextMenu.Size = new Size(192, 148);
             // 
