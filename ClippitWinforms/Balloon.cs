@@ -73,8 +73,16 @@ public class Balloon : Form
                 ControlStyles.OptimizedDoubleBuffer, true);
 
         // Handle parent form movement
-        parentForm.LocationChanged += (s, e) => UpdatePosition();
-        parentForm.SizeChanged += (s, e) => UpdatePosition();
+        parentForm.LocationChanged += (s, e) =>
+        {
+            UpdateSize();
+            UpdatePosition();
+        };
+        parentForm.SizeChanged += (s, e) =>
+        {
+            UpdateSize();
+            UpdatePosition();
+        };
     }
 
     public void ShowBalloon(string title, string content)
@@ -87,6 +95,7 @@ public class Balloon : Form
         UpdatePosition();
         Show();
     }
+
     private Size MeasureText(string text, Font font, int maxWidth)
     {
         using (Graphics g = CreateGraphics())
@@ -113,36 +122,43 @@ public class Balloon : Form
         int maxWidth = parentForm.Width;
         int minWidth = 100;
         int innerWidth = maxWidth - (padding * 2);
-        
+
         // Measure title
         Size titleSize = MeasureText(titleLabel.Text, titleLabel.Font, innerWidth);
-        
+
         // Measure content
         Size contentSize = MeasureText(contentLabel.Text, contentLabel.Font, innerWidth);
-        
+
         // Calculate required width
         int requiredInnerWidth = Math.Max(titleSize.Width, contentSize.Width);
         int totalWidth = Math.Min(maxWidth, Math.Max(minWidth, requiredInnerWidth + (padding * 2)));
-        
+
+        // Adjust width for left or right tail
+        if (tailDirection == TailDirection.Left || tailDirection == TailDirection.Right)
+        {
+            totalWidth += tailHeight;
+        }
+
         // Update form width
         Width = totalWidth;
-        
+
         // Update labels
         int usableWidth = Width - (padding * 2);
-        
+
         // Configure title
         titleLabel.Width = usableWidth;
         titleLabel.Height = titleSize.Height;
         titleLabel.Location = new Point(padding, padding);
-        
+
         // Configure content with AutoSize true for proper wrapping
         contentLabel.MaximumSize = new Size(usableWidth, 0);
         contentLabel.AutoSize = true;
-        contentLabel.Location = new Point(padding, titleLabel.Bottom + 10);
-        
+        contentLabel.Location = new Point(padding, titleLabel.Bottom);
+
         // Update form height after content is properly wrapped
         Height = padding + titleLabel.Height + 10 + contentLabel.Height + padding + tailHeight;
     }
+
 
     private void UpdatePosition()
     {
@@ -208,10 +224,8 @@ public class Balloon : Form
 
         Location = initialPos;
         Invalidate();
+        BringToFront();
     }
-
-
-
 
     public void LoadSettings(string jsonSettings)
     {
