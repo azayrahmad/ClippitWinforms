@@ -9,6 +9,7 @@ namespace ClippitWinforms
         private readonly Random random = new();
         private readonly AnimationManager animationManager;
         private readonly Timer stateTimer;
+        private Timer animationTimer;
         private Timer playbackTimer;
 
         private string currentState = "IdlingLevel1";
@@ -32,8 +33,15 @@ namespace ClippitWinforms
             this.animationManager = animationManager;
             states = LoadStates(stateJsonPath);
             stateTimer = InitializeTimer();
+            animationTimer = new Timer { Interval = 16 };
+            animationTimer.Tick += animationTimer_Tick;
+            animationTimer.Start();
         }
 
+        private void animationTimer_Tick(object sender, EventArgs e)
+        {
+            animationManager.UpdateAnimation();
+        }
         private static Dictionary<string, AgentState> LoadStates(string stateJsonPath)
         {
             var jsonString = File.ReadAllText(stateJsonPath);
@@ -251,15 +259,21 @@ namespace ClippitWinforms
         {
             stateTimer.Stop();
             StopContinuousAnimation();
-
+            if(showing) animationTimer.Start();
             string visibilityState = showing ? "Showing" : "Hiding";
             await SetState(visibilityState);
 
             if (showing)
             {
-                ResetIdleProgression();
+                animationTimer.Stop();
+                ResetIdleProgression(); 
+                animationTimer.Start();
                 await SetIdleState(1);
                 stateTimer.Start();
+            }
+            else
+            {
+                animationTimer.Stop();
             }
         }
 
@@ -274,6 +288,7 @@ namespace ClippitWinforms
             stateTimer?.Dispose();
             playbackTimer?.Dispose();
             animationCancellation?.Dispose();
+            animationTimer?.Dispose();
             GC.SuppressFinalize(this);
         }
     }

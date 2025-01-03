@@ -21,7 +21,6 @@ namespace ClippitWinforms
             InitializeManagers();
             InitializeSelectionMenu();
             PlayStartupAnimation();
-            animationTimer.Start();
 
             // Create the speech balloon
             speechBalloon = new Balloon(this);
@@ -177,11 +176,6 @@ namespace ClippitWinforms
             // Let the state manager handle animation completion
             await stateManager.HandleAnimationCompleted();
         }
-
-        private void animationTimer_Tick(object sender, EventArgs e)
-        {
-            animationManager.UpdateAnimation();
-        }
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
@@ -226,7 +220,6 @@ namespace ClippitWinforms
                 animationManager.Dispose();
                 stateManager.Dispose();
                 trayIcon.Dispose();
-                animationTimer?.Dispose();
 
                 Application.Exit();
             }
@@ -241,11 +234,9 @@ namespace ClippitWinforms
                 await stateManager.HandleVisibilityChange(false);
                 Hide();
                 speechBalloon.HideBalloon();
-                animationTimer.Stop();
             }
             else
             {
-                animationTimer.Start();
                 menu.Text = "Hide";
                 Show();
                 await stateManager.HandleVisibilityChange(true);
