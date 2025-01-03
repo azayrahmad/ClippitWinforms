@@ -1,5 +1,6 @@
 ﻿using System.Drawing.Drawing2D;
 using System.Text.Json;
+using Timer = System.Windows.Forms.Timer;
 
 namespace ClippitWinforms;
 
@@ -7,25 +8,24 @@ public class BalloonSettings
 {
     public int NumLines { get; set; } = 2;
     public int CharsPerLine { get; set; } = 28;
-    public string FontName { get; set; } = "Windows XP Tahoma";
+    public string FontName { get; set; } = "MS Sans Serif";
     public int FontHeight { get; set; } = 13;
     public string ForeColor { get; set; } = "00000000";
-    public string BackColor { get; set; } = "00e1ffff";
+    public string BackColor { get; set; } = "00ffffcc";
     public string BorderColor { get; set; } = "00000000";
 
-    public Color GetForeColor() => ColorTranslator.FromHtml("#" + ForeColor.Substring(2));
-    public Color GetBackColor() => ColorTranslator.FromHtml("#" + BackColor.Substring(2));
-    public Color GetBorderColor() => ColorTranslator.FromHtml("#" + BorderColor.Substring(2));
+    public Color GetForeColor() => ColorTranslator.FromHtml(string.Concat("#", ForeColor.AsSpan(2)));
+    public Color GetBackColor() => ColorTranslator.FromHtml(string.Concat("#", BackColor.AsSpan(2)));
+    public Color GetBorderColor() => ColorTranslator.FromHtml(string.Concat("#", BorderColor.AsSpan(2)));
 }
 
 public class Balloon : Form
 {
-    private readonly Label titleLabel;
     private readonly Label contentLabel;
-    private readonly int tailHeight = 40; // Increased tail height
+    private readonly int tailHeight = 40; 
     private readonly int cornerRadius = 10;
     private readonly int padding = 10;
-    private BalloonSettings settings;
+    private BalloonSettings settings = new BalloonSettings();
     private Form parentForm;
     private enum TailDirection
     {
@@ -35,6 +35,8 @@ public class Balloon : Form
     }
 
     private TailDirection tailDirection = TailDirection.Bottom;
+
+    private Timer hideTimer;
     public Balloon(Form parent)
     {
         parentForm = parent;
@@ -46,16 +48,6 @@ public class Balloon : Form
         BackColor = Color.Pink;
         TransparencyKey = Color.Pink;
 
-        // Configure title label
-        titleLabel = new Label
-        {
-            Location = new Point(padding, padding),
-            AutoSize = false,
-            Font = new Font("Windows XP Tahoma", 10, FontStyle.Bold),
-            TextAlign = ContentAlignment.MiddleLeft,
-            UseMnemonic = false // Prevents & from being interpreted as an underline marker
-        };
-        
         // Configure content label
         contentLabel = new Label
         {
@@ -65,7 +57,7 @@ public class Balloon : Form
         };
 
         // Add controls to the form
-        Controls.AddRange(new Control[] { titleLabel, contentLabel });
+        Controls.AddRange([contentLabel]);
         
         // Enable custom drawing
         SetStyle(ControlStyles.UserPaint | 
@@ -83,21 +75,38 @@ public class Balloon : Form
             UpdateSize();
             UpdatePosition();
         };
+        // Initialize timer for hide timeout
+        hideTimer = new Timer();
+        hideTimer.Tick += OnHideTimerTick;
+        ApplySettings();
     }
 
-    public void ShowBalloon(string title, string content)
+    public void ShowBalloon(string title, string content, int displayDurationMs = 0)
     {
-        titleLabel.Text = title;
+        // titleLabel.Text = title;
         contentLabel.Text = content;
         
         // Recalculate size based on content
         UpdateSize();
         UpdatePosition();
+
+        if (displayDurationMs > 0)
+        {
+            // Start the hide timer with the specified duration
+            hideTimer.Interval = displayDurationMs;
+            hideTimer.Start();
+        }
         Show();
+    }
+    public void HideBalloon()
+    {
+        hideTimer.Stop();
+        Close();
     }
 
     private Size MeasureText(string text, Font font, int maxWidth)
     {
+        if (string.IsNullOrEmpty(text)) return new Size(0, 0);
         using (Graphics g = CreateGraphics())
         {
             // Create a temporary rectangle for text measurement
@@ -124,7 +133,8 @@ public class Balloon : Form
         int innerWidth = maxWidth - (padding * 2);
 
         // Measure title
-        Size titleSize = MeasureText(titleLabel.Text, titleLabel.Font, innerWidth);
+        // Size titleSize = MeasureText(titleLabel.Text, titleLabel.Font, innerWidth);
+        Size titleSize = new Size(0, 0);
 
         // Measure content
         Size contentSize = MeasureText(contentLabel.Text, contentLabel.Font, innerWidth);
@@ -146,17 +156,19 @@ public class Balloon : Form
         int usableWidth = Width - (padding * 2);
 
         // Configure title
-        titleLabel.Width = usableWidth;
-        titleLabel.Height = titleSize.Height;
-        titleLabel.Location = new Point(padding, padding);
+        //titleLabel.Width = usableWidth;
+        //titleLabel.Height = titleSize.Height;
+        //titleLabel.Location = new Point(padding, padding);
 
         // Configure content with AutoSize true for proper wrapping
         contentLabel.MaximumSize = new Size(usableWidth, 0);
         contentLabel.AutoSize = true;
-        contentLabel.Location = new Point(padding, titleLabel.Bottom);
+        //contentLabel.Location = new Point(padding, titleLabel.Bottom);
+        contentLabel.Location = new Point(padding, padding);
 
         // Update form height after content is properly wrapped
-        Height = padding + titleLabel.Height + 10 + contentLabel.Height + padding + tailHeight;
+        //Height = padding + titleLabel.Height + 10 + contentLabel.Height + padding + tailHeight;
+        Height = padding + contentLabel.Height + padding + tailHeight;
     }
 
 
@@ -243,14 +255,12 @@ public class Balloon : Form
     private void ApplySettings()
     {
         if (settings == null) return;
-
-        titleLabel.Font = new Font("Tahoma 8pt Bold Windows XP", settings.FontHeight, FontStyle.Bold);
-        contentLabel.Font = new Font("Windows XP Tahoma", settings.FontHeight);
         
-        titleLabel.ForeColor = settings.GetForeColor();
+        //titleLabel.ForeColor = settings.GetForeColor();
         contentLabel.ForeColor = settings.GetForeColor();
-        titleLabel.BackColor = settings.GetBackColor();
+        // titleLabel.BackColor = settings.GetBackColor();
         contentLabel.BackColor = settings.GetBackColor();
+        contentLabel.Font = new Font(settings.FontName, settings.FontHeight);
 
         //UpdateSize();
         //UpdatePosition();
@@ -365,5 +375,11 @@ public class Balloon : Form
         //path.AddLine(Width - 1, centerY, bounds.Right, centerY + tailWidth);
 
         // path.CloseFigure();
+    }
+
+    private void OnHideTimerTick(object sender, EventArgs e)
+    {
+        // Stop the hide timer and close the balloon
+        HideBalloon();
     }
 }

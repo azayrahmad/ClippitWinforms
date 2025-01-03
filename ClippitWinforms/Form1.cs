@@ -26,29 +26,29 @@ namespace ClippitWinforms
             // Create the speech balloon
             speechBalloon = new Balloon(this);
 
-            // Load settings from JSON
-            string jsonSettings = @"{
-            ""Balloon"": [
-                {
-                    ""NumLines"": 2,
-                    ""CharsPerLine"": 28,
-                    ""FontName"": ""MS W98 UI"",
-                    ""FontHeight"": 13,
-                    ""ForeColor"": ""00000000"",
-                    ""BackColor"": ""00e1ffff"",
-                    ""BorderColor"": ""00000000""
-                }
-            ]
-        }";
+            //// Load settings from JSON
+            //string jsonSettings = @"{
+            //    ""Balloon"": [
+            //        {
+            //            ""NumLines"": 2,
+            //            ""CharsPerLine"": 28,
+            //            ""FontName"": ""MS W98 UI"",
+            //            ""FontHeight"": 13,
+            //            ""ForeColor"": ""00000000"",
+            //            ""BackColor"": ""00e1ffff"",
+            //            ""BorderColor"": ""00000000""
+            //        }
+            //    ]
+            //}";
 
-            // Extract the first balloon settings
-            using (JsonDocument doc = JsonDocument.Parse(jsonSettings))
-            {
-                JsonElement firstBalloon = doc.RootElement.GetProperty("Balloon")[0];
-                speechBalloon.LoadSettings(firstBalloon.ToString());
-            }
+            //// Extract the first balloon settings
+            //using (JsonDocument doc = JsonDocument.Parse(jsonSettings))
+            //{
+            //    JsonElement firstBalloon = doc.RootElement.GetProperty("Balloon")[0];
+            //    speechBalloon.LoadSettings(firstBalloon.ToString());
+            //}
 
-            }
+        }
 
         #region Initializations
         private void InitializePosition()
@@ -147,7 +147,7 @@ namespace ClippitWinforms
             // Show the balloon
             speechBalloon.ShowBalloon(
                 "Hello",
-                "How may I help you?");
+                "It looks like you're trying to write a letter.\r\rWould you like help?", 10000);
 
             await stateManager.SetState("IdlingLevel1"); // Set initial state instead of direct animation
         }
@@ -240,6 +240,7 @@ namespace ClippitWinforms
                 menu.Text = "Show";
                 await stateManager.HandleVisibilityChange(false);
                 Hide();
+                speechBalloon.HideBalloon();
                 animationTimer.Stop();
             }
             else
