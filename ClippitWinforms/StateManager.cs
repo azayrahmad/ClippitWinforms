@@ -10,12 +10,10 @@ namespace ClippitWinforms
         private readonly AnimationManager animationManager;
         private readonly Timer stateTimer;
         private Timer animationTimer;
-        private Timer playbackTimer;
 
         private string currentState = "IdlingLevel1";
         private int currentIdleLevel = 1;
         private int idleTickCount = 0;
-        private string continuousAnimation;
 
         private const string IdlePrefix = "IdlingLevel";
         private const int MaxIdleLevel = 3;
@@ -131,7 +129,6 @@ namespace ClippitWinforms
             try
             {
                 currentState = "Playing";
-                continuousAnimation = null; // We don't want continuous playback
                 isExiting = false;
 
                 // Create a task to play the animation
@@ -164,45 +161,9 @@ namespace ClippitWinforms
             }
         }
 
-        public async Task StartContinuousAnimation(string animationName, int? timeoutMs = null)
-        {
-            StopContinuousAnimation();
-
-            continuousAnimation = animationName;
-            currentState = "Playing";
-
-            if (timeoutMs.HasValue)
-            {
-                playbackTimer = new Timer();
-                playbackTimer.Interval = timeoutMs.Value;
-                playbackTimer.Tick += async (s, e) =>
-                {
-                    StopContinuousAnimation();
-                    await ReturnToIdle();
-                };
-                playbackTimer.Start();
-            }
-
-            // Start the first playback
-            await PlayContinuousAnimation();
-        }
-
-        private async Task PlayContinuousAnimation()
-        {
-            if (currentState == "Playing" && !string.IsNullOrEmpty(continuousAnimation))
-            {
-                await animationManager.InterruptAndPlayAnimation(continuousAnimation);
-                // When this animation completes, AnimationManager will trigger the completion event
-            }
-        }
-
         public void StopContinuousAnimation()
         {
             isExiting = true;
-            playbackTimer?.Stop();
-            playbackTimer?.Dispose();
-            playbackTimer = null;
-            continuousAnimation = null;
 
             animationCancellation?.Cancel();
             animationCancellation?.Dispose();
@@ -211,11 +172,6 @@ namespace ClippitWinforms
 
         public async Task HandleAnimationCompleted()
         {
-            //if (currentState == "Playing" && !string.IsNullOrEmpty(continuousAnimation))
-            //{
-            //    // If we're still in Playing state, start the animation again
-            //    await PlayContinuousAnimation();
-            //}
             if (isExiting && currentState != "Hiding")
             {
                 isExiting = false;
@@ -286,7 +242,6 @@ namespace ClippitWinforms
         public void Dispose()
         {
             stateTimer?.Dispose();
-            playbackTimer?.Dispose();
             animationCancellation?.Dispose();
             animationTimer?.Dispose();
             GC.SuppressFinalize(this);
