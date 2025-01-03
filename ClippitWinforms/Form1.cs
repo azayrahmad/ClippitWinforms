@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace ClippitWinforms
 {
-    public partial class Clippy : Form
+    public partial class CharacterView : Form
     {
         private AnimationManager animationManager;
         private AudioManager audioManager;
@@ -14,7 +14,7 @@ namespace ClippitWinforms
 
         private Point lastPoint;
 
-        public Clippy()
+        public CharacterView()
         {
             InitializeComponent();
             InitializePosition();

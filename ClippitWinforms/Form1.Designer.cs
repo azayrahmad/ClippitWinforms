@@ -1,6 +1,6 @@
 ﻿namespace ClippitWinforms
 {
-    partial class Clippy
+    partial class CharacterView
     {
         /// <summary>
         ///  Required designer variable.
@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Clippy));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(CharacterView));
             contextMenu = new ContextMenuStrip(components);
             hideToolStripMenuItem1 = new ToolStripMenuItem();
             animateToolStripMenuItem = new ToolStripMenuItem();
