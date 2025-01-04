@@ -1,3 +1,4 @@
+using ClippitWinforms.Managers;
 using System.Drawing;
 
 namespace ClippitWinforms
@@ -31,10 +32,10 @@ namespace ClippitWinforms
 
         private void InitializeAgent()
         {
-            string spritePath = @"D:\Exercises\ClippitWinforms\ClippitWinforms\map.png";
-            string animationJsonPath = @"C:\Users\azayr\OneDrive\Documents\GitHub\ClippitWinforms\ClippitWinforms\animation.json";
-            string soundsJsonPath = @"C:\Users\azayr\OneDrive\Documents\GitHub\ClippitWinforms\ClippitWinforms\sounds-mp3.json";
-            string stateJsonPath = @"C:\Users\azayr\OneDrive\Documents\GitHub\ClippitWinforms\ClippitWinforms\states.json";
+            string spritePath = @"C:\Users\azayr\OneDrive\Documents\GitHub\ClippitWinforms\ClippitWinforms\AgentData\map.png";
+            string animationJsonPath = @"C:\Users\azayr\OneDrive\Documents\GitHub\ClippitWinforms\ClippitWinforms\AgentData\animation.json";
+            string soundsJsonPath = @"C:\Users\azayr\OneDrive\Documents\GitHub\ClippitWinforms\ClippitWinforms\AgentData\sounds-mp3.json";
+            string stateJsonPath = @"C:\Users\azayr\OneDrive\Documents\GitHub\ClippitWinforms\ClippitWinforms\AgentData\states.json";
 
             agent = new Agent(this, spritePath, animationJsonPath, soundsJsonPath, stateJsonPath);
             agent.FrameChanged += (s, e) => this.Invalidate();

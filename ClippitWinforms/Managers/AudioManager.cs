@@ -3,13 +3,13 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text.Json;
 
-namespace ClippitWinforms
+namespace ClippitWinforms.Managers
 {
     internal class AudioManager
     {
         private Dictionary<string, byte[]> soundBuffers = new Dictionary<string, byte[]>();
         private ConcurrentDictionary<string, WaveOutEvent> activeOutputs = new ConcurrentDictionary<string, WaveOutEvent>();
-        public AudioManager(string jsonFilePath) 
+        public AudioManager(string jsonFilePath)
         {
             LoadSounds(jsonFilePath);
         }

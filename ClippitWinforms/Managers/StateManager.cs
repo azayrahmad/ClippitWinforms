@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using Timer = System.Windows.Forms.Timer;
 
-namespace ClippitWinforms
+namespace ClippitWinforms.Managers
 {
     public class StateManager : IDisposable
     {
@@ -215,14 +215,14 @@ namespace ClippitWinforms
         {
             stateTimer.Stop();
             StopContinuousAnimation();
-            if(showing) animationTimer.Start();
+            if (showing) animationTimer.Start();
             string visibilityState = showing ? "Showing" : "Hiding";
             await SetState(visibilityState);
 
             if (showing)
             {
                 animationTimer.Stop();
-                ResetIdleProgression(); 
+                ResetIdleProgression();
                 animationTimer.Start();
                 await SetIdleState(1);
                 stateTimer.Start();

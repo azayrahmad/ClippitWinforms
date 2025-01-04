@@ -1,4 +1,4 @@
-﻿namespace ClippitWinforms;
+﻿namespace ClippitWinforms.Managers;
 
 public class Agent : IDisposable
 {
@@ -33,7 +33,8 @@ public class Agent : IDisposable
         animationManager = new AnimationManager(spriteManager, animationJsonPath);
         audioManager = new AudioManager(soundsJsonPath);
 
-        animationManager.FrameChanged += (s, e) => {
+        animationManager.FrameChanged += (s, e) =>
+        {
             var currentFrame = animationManager.GetCurrentFrame();
             if (currentFrame?.Sound != null)
             {
@@ -42,7 +43,8 @@ public class Agent : IDisposable
             FrameChanged?.Invoke(this, EventArgs.Empty);
         };
 
-        animationManager.AnimationCompleted += async (s, animName) => {
+        animationManager.AnimationCompleted += async (s, animName) =>
+        {
             AnimationCompleted?.Invoke(this, animName);
             await HandleAnimationCompleted();
         };

@@ -1,6 +1,6 @@
 ﻿using System.Drawing.Imaging;
 
-namespace ClippitWinforms
+namespace ClippitWinforms.Managers
 {
     public interface ISpriteManager : IDisposable
     {
@@ -130,5 +130,5 @@ namespace ClippitWinforms
         }
     }
 
-    
+
 }

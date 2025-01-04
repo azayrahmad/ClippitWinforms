@@ -1,7 +1,8 @@
-﻿using System.Drawing.Imaging;
+﻿using ClippitWinforms.Data;
+using System.Drawing.Imaging;
 using System.Text.Json;
 
-namespace ClippitWinforms
+namespace ClippitWinforms.Managers
 {
     public class AnimationManager : IDisposable
     {
