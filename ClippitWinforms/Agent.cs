@@ -5,7 +5,7 @@ public class Agent : IDisposable
     private AnimationManager animationManager;
     private AudioManager audioManager;
     private StateManager stateManager;
-    private Balloon speechBalloon;
+    private BalloonView speechBalloon;
 
     public event EventHandler? FrameChanged;
     public event EventHandler<string>? AnimationCompleted;
@@ -16,7 +16,7 @@ public class Agent : IDisposable
         InitializeManagers(spritePath, animationJsonPath, soundsJsonPath, stateJsonPath);
 
         // Create the speech balloon
-        speechBalloon = new Balloon(parentForm);
+        speechBalloon = new BalloonView(parentForm);
     }
 
     private void InitializeManagers(string spritePath, string animationJsonPath,

@@ -19,7 +19,7 @@ public class BalloonSettings
     public Color GetBorderColor() => ColorTranslator.FromHtml(string.Concat("#", BorderColor.AsSpan(2)));
 }
 
-public class Balloon : Form
+public class BalloonView : Form
 {
     private readonly Label contentLabel;
     private readonly int tailHeight = 40; 
@@ -37,7 +37,7 @@ public class Balloon : Form
     private TailDirection tailDirection = TailDirection.Bottom;
 
     private Timer hideTimer;
-    public Balloon(Form parent)
+    public BalloonView(Form parent)
     {
         parentForm = parent;
         
