@@ -203,7 +203,7 @@ namespace ClippitWinforms
 
         public async Task PlayRandomAnimation()
         {
-            var animations = animationManager.GetAvailableAnimations().ToList();
+            var animations = animationManager.GetSelectableAnimations().ToList();
             if (animations.Count > 0)
             {
                 var randomAnimation = animations[random.Next(animations.Count)];

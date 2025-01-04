@@ -32,6 +32,10 @@ namespace ClippitWinforms
         {
             return animations.Keys;
         }
+        public IEnumerable<string> GetSelectableAnimations()
+        {
+            return animations.Keys.Where(animation => !animation.StartsWith("Idle", StringComparison.OrdinalIgnoreCase));
+        }
         public async Task InterruptAndPlayAnimation(string newAnimationName)
         {
             if (currentAnimation == null || !IsAnimating)

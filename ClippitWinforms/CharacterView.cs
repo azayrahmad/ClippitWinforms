@@ -66,17 +66,9 @@ namespace ClippitWinforms
         private void InitializeSelectionMenu()
         {
             // Populate Select Animation
-            Animations = animationManager.GetAvailableAnimations().OrderBy(a => a);
+            Animations = animationManager.GetSelectableAnimations().OrderBy(a => a);
             foreach (var animation in Animations)
             {
-                // Skip internal animations like Idle sequences
-                if (animation.StartsWith("Idle", StringComparison.OrdinalIgnoreCase) ||
-                    animation.Equals("Greeting", StringComparison.OrdinalIgnoreCase) ||
-                    animation.Equals("GoodBye", StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
                 var menuItem = new ToolStripMenuItem(animation);
                 menuItem.Click += async (sender, e) => await PlaySelectedAnimation(animation);
                 selectAnimationToolStripMenuItem.DropDownItems.Add(menuItem);
