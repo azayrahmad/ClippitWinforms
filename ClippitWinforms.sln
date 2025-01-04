@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35527.113 d17.12
+VisualStudioVersion = 17.12.35527.113
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClippitWinforms", "ClippitWinforms\ClippitWinforms.csproj", "{3CAAD365-6BE9-4504-AD59-E915B05A7E98}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClippitWinforms.AgentCore", "ClippitWinforms.AgentCore\ClippitWinforms.AgentCore.csproj", "{386BF881-19B4-4C1B-8E3C-3325C23A4823}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{3CAAD365-6BE9-4504-AD59-E915B05A7E98}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3CAAD365-6BE9-4504-AD59-E915B05A7E98}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3CAAD365-6BE9-4504-AD59-E915B05A7E98}.Release|Any CPU.Build.0 = Release|Any CPU
+		{386BF881-19B4-4C1B-8E3C-3325C23A4823}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{386BF881-19B4-4C1B-8E3C-3325C23A4823}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{386BF881-19B4-4C1B-8E3C-3325C23A4823}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{386BF881-19B4-4C1B-8E3C-3325C23A4823}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
