@@ -8,6 +8,7 @@ namespace ClippitWinforms;
 
 public class BalloonView : Form
 {
+    private Label titleLabel;
     private readonly Label contentLabel;
     private readonly int tailHeight = 40;
     private readonly int cornerRadius = 10;
@@ -64,7 +65,22 @@ public class BalloonView : Form
 
     public void ShowBalloon(string title, string content, int displayDurationMs = 0)
     {
-        // titleLabel.Text = title;
+        if (!string.IsNullOrEmpty(title))
+        {
+            titleLabel = new Label
+            {
+                Location = new Point(padding, padding),
+                AutoSize = false,
+                Font = new Font(settings.FontName, settings.FontHeight, FontStyle.Bold),
+                TextAlign = ContentAlignment.MiddleLeft,
+                UseMnemonic = false, // Prevents & from being interpreted as an underline marker
+                BackColor = settings.GetBackColor(),
+                ForeColor = settings.GetForeColor(),
+                Text = title
+            };
+
+            Controls.Add(titleLabel);
+        }
         contentLabel.Text = content;
 
         // Recalculate size based on content
@@ -116,6 +132,10 @@ public class BalloonView : Form
         // Measure title
         // Size titleSize = MeasureText(titleLabel.Text, titleLabel.Font, innerWidth);
         Size titleSize = new Size(0, 0);
+        if (titleLabel != null)
+        {
+            titleSize = MeasureText(titleLabel.Text, titleLabel.Font, innerWidth);
+        }
 
         // Measure content
         Size contentSize = MeasureText(contentLabel.Text, contentLabel.Font, innerWidth);
@@ -137,19 +157,23 @@ public class BalloonView : Form
         int usableWidth = Width - (padding * 2);
 
         // Configure title
-        //titleLabel.Width = usableWidth;
-        //titleLabel.Height = titleSize.Height;
-        //titleLabel.Location = new Point(padding, padding);
+        if (titleLabel != null)
+        {
+            titleLabel.Width = usableWidth;
+            titleLabel.Height = titleSize.Height;
+            titleLabel.Location = new Point(padding, padding);
+        }
 
         // Configure content with AutoSize true for proper wrapping
         contentLabel.MaximumSize = new Size(usableWidth, 0);
         contentLabel.AutoSize = true;
         //contentLabel.Location = new Point(padding, titleLabel.Bottom);
-        contentLabel.Location = new Point(padding, padding);
+        contentLabel.Location = new Point(padding, titleLabel == null ? padding : titleLabel.Bottom);
 
         // Update form height after content is properly wrapped
         //Height = padding + titleLabel.Height + 10 + contentLabel.Height + padding + tailHeight;
         Height = padding + contentLabel.Height + padding + tailHeight;
+        if (titleLabel != null) Height += titleLabel.Height;
     }
 
 

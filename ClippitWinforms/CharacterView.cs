@@ -16,7 +16,7 @@ namespace ClippitWinforms
             InitializeAgent();
             InitializeSelectionMenu();
 
-            agent.PlayStartupAnimation();
+            agent.Start();
         }
 
         private void InitializePosition()

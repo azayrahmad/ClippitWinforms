@@ -62,11 +62,11 @@ public class Agent : IDisposable
         return stateManager.GetAvailableStates();
     }
 
-    public async Task PlayStartupAnimation()
+    public async Task Start()
     {
-        await animationManager.PlayAnimation("Greeting");
+        await PlayAnimation("Greeting");
         speechBalloon.ShowBalloon(
-            "Hello",
+            null,
             "It looks like you're trying to write a letter.\r\rWould you like help?",
             10000);
         await stateManager.SetState("IdlingLevel1");
