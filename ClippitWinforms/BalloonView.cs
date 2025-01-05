@@ -1,28 +1,15 @@
-﻿using System.Drawing.Drawing2D;
+﻿using ClippitWinforms.Data;
+using System.Drawing.Drawing2D;
 using System.Text.Json;
 using Timer = System.Windows.Forms.Timer;
 
 namespace ClippitWinforms;
 
-public class BalloonSettings
-{
-    public int NumLines { get; set; } = 2;
-    public int CharsPerLine { get; set; } = 28;
-    public string FontName { get; set; } = "MS Sans Serif";
-    public int FontHeight { get; set; } = 13;
-    public string ForeColor { get; set; } = "00000000";
-    public string BackColor { get; set; } = "00ffffcc";
-    public string BorderColor { get; set; } = "00000000";
-
-    public Color GetForeColor() => ColorTranslator.FromHtml(string.Concat("#", ForeColor.AsSpan(2)));
-    public Color GetBackColor() => ColorTranslator.FromHtml(string.Concat("#", BackColor.AsSpan(2)));
-    public Color GetBorderColor() => ColorTranslator.FromHtml(string.Concat("#", BorderColor.AsSpan(2)));
-}
 
 public class BalloonView : Form
 {
     private readonly Label contentLabel;
-    private readonly int tailHeight = 40; 
+    private readonly int tailHeight = 40;
     private readonly int cornerRadius = 10;
     private readonly int padding = 10;
     private BalloonSettings settings = new BalloonSettings();
@@ -39,14 +26,8 @@ public class BalloonView : Form
     private Timer hideTimer;
     public BalloonView(Form parent)
     {
+        InitializeComponent();
         parentForm = parent;
-        
-        // Set up the form properties
-        FormBorderStyle = FormBorderStyle.None;
-        ShowInTaskbar = false;
-        TopMost = true;
-        BackColor = Color.Pink;
-        TransparencyKey = Color.Pink;
 
         // Configure content label
         contentLabel = new Label
@@ -58,10 +39,10 @@ public class BalloonView : Form
 
         // Add controls to the form
         Controls.AddRange([contentLabel]);
-        
+
         // Enable custom drawing
-        SetStyle(ControlStyles.UserPaint | 
-                ControlStyles.AllPaintingInWmPaint | 
+        SetStyle(ControlStyles.UserPaint |
+                ControlStyles.AllPaintingInWmPaint |
                 ControlStyles.OptimizedDoubleBuffer, true);
 
         // Handle parent form movement
@@ -85,7 +66,7 @@ public class BalloonView : Form
     {
         // titleLabel.Text = title;
         contentLabel.Text = content;
-        
+
         // Recalculate size based on content
         UpdateSize();
         UpdatePosition();
@@ -111,16 +92,16 @@ public class BalloonView : Form
         {
             // Create a temporary rectangle for text measurement
             RectangleF rect = new RectangleF(0, 0, maxWidth, float.MaxValue);
-            
+
             // Measure the text with wrapping
             CharacterRange[] ranges = { new CharacterRange(0, text.Length) };
             StringFormat sf = new StringFormat();
             sf.SetMeasurableCharacterRanges(ranges);
-            
+
             // Get the actual region the text occupies
             Region[] regions = g.MeasureCharacterRanges(text, font, rect, sf);
             RectangleF bounds = regions[0].GetBounds(g);
-            
+
             // Add a small buffer to ensure text isn't cut off
             return new Size((int)Math.Ceiling(bounds.Width), (int)Math.Ceiling(bounds.Height + 5));
         }
@@ -255,7 +236,7 @@ public class BalloonView : Form
     private void ApplySettings()
     {
         if (settings == null) return;
-        
+
         //titleLabel.ForeColor = settings.GetForeColor();
         contentLabel.ForeColor = settings.GetForeColor();
         // titleLabel.BackColor = settings.GetBackColor();
@@ -273,13 +254,13 @@ public class BalloonView : Form
         using (GraphicsPath path = CreateBalloonPath())
         {
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            
+
             // Fill the balloon
             using (SolidBrush brush = new SolidBrush(settings?.GetBackColor() ?? Color.White))
             {
                 e.Graphics.FillPath(brush, path);
             }
-            
+
             // Draw the border
             using (Pen pen = new Pen(settings?.GetBorderColor() ?? Color.Gray, 1))
             {
@@ -292,7 +273,7 @@ public class BalloonView : Form
     {
         GraphicsPath path = new GraphicsPath();
         Rectangle bounds;
-        
+
         switch (tailDirection)
         {
             case TailDirection.Bottom:
@@ -375,6 +356,22 @@ public class BalloonView : Form
         //path.AddLine(Width - 1, centerY, bounds.Right, centerY + tailWidth);
 
         // path.CloseFigure();
+    }
+
+    private void InitializeComponent()
+    {
+        SuspendLayout();
+        // 
+        // BalloonView
+        // 
+        BackColor = Color.Pink;
+        ClientSize = new Size(282, 253);
+        FormBorderStyle = FormBorderStyle.None;
+        Name = "BalloonView";
+        ShowInTaskbar = false;
+        TopMost = true;
+        TransparencyKey = Color.Pink;
+        ResumeLayout(false);
     }
 
     private void OnHideTimerTick(object sender, EventArgs e)

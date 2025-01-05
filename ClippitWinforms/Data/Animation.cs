@@ -1,5 +1,4 @@
-﻿using System;
-namespace ClippitWinforms.Data
+﻿namespace ClippitWinforms.Data
 {
     public class Branch
     {
