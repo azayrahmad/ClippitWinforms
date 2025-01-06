@@ -1,4 +1,8 @@
-﻿namespace ClippitWinforms.Managers;
+﻿using ClippitWinforms.AgentCore;
+using ClippitWinforms.AgentCore.Models;
+using ClippitWinforms.AgentCore.Services;
+
+namespace ClippitWinforms.Managers;
 
 public class Agent : IDisposable
 {
@@ -17,6 +21,12 @@ public class Agent : IDisposable
 
         // Create the speech balloon
         speechBalloon = new BalloonView(parentForm);
+    }
+
+    public AgentCharacterDefinition ReadFile(string path)
+    {
+        CharacterParser parser = new CharacterParser();
+        return parser.ParseFromFile(path);
     }
 
     private void InitializeManagers(string spritePath, string animationJsonPath,

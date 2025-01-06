@@ -8,6 +8,9 @@ namespace ClippitWinforms
         private Agent agent;
         private bool isClosing = false;
         private Point lastPoint;
+        private string defaultAgentFolderDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        private string defaultAgentFolderName = "Agents";
+        private string defaultAgentName = "Clippit";
 
         public CharacterView()
         {
@@ -39,6 +42,10 @@ namespace ClippitWinforms
 
             agent = new Agent(this, spritePath, animationJsonPath, soundsJsonPath, stateJsonPath);
             agent.FrameChanged += (s, e) => this.Invalidate();
+
+            var locationPath = Path.Combine(defaultAgentFolderDirectory, defaultAgentFolderName, defaultAgentName);
+            var acdFile = new DirectoryInfo(locationPath).GetFiles("*.acd").FirstOrDefault();
+            var result = agent.ReadFile(acdFile.FullName);
         }
 
         private void InitializeSelectionMenu()
