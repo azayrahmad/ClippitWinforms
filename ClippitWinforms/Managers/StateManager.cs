@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using ClippitWinforms.AgentCore.Models;
+using System.Text.Json;
 using Timer = System.Windows.Forms.Timer;
 
 namespace ClippitWinforms.Managers
@@ -26,10 +27,16 @@ namespace ClippitWinforms.Managers
             public string[] Animation { get; set; }
         }
 
-        public StateManager(string stateJsonPath, AnimationManager animationManager)
+        public StateManager(Dictionary<string, State> statesDict, AnimationManager animationManager)
         {
             this.animationManager = animationManager;
-            states = LoadStates(stateJsonPath);
+            states = new Dictionary<string, AgentState>();
+            foreach (var state in statesDict)
+            {
+                var key = state.Value.Name;
+                var value = state.Value.Animations.ToArray();
+                states[key] = new AgentState { Animation = value };
+            }
             stateTimer = InitializeTimer();
             animationTimer = new Timer { Interval = 16 };
             animationTimer.Tick += animationTimer_Tick;

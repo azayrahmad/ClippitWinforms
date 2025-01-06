@@ -15,9 +15,9 @@ public class Agent : IDisposable
     public event EventHandler<string>? AnimationCompleted;
 
     public Agent(Form parentForm, string spritePath, string animationJsonPath,
-        string soundsJsonPath, string stateJsonPath)
+        string soundsJsonPath, string agentPath)
     {
-        InitializeManagers(spritePath, animationJsonPath, soundsJsonPath, stateJsonPath);
+        InitializeManagers(spritePath, animationJsonPath, soundsJsonPath, agentPath);
 
         // Create the speech balloon
         speechBalloon = new BalloonView(parentForm);
@@ -30,8 +30,10 @@ public class Agent : IDisposable
     }
 
     private void InitializeManagers(string spritePath, string animationJsonPath,
-        string soundsJsonPath, string stateJsonPath)
+        string soundsJsonPath, string agentPath)
     {
+        var result = ReadFile(agentPath);
+
         // Create sprite manager with transparency key
         var spriteManager = new BitmapSpriteManager(
             spritePath,
@@ -59,7 +61,7 @@ public class Agent : IDisposable
             await HandleAnimationCompleted();
         };
 
-        stateManager = new StateManager(stateJsonPath, animationManager);
+        stateManager = new StateManager(result.States, animationManager);
     }
 
     public IEnumerable<string> GetSelectableAnimations()

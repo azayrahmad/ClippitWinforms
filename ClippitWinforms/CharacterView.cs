@@ -40,12 +40,12 @@ namespace ClippitWinforms
             string soundsJsonPath = @"C:\Users\azayr\OneDrive\Documents\GitHub\ClippitWinforms\ClippitWinforms\AgentData\Clippit\sounds-mp3.json";
             string stateJsonPath = @"C:\Users\azayr\OneDrive\Documents\GitHub\ClippitWinforms\ClippitWinforms\AgentData\Clippit\states.json";
 
-            agent = new Agent(this, spritePath, animationJsonPath, soundsJsonPath, stateJsonPath);
-            agent.FrameChanged += (s, e) => this.Invalidate();
 
             var locationPath = Path.Combine(defaultAgentFolderDirectory, defaultAgentFolderName, defaultAgentName);
-            var acdFile = new DirectoryInfo(locationPath).GetFiles("*.acd").FirstOrDefault();
-            var result = agent.ReadFile(acdFile.FullName);
+            var acdFile = new DirectoryInfo(locationPath).GetFiles("*.acd").First();
+
+            agent = new Agent(this, spritePath, animationJsonPath, soundsJsonPath, acdFile.FullName);
+            agent.FrameChanged += (s, e) => this.Invalidate();
         }
 
         private void InitializeSelectionMenu()
