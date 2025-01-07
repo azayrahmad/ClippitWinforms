@@ -1,6 +1,7 @@
 ﻿using ClippitWinforms.AgentCore;
 using ClippitWinforms.AgentCore.Models;
 using ClippitWinforms.AgentCore.Services;
+using System.Globalization;
 
 namespace ClippitWinforms.Managers;
 
@@ -10,6 +11,9 @@ public class Agent : IDisposable
     private AudioManager audioManager;
     private StateManager stateManager;
     private BalloonView speechBalloon;
+    
+    private AgentCharacterDefinition characterDefinition;
+    private Info currentInfo;
 
     public event EventHandler? FrameChanged;
     public event EventHandler<string>? AnimationCompleted;
@@ -21,6 +25,18 @@ public class Agent : IDisposable
 
         // Create the speech balloon
         speechBalloon = new BalloonView(parentForm);
+
+        var info = characterDefinition.Character.Infos.FirstOrDefault(info => info.LanguageCode.Equals(CultureInfo.CurrentCulture));
+        if (info != null)
+        {
+            currentInfo = info;
+        }
+        else
+        {
+            currentInfo = characterDefinition.Character.Infos.First(info => info.LanguageCode.Equals(CultureInfo.GetCultureInfo(0x0009)));
+        }
+
+
     }
 
     public AgentCharacterDefinition ReadFile(string path)
@@ -32,13 +48,13 @@ public class Agent : IDisposable
     private void InitializeManagers(string spritePath, string animationJsonPath,
         string soundsJsonPath, string agentPath)
     {
-        var agentCharacterDefinition = ReadFile(agentPath);
+        characterDefinition = ReadFile(agentPath);
 
         // Create sprite manager with transparency key
         var spriteManager = new BitmapSpriteManager(
             spritePath,
-            agentCharacterDefinition.Character.Width, // sprite width
-            agentCharacterDefinition.Character.Height,  // sprite height
+            characterDefinition.Character.Width, // sprite width
+            characterDefinition.Character.Height,  // sprite height
             Color.FromArgb(255, 0, 255) // transparency key
         );
 
@@ -61,7 +77,7 @@ public class Agent : IDisposable
             await HandleAnimationCompleted();
         };
 
-        stateManager = new StateManager(agentCharacterDefinition.States, animationManager);
+        stateManager = new StateManager(characterDefinition.States, animationManager);
     }
 
     public IEnumerable<string> GetSelectableAnimations()
@@ -78,8 +94,8 @@ public class Agent : IDisposable
     {
         await animationManager.InterruptAndPlayAnimation("Greeting");
         speechBalloon.ShowBalloon(
-            null,
-            "It looks like you're trying to write a letter.\r\rWould you like help?",
+            currentInfo.Name,
+            currentInfo.Greetings[new Random().Next(currentInfo.Greetings.Count) - 1],
             10000);
         await stateManager.SetState("IdlingLevel1");
     }
