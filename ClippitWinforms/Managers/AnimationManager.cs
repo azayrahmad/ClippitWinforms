@@ -1,6 +1,8 @@
-﻿using ClippitWinforms.Data;
+﻿using ClippitWinforms.AgentCore.Models;
+using ClippitWinforms.Data;
 using System.Drawing.Imaging;
 using System.Text.Json;
+using Animation = ClippitWinforms.AgentCore.Models.Animation;
 
 namespace ClippitWinforms.Managers
 {
@@ -23,10 +25,10 @@ namespace ClippitWinforms.Managers
         public int CurrentFrameIndex => currentFrameIndex;
         public bool IsAnimating => currentAnimation != null;
 
-        public AnimationManager(ISpriteManager spriteManager, string animationJsonPath)
+        public AnimationManager(ISpriteManager spriteManager, Dictionary<string, Animation> animationsDefinition)
         {
             this.spriteManager = spriteManager;
-            LoadAnimations(animationJsonPath);
+            animations = animationsDefinition;
             lastFrameTime = Environment.TickCount64;
         }
         public IEnumerable<string> GetAvailableAnimations()
@@ -107,7 +109,7 @@ namespace ClippitWinforms.Managers
             var currentTime = Environment.TickCount64;
             var currentFrame = currentAnimation.Frames[currentFrameIndex];
 
-            if (currentTime - lastFrameTime >= currentFrame.Duration)
+            if (currentTime - lastFrameTime >= currentFrame.Duration * 10)
             {
                 int nextFrameIndex = GetNextFrameIndex(currentFrame);
 
@@ -132,24 +134,24 @@ namespace ClippitWinforms.Managers
             }
         }
 
-        private int GetNextFrameIndex(AnimationFrame currentFrame)
+        private int GetNextFrameIndex(FrameDefinition currentFrame)
         {
-            if (isExiting && currentFrame.ExitBranch.HasValue)
+            if (isExiting && currentFrame.ExitBranch > 0)
             {
-                return currentFrame.ExitBranch.Value;
+                return currentFrame.ExitBranch - 1;
             }
 
-            if (currentFrame.Branching?.Branches != null && currentFrame.Branching.Branches.Any())
+            if (currentFrame.Branching != null && currentFrame.Branching.Any())
             {
                 int randomValue = random.Next(100);
                 int cumulative = 0;
 
-                foreach (var branch in currentFrame.Branching.Branches)
+                foreach (var branch in currentFrame.Branching)
                 {
-                    cumulative += branch.Weight;
+                    cumulative += branch.Probability;
                     if (randomValue < cumulative)
                     {
-                        return branch.FrameIndex;
+                        return branch.BranchTo - 1;
                     }
                 }
             }
@@ -165,28 +167,31 @@ namespace ClippitWinforms.Managers
             var frame = currentAnimation.Frames[currentFrameIndex];
             if (frame.Images != null && frame.Images.Count > 0)
             {
-                var position = frame.Images[0];
-                int sourceX = position[0];
-                int sourceY = position[1];
+                if (int.TryParse(Path.GetFileNameWithoutExtension(frame.Images[0].Filename), out int frameNumber))
+                {
+                    var position = frame.Images[0];
+                    int sourceX = frameNumber;
+                    int sourceY = position.OffsetY;
 
-                Rectangle destRect = new Rectangle(
-                    0, 0,
-                    spriteManager.SpriteWidth * Scale,
-                    spriteManager.SpriteHeight * Scale
-                );
+                    Rectangle destRect = new Rectangle(
+                        0, 0,
+                        spriteManager.SpriteWidth * Scale,
+                        spriteManager.SpriteHeight * Scale
+                    );
 
-                spriteManager.DrawSprite(
-                    graphics,
-                    sourceX,
-                    sourceY,
-                    spriteManager.SpriteWidth,
-                    spriteManager.SpriteHeight,
-                    destRect
-                );
+                    spriteManager.DrawSprite(
+                        graphics,
+                        sourceX,
+                        sourceY,
+                        spriteManager.SpriteWidth,
+                        spriteManager.SpriteHeight,
+                        destRect
+                    );
+                }
             }
         }
 
-        public AnimationFrame GetCurrentFrame()
+        public FrameDefinition GetCurrentFrame()
         {
             return currentAnimation?.Frames[currentFrameIndex];
         }

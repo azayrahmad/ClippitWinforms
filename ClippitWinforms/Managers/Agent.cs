@@ -18,10 +18,13 @@ public class Agent : IDisposable
     public event EventHandler? FrameChanged;
     public event EventHandler<string>? AnimationCompleted;
 
+    private string agentFolderPath;
+
     public Agent(Form parentForm, string spritePath, string animationJsonPath,
         string soundsJsonPath, string agentPath)
     {
         InitializeManagers(spritePath, animationJsonPath, soundsJsonPath, agentPath);
+
 
         // Create the speech balloon
         speechBalloon = new BalloonView(parentForm);
@@ -48,6 +51,7 @@ public class Agent : IDisposable
     {
         characterDefinition = ReadFile(agentPath);
 
+        agentFolderPath = Path.GetDirectoryName(agentPath);
         // Create sprite manager with transparency key
         var spriteManager = new BitmapSpriteManager(
             spritePath,
@@ -56,15 +60,19 @@ public class Agent : IDisposable
             Color.FromArgb(255, 0, 255) // transparency key
         );
 
-        animationManager = new AnimationManager(spriteManager, animationJsonPath);
+        var dirSpriteManager = new DirectorySpriteManager(Path.Combine(agentFolderPath, "Images"), 
+                characterDefinition.Character.Width, 
+                characterDefinition.Character.Height);
+
+        animationManager = new AnimationManager(dirSpriteManager, characterDefinition.Animations);
         audioManager = new AudioManager(soundsJsonPath);
 
         animationManager.FrameChanged += (s, e) =>
         {
             var currentFrame = animationManager.GetCurrentFrame();
-            if (currentFrame?.Sound != null)
+            if (currentFrame?.SoundEffect != null)
             {
-                audioManager.PlayFrameSound(currentFrame.Sound);
+                audioManager.PlayFrameSound(currentFrame.SoundEffect);
             }
             FrameChanged?.Invoke(this, EventArgs.Empty);
         };
@@ -90,13 +98,12 @@ public class Agent : IDisposable
 
     public async Task Start()
     {
-        var a = stateManager.SetState("Playing");
+        stateManager.SetState("Playing");
         await animationManager.InterruptAndPlayAnimation("Greeting");
         speechBalloon.ShowBalloon(
             currentInfo.Name,
             currentInfo.Greetings[new Random().Next(currentInfo.Greetings.Count) - 1],
             10000);
-        await a;
         await stateManager.SetState("IdlingLevel1");
     }
 
