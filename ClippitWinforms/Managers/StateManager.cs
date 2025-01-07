@@ -123,7 +123,7 @@ namespace ClippitWinforms.Managers
                 await UpdateStateAnimation();
             }
         }
-        public async Task PlayAnimationOnce(string animationName, int? timeoutMs = null)
+        public async Task PlayAnimation(string animationName, int? timeoutMs = null)
         {
             // Cancel any existing animation
             StopContinuousAnimation();
@@ -214,7 +214,7 @@ namespace ClippitWinforms.Managers
             if (animations.Count > 0)
             {
                 var randomAnimation = animations[random.Next(animations.Count)];
-                await PlayAnimationOnce(randomAnimation, 5000);
+                await PlayAnimation(randomAnimation, 5000);
             }
         }
 

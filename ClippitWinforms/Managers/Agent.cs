@@ -35,8 +35,6 @@ public class Agent : IDisposable
         {
             currentInfo = characterDefinition.Character.Infos.First(info => info.LanguageCode.Equals(CultureInfo.GetCultureInfo(0x0009)));
         }
-
-
     }
 
     public AgentCharacterDefinition ReadFile(string path)
@@ -107,7 +105,12 @@ public class Agent : IDisposable
 
     public async Task PlayAnimation(string animationName, int? timeoutMs = null)
     {
-        await stateManager.PlayAnimationOnce(animationName, timeoutMs);
+        await stateManager.PlayAnimation(animationName, timeoutMs);
+    }
+
+    public async Task PlayAnimationLoop(string animationName)
+    {
+        await animationManager.InterruptAndPlayAnimation(animationName);
     }
 
     public async Task SetState(string state)
