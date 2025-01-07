@@ -32,13 +32,13 @@ public class Agent : IDisposable
     private void InitializeManagers(string spritePath, string animationJsonPath,
         string soundsJsonPath, string agentPath)
     {
-        var result = ReadFile(agentPath);
+        var agentCharacterDefinition = ReadFile(agentPath);
 
         // Create sprite manager with transparency key
         var spriteManager = new BitmapSpriteManager(
             spritePath,
-            124, // sprite width
-            93,  // sprite height
+            agentCharacterDefinition.Character.Width, // sprite width
+            agentCharacterDefinition.Character.Height,  // sprite height
             Color.FromArgb(255, 0, 255) // transparency key
         );
 
@@ -61,7 +61,7 @@ public class Agent : IDisposable
             await HandleAnimationCompleted();
         };
 
-        stateManager = new StateManager(result.States, animationManager);
+        stateManager = new StateManager(agentCharacterDefinition.States, animationManager);
     }
 
     public IEnumerable<string> GetSelectableAnimations()
@@ -76,7 +76,7 @@ public class Agent : IDisposable
 
     public async Task Start()
     {
-        await PlayAnimation("Greeting");
+        await animationManager.InterruptAndPlayAnimation("Greeting");
         speechBalloon.ShowBalloon(
             null,
             "It looks like you're trying to write a letter.\r\rWould you like help?",
