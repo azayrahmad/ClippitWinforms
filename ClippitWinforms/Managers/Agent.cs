@@ -90,11 +90,13 @@ public class Agent : IDisposable
 
     public async Task Start()
     {
+        var a = stateManager.SetState("Playing");
         await animationManager.InterruptAndPlayAnimation("Greeting");
         speechBalloon.ShowBalloon(
             currentInfo.Name,
             currentInfo.Greetings[new Random().Next(currentInfo.Greetings.Count) - 1],
             10000);
+        await a;
         await stateManager.SetState("IdlingLevel1");
     }
 
