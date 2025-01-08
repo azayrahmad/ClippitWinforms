@@ -21,7 +21,6 @@ namespace ClippitWinforms.Managers
         private const int TicksPerLevel = 12;
         private const int TimerInterval = 10000; // 10 seconds
         private CancellationTokenSource animationCancellation;
-        private bool isExiting = false;
         public class AgentState
         {
             public string[] Animation { get; set; }
@@ -130,7 +129,7 @@ namespace ClippitWinforms.Managers
             try
             {
                 currentState = "Playing";
-                isExiting = false;
+                animationManager.isExiting = false;
 
                 // Create a task to play the animation
                 var animationTask = animationManager.PlayAnimation(animationName);
@@ -146,7 +145,7 @@ namespace ClippitWinforms.Managers
                     if (completedTask == timeoutTask)
                     {
                         // If timeout occurred, stop the animation
-                        isExiting = true;
+                        animationManager.isExiting = true;
                     }
                 }
                 else
@@ -164,7 +163,7 @@ namespace ClippitWinforms.Managers
 
         public void StopContinuousAnimation()
         {
-            isExiting = true;
+            animationManager.isExiting = true;
 
             animationCancellation?.Cancel();
             animationCancellation?.Dispose();
@@ -173,9 +172,9 @@ namespace ClippitWinforms.Managers
 
         public async Task HandleAnimationCompleted()
         {
-            if (isExiting && currentState != "Hiding")
+            if (animationManager.isExiting && currentState != "Hiding")
             {
-                isExiting = false;
+                animationManager.isExiting = false;
                 await ReturnToIdle();
             }
         }

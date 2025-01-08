@@ -13,7 +13,7 @@ namespace ClippitWinforms.Managers
         private Animation currentAnimation;
         private int currentFrameIndex = 0;
         private long lastFrameTime;
-        private bool isExiting = false;
+        public bool isExiting = false;
         private Random random = new Random();
         private TaskCompletionSource<bool> animationComplete;
         // private string queuedAnimation = null;
