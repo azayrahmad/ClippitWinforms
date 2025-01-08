@@ -53,9 +53,7 @@ public class Agent : IDisposable
 
         agentFolderPath = Path.GetDirectoryName(agentPath);
 
-        var dirSpriteManager = new DirectorySpriteManager(Path.Combine(agentFolderPath, "Images"), 
-                characterDefinition.Character.Width, 
-                characterDefinition.Character.Height);
+        var dirSpriteManager = new DirectorySpriteManager(Path.Combine(agentFolderPath, "Images"), characterDefinition.Character);
 
         animationManager = new AnimationManager(dirSpriteManager, characterDefinition.Animations);
         audioManager = new WavDirectoryAudioManager(Path.Combine(agentFolderPath, "Audio"));

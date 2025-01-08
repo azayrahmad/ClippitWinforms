@@ -1,4 +1,5 @@
-﻿using System.Drawing.Imaging;
+﻿using ClippitWinforms.AgentCore.Models;
+using System.Drawing.Imaging;
 
 namespace ClippitWinforms.Managers
 {
@@ -51,17 +52,16 @@ namespace ClippitWinforms.Managers
         private readonly ImageAttributes imageAttributes;
         private readonly int width;
         private readonly int height;
-        private Bitmap colorTable;
 
         public override int SpriteWidth => width;
         public override int SpriteHeight => height;
 
-        public DirectorySpriteManager(string directoryPath, int spriteWidth, int spriteHeight)
+        public DirectorySpriteManager(string directoryPath, Character character)
         {
-            width = spriteWidth;
-            height = spriteHeight;
+            width = character.Width;
+            height = character.Height;
             sprites = new Dictionary<int, Bitmap>();
-            imageAttributes = CreateImageAttributes();
+            imageAttributes = CreateImageAttributes(directoryPath, character);
             LoadSprites(directoryPath);
         }
 
@@ -83,12 +83,11 @@ namespace ClippitWinforms.Managers
 
                             using (Graphics g = Graphics.FromImage(sprite))
                             {
-                                ImageAttributes attrs = CreateImageAttributes();
                                 g.DrawImage(originalImage,
                                     new Rectangle(0, 0, originalImage.Width, originalImage.Height),
                                     0, 0, originalImage.Width, originalImage.Height,
                                     GraphicsUnit.Pixel,
-                                    attrs);
+                                    imageAttributes);
                             }
                             sprites[frameNumber] = sprite;
                         }
@@ -101,11 +100,12 @@ namespace ClippitWinforms.Managers
             }
         }
 
-        private ImageAttributes CreateImageAttributes()
+        private ImageAttributes CreateImageAttributes(string directoryPath, Character character)
         {
             var attrs = new ImageAttributes();
             // Use transparency value 253
-            Color transparencyColor = Color.FromArgb(255, 0 , 255);
+            
+            Color transparencyColor = GetTransparencyColor(Path.Combine(directoryPath, Path.GetFileName(character.ColorTable)), character.Transparency);
             attrs.SetColorKey(transparencyColor, transparencyColor);
             return attrs;
         }
