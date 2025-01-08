@@ -47,12 +47,6 @@ namespace ClippitWinforms.Managers
         {
             animationManager.UpdateAnimation();
         }
-        private static Dictionary<string, AgentState> LoadStates(string stateJsonPath)
-        {
-            var jsonString = File.ReadAllText(stateJsonPath);
-            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            return JsonSerializer.Deserialize<Dictionary<string, AgentState>>(jsonString);
-        }
 
         private Timer InitializeTimer()
         {
