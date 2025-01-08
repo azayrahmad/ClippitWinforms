@@ -43,7 +43,7 @@ namespace ClippitWinforms.Managers
         {
             if (currentAnimation == null || !IsAnimating)
             {
-                await PlayAnimation(newAnimationName);
+                await PlayAnimation(newAnimationName, true);
                 return;
             }
 
@@ -104,7 +104,7 @@ namespace ClippitWinforms.Managers
             {
                 int nextFrameIndex = GetNextFrameIndex(currentFrame) ?? -1;
 
-                if (isExiting && currentFrame.ExitBranch == null && nextFrameIndex < 0)
+                if (isExiting && currentFrame.ExitBranch == null && nextFrameIndex == 0)
                 {
                     animationComplete?.TrySetResult(true);
                     AnimationCompleted?.Invoke(this, currentAnimation.Name);
