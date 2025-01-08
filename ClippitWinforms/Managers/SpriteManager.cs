@@ -136,6 +136,7 @@ namespace ClippitWinforms.Managers
         private readonly ImageAttributes imageAttributes;
         private readonly int width;
         private readonly int height;
+        private Bitmap colorTable;
 
         public override int SpriteWidth => width;
         public override int SpriteHeight => height;
@@ -189,9 +190,41 @@ namespace ClippitWinforms.Managers
         {
             var attrs = new ImageAttributes();
             // Use transparency value 253
-            Color transparencyColor = Color.FromArgb(253, 253, 253);
+            Color transparencyColor = Color.FromArgb(255, 0 , 255);
             attrs.SetColorKey(transparencyColor, transparencyColor);
             return attrs;
+        }
+
+        /// <summary>
+        /// Gets the transparency color from a color table image based on a specified index.
+        /// </summary>
+        /// <param name="colorTablePath">The file path to the color table image.</param>
+        /// <param name="index">The index of the color in the color table.</param>
+        /// <returns>The Color at the specified index, or Color.Empty if invalid.</returns>
+        public static Color GetTransparencyColor(string colorTablePath, int index)
+        {
+            using (Bitmap colorTableBitmap = new Bitmap(colorTablePath))
+            {
+                // Ensure the image is in indexed color mode
+                if (colorTableBitmap.PixelFormat != PixelFormat.Format8bppIndexed &&
+                    colorTableBitmap.PixelFormat != PixelFormat.Format4bppIndexed &&
+                    colorTableBitmap.PixelFormat != PixelFormat.Format1bppIndexed)
+                {
+                    throw new InvalidOperationException("The provided image is not in an indexed color format.");
+                }
+
+                // Get the palette from the image
+                ColorPalette palette = colorTableBitmap.Palette;
+
+                // Validate the index
+                if (index < 0 || index >= palette.Entries.Length)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(index), "Index is out of range for the color table.");
+                }
+
+                // Return the color at the specified index
+                return palette.Entries[index];
+            }
         }
 
         public override void DrawSprite(Graphics graphics, int sourceX, int sourceY, int width, int height, Rectangle destRect)
