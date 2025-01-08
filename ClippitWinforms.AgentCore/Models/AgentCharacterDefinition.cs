@@ -50,7 +50,7 @@ namespace ClippitWinforms.AgentCore.Models
     {
         public int Duration { get; set; }
         public string SoundEffect { get; set; }
-        public int ExitBranch { get; set; }
+        public int? ExitBranch { get; set; }
         public List<ImageDefinition> Images { get; set; } = new List<ImageDefinition>();
         public List<BranchingDefinition> Branching { get; set; }
     }

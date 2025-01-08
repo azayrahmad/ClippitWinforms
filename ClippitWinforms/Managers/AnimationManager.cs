@@ -66,15 +66,6 @@ namespace ClippitWinforms.Managers
                 queuedAnimation = null;
             }
         }
-        private void LoadAnimations(string animationJsonPath)
-        {
-            string animationsJson = File.ReadAllText(animationJsonPath);
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            };
-            animations = JsonSerializer.Deserialize<Dictionary<string, Animation>>(animationsJson, options);
-        }
 
         public void SetAnimation(string animationName, bool useExitBranch = false)
         {
@@ -111,9 +102,9 @@ namespace ClippitWinforms.Managers
 
             if (currentTime - lastFrameTime >= currentFrame.Duration * 10)
             {
-                int nextFrameIndex = GetNextFrameIndex(currentFrame);
+                int nextFrameIndex = GetNextFrameIndex(currentFrame) ?? -1;
 
-                if (isExiting && currentFrame.ExitBranch == null && nextFrameIndex == 0)
+                if (isExiting && currentFrame.ExitBranch == null && nextFrameIndex < 0)
                 {
                     animationComplete?.TrySetResult(true);
                     AnimationCompleted?.Invoke(this, currentAnimation.Name);
@@ -134,9 +125,9 @@ namespace ClippitWinforms.Managers
             }
         }
 
-        private int GetNextFrameIndex(FrameDefinition currentFrame)
+        private int? GetNextFrameIndex(FrameDefinition currentFrame)
         {
-            if (isExiting && currentFrame.ExitBranch > 0)
+            if (isExiting && currentFrame.ExitBranch != null)
             {
                 return currentFrame.ExitBranch - 1;
             }
