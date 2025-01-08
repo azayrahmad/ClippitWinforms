@@ -158,26 +158,30 @@ namespace ClippitWinforms.Managers
             var frame = currentAnimation.Frames[currentFrameIndex];
             if (frame.Images != null && frame.Images.Count > 0)
             {
-                if (int.TryParse(Path.GetFileNameWithoutExtension(frame.Images[0].Filename), out int frameNumber))
+                foreach (var image in frame.Images)
                 {
-                    var position = frame.Images[0];
-                    int sourceX = frameNumber;
-                    int sourceY = position.OffsetY;
+                    if (int.TryParse(Path.GetFileNameWithoutExtension(image.Filename), out int frameNumber))
+                    {
+                        var position = image;
+                        int sourceX = position.OffsetX;
+                        int sourceY = position.OffsetY;
 
-                    Rectangle destRect = new Rectangle(
-                        0, 0,
-                        spriteManager.SpriteWidth * Scale,
-                        spriteManager.SpriteHeight * Scale
-                    );
+                        Rectangle destRect = new Rectangle(
+                            0, 0,
+                            spriteManager.SpriteWidth * Scale,
+                            spriteManager.SpriteHeight * Scale
+                        );
 
-                    spriteManager.DrawSprite(
-                        graphics,
-                        sourceX,
-                        sourceY,
-                        spriteManager.SpriteWidth,
-                        spriteManager.SpriteHeight,
-                        destRect
-                    );
+                        spriteManager.DrawSprite(
+                            graphics,
+                            frameNumber,
+                            sourceX,
+                            sourceY,
+                            spriteManager.SpriteWidth,
+                            spriteManager.SpriteHeight,
+                            destRect
+                        );
+                    }
                 }
             }
         }

@@ -4,7 +4,7 @@ namespace ClippitWinforms.Managers
 {
     public interface ISpriteManager : IDisposable
     {
-        void DrawSprite(Graphics graphics, int sourceX, int sourceY, int width, int height, Rectangle destRect);
+        void DrawSprite(Graphics graphics, int spritenum, int offsetX, int offsetY, int width, int height, Rectangle destRect);
         int SpriteWidth { get; }
         int SpriteHeight { get; }
     }
@@ -16,7 +16,7 @@ namespace ClippitWinforms.Managers
         public abstract int SpriteWidth { get; }
         public abstract int SpriteHeight { get; }
 
-        public abstract void DrawSprite(Graphics graphics, int sourceX, int sourceY, int width, int height, Rectangle destRect);
+        public abstract void DrawSprite(Graphics graphics, int spritenum, int offsetX, int offsetY, int width, int height, Rectangle destRect);
 
         protected virtual void Dispose(bool disposing)
         {
@@ -45,91 +45,6 @@ namespace ClippitWinforms.Managers
             Dispose(false);
         }
     }
-
-    public class BitmapSpriteManager : BaseSpriteManager
-    {
-        private readonly Bitmap spriteSheet;
-        private readonly ImageAttributes imageAttributes;
-        private readonly int width;
-        private readonly int height;
-
-        public override int SpriteWidth => width;
-        public override int SpriteHeight => height;
-
-        public BitmapSpriteManager(string spritePath, int spriteWidth, int spriteHeight, Color? transparencyKey = null)
-        {
-            width = spriteWidth;
-            height = spriteHeight;
-            spriteSheet = LoadSpriteSheet(spritePath, transparencyKey);
-            imageAttributes = CreateImageAttributes(transparencyKey);
-        }
-
-        private Bitmap LoadSpriteSheet(string spritePath, Color? transparencyKey)
-        {
-            try
-            {
-                using (Bitmap originalImage = new(spritePath))
-                {
-                    var sprite = new Bitmap(originalImage.Width, originalImage.Height, PixelFormat.Format32bppArgb);
-
-                    using (Graphics g = Graphics.FromImage(sprite))
-                    {
-                        if (transparencyKey.HasValue)
-                        {
-                            ImageAttributes attrs = CreateImageAttributes(transparencyKey);
-                            g.DrawImage(originalImage,
-                                new Rectangle(0, 0, originalImage.Width, originalImage.Height),
-                                0, 0, originalImage.Width, originalImage.Height,
-                                GraphicsUnit.Pixel,
-                                attrs);
-                        }
-                        else
-                        {
-                            g.DrawImage(originalImage, 0, 0);
-                        }
-                    }
-                    return sprite;
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new ApplicationException($"Error loading sprite sheet: {ex.Message}", ex);
-            }
-        }
-
-        private ImageAttributes CreateImageAttributes(Color? transparencyKey)
-        {
-            var attrs = new ImageAttributes();
-            if (transparencyKey.HasValue)
-            {
-                attrs.SetColorKey(transparencyKey.Value, transparencyKey.Value);
-            }
-            return attrs;
-        }
-
-        public override void DrawSprite(Graphics graphics, int sourceX, int sourceY, int width, int height, Rectangle destRect)
-        {
-            if (isDisposed) throw new ObjectDisposedException(nameof(BitmapSpriteManager));
-
-            graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
-            graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
-
-            graphics.DrawImage(
-                spriteSheet,
-                destRect,
-                sourceX, sourceY, width, height,
-                GraphicsUnit.Pixel,
-                imageAttributes
-            );
-        }
-
-        protected override void DisposeManagedResources()
-        {
-            spriteSheet?.Dispose();
-            imageAttributes?.Dispose();
-        }
-    }
-
     public class DirectorySpriteManager : BaseSpriteManager
     {
         private readonly Dictionary<int, Bitmap> sprites;
@@ -227,23 +142,22 @@ namespace ClippitWinforms.Managers
             }
         }
 
-        public override void DrawSprite(Graphics graphics, int sourceX, int sourceY, int width, int height, Rectangle destRect)
+        public override void DrawSprite(Graphics graphics, int spritenum, int offsetX, int offsetY, int width, int height, Rectangle destRect)
         {
             if (isDisposed) throw new ObjectDisposedException(nameof(DirectorySpriteManager));
 
             // Calculate which sprite number we're looking for based on the sourceX position
-            int spriteNumber = (sourceX / width) + 1;
+            //int spriteNumber = (sourceX / width) + 1;
 
-            if (sprites.TryGetValue(sourceX, out Bitmap? sprite))
+            if (sprites.TryGetValue(spritenum, out Bitmap? sprite))
             {
                 graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
                 graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
 
-                // For individual sprites, we only need to consider the Y offset since each file is a single sprite
                 graphics.DrawImage(
                     sprite,
                     destRect,
-                    0, sourceY, width, height,
+                    offsetX, offsetY, width, height,
                     GraphicsUnit.Pixel,
                     imageAttributes
                 );

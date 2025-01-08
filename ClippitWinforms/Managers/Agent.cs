@@ -52,13 +52,6 @@ public class Agent : IDisposable
         characterDefinition = ReadFile(agentPath);
 
         agentFolderPath = Path.GetDirectoryName(agentPath);
-        // Create sprite manager with transparency key
-        var spriteManager = new BitmapSpriteManager(
-            spritePath,
-            characterDefinition.Character.Width, // sprite width
-            characterDefinition.Character.Height,  // sprite height
-            Color.FromArgb(255, 0, 255) // transparency key
-        );
 
         var dirSpriteManager = new DirectorySpriteManager(Path.Combine(agentFolderPath, "Images"), 
                 characterDefinition.Character.Width, 
