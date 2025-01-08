@@ -8,7 +8,7 @@ namespace ClippitWinforms.Managers;
 public class Agent : IDisposable
 {
     private AnimationManager animationManager;
-    private AudioManager audioManager;
+    private IAudioManager audioManager;
     private StateManager stateManager;
     private BalloonView speechBalloon;
     
@@ -65,7 +65,7 @@ public class Agent : IDisposable
                 characterDefinition.Character.Height);
 
         animationManager = new AnimationManager(dirSpriteManager, characterDefinition.Animations);
-        audioManager = new AudioManager(soundsJsonPath);
+        audioManager = new WavDirectoryAudioManager(Path.Combine(agentFolderPath, "Audio"));
 
         animationManager.FrameChanged += (s, e) =>
         {
