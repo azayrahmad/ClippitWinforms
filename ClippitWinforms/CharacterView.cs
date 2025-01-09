@@ -10,7 +10,7 @@ namespace ClippitWinforms
         private Point lastPoint;
         private string defaultAgentFolderDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         private string defaultAgentFolderName = "Agents";
-        private string defaultAgentName = "Clippit";
+        private string defaultAgentName = "Genius";
 
         public CharacterView()
         {
@@ -49,7 +49,7 @@ namespace ClippitWinforms
             foreach (var animation in agent.GetSelectableAnimations())
             {
                 var menuItem = new ToolStripMenuItem(animation);
-                menuItem.Click += async (sender, e) => await agent.PlayAnimationLoop(animation);
+                menuItem.Click += async (sender, e) => await agent.PlayAnimation(animation);
                 selectAnimationToolStripMenuItem.DropDownItems.Add(menuItem);
             }
 

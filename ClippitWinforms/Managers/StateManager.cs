@@ -157,7 +157,8 @@ namespace ClippitWinforms.Managers
             finally
             {
                 // Return to idle state
-                await ReturnToIdle();
+                animationManager.isExiting = true;
+                await HandleAnimationCompleted();
             }
         }
 
@@ -172,7 +173,7 @@ namespace ClippitWinforms.Managers
 
         public async Task HandleAnimationCompleted()
         {
-            if (animationManager.isExiting && currentState != "Hiding")
+            if (animationManager.isExiting && currentState == "Playing")
             {
                 animationManager.isExiting = false;
                 await ReturnToIdle();
