@@ -158,8 +158,9 @@ namespace ClippitWinforms.Managers
             var frame = currentAnimation.Frames[currentFrameIndex];
             if (frame.Images != null && frame.Images.Count > 0)
             {
-                foreach (var image in frame.Images)
+                for(int i = frame.Images.Count - 1; i >= 0; i--)
                 {
+                    var image = frame.Images[i];
                     if (int.TryParse(Path.GetFileNameWithoutExtension(image.Filename), out int frameNumber))
                     {
                         var position = image;
@@ -167,7 +168,7 @@ namespace ClippitWinforms.Managers
                         int sourceY = position.OffsetY;
 
                         Rectangle destRect = new Rectangle(
-                            0, 0,
+                            sourceX * Scale, sourceY * Scale,
                             spriteManager.SpriteWidth * Scale,
                             spriteManager.SpriteHeight * Scale
                         );
@@ -175,8 +176,8 @@ namespace ClippitWinforms.Managers
                         spriteManager.DrawSprite(
                             graphics,
                             frameNumber,
-                            sourceX,
-                            sourceY,
+                            0,
+                            0,
                             spriteManager.SpriteWidth,
                             spriteManager.SpriteHeight,
                             destRect

@@ -18,7 +18,7 @@ namespace ClippitWinforms.Managers
         public abstract int SpriteHeight { get; }
 
         public abstract void DrawSprite(Graphics graphics, int spritenum, int offsetX, int offsetY, int width, int height, Rectangle destRect);
-
+        public abstract Color GetTransparencyColor(string colorTablePath, int index);
         protected virtual void Dispose(bool disposing)
         {
             if (!isDisposed)
@@ -116,7 +116,7 @@ namespace ClippitWinforms.Managers
         /// <param name="colorTablePath">The file path to the color table image.</param>
         /// <param name="index">The index of the color in the color table.</param>
         /// <returns>The Color at the specified index, or Color.Empty if invalid.</returns>
-        public static Color GetTransparencyColor(string colorTablePath, int index)
+        public override Color GetTransparencyColor(string colorTablePath, int index)
         {
             using (Bitmap colorTableBitmap = new Bitmap(colorTablePath))
             {
@@ -145,9 +145,6 @@ namespace ClippitWinforms.Managers
         public override void DrawSprite(Graphics graphics, int spritenum, int offsetX, int offsetY, int width, int height, Rectangle destRect)
         {
             if (isDisposed) throw new ObjectDisposedException(nameof(DirectorySpriteManager));
-
-            // Calculate which sprite number we're looking for based on the sourceX position
-            //int spriteNumber = (sourceX / width) + 1;
 
             if (sprites.TryGetValue(spritenum, out Bitmap? sprite))
             {

@@ -46,6 +46,9 @@ namespace ClippitWinforms
 
             agent = new Agent(this, spritePath, animationJsonPath, soundsJsonPath, acdFile.FullName);
             agent.FrameChanged += (s, e) => this.Invalidate();
+
+            BackColor = agent.TransparencyKey;
+            TransparencyKey = agent.TransparencyKey;
         }
 
         private void InitializeSelectionMenu()

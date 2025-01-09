@@ -151,7 +151,7 @@
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Clippy";
             TopMost = true;
-            TransparencyKey = Color.Black;
+            //TransparencyKey = Color.Pink;
             contextMenu.ResumeLayout(false);
             trayMenu.ResumeLayout(false);
             ResumeLayout(false);

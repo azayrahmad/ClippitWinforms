@@ -15,6 +15,7 @@ public class Agent : IDisposable
     private AgentCharacterDefinition characterDefinition;
     private Info currentInfo;
 
+    public Color TransparencyKey {  get; set; }
     public event EventHandler? FrameChanged;
     public event EventHandler<string>? AnimationCompleted;
 
@@ -54,7 +55,7 @@ public class Agent : IDisposable
         agentFolderPath = Path.GetDirectoryName(agentPath);
 
         var dirSpriteManager = new DirectorySpriteManager(Path.Combine(agentFolderPath, "Images"), characterDefinition.Character);
-
+        TransparencyKey = dirSpriteManager.GetTransparencyColor(Path.Combine(agentFolderPath, "Images", Path.GetFileName(characterDefinition.Character.ColorTable)), characterDefinition.Character.Transparency);
         animationManager = new AnimationManager(dirSpriteManager, characterDefinition.Animations);
         audioManager = new WavDirectoryAudioManager(Path.Combine(agentFolderPath, "Audio"));
 
