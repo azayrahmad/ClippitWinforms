@@ -10,16 +10,14 @@ namespace ClippitWinforms
         private Point lastPoint;
         private string defaultAgentFolderDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         private string defaultAgentFolderName = "Agents";
-        private string defaultAgentName = "Genius";
+        private string defaultAgentName = "Clippit";
 
         public CharacterView()
         {
             InitializeComponent();
             InitializePosition();
-            InitializeAgent();
+            InitializeAgent(defaultAgentName);
             InitializeSelectionMenu();
-
-            agent.Start();
         }
 
         private void InitializePosition()
@@ -33,14 +31,16 @@ namespace ClippitWinforms
             this.MouseMove += OnMouseMove;
         }
 
-        private void InitializeAgent()
+        private void InitializeAgent(string agentName)
         {
 
-            var locationPath = Path.Combine(defaultAgentFolderDirectory, defaultAgentFolderName, defaultAgentName);
+            var locationPath = Path.Combine(defaultAgentFolderDirectory, defaultAgentFolderName, agentName);
             var acdFile = new DirectoryInfo(locationPath).GetFiles("*.acd").First();
 
             agent = new Agent(this, acdFile.FullName);
             agent.FrameChanged += (s, e) => this.Invalidate();
+
+            agent.Start();
         }
 
         private void InitializeSelectionMenu()
