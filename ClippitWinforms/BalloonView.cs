@@ -29,6 +29,8 @@ public class BalloonView : Form
     {
         InitializeComponent();
         parentForm = parent;
+        BackColor = parentForm.BackColor;
+        TransparencyKey = parentForm.TransparencyKey;
 
         // Configure content label
         contentLabel = new Label

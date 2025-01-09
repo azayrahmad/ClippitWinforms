@@ -21,11 +21,11 @@ public class Agent : IDisposable
 
     private string agentFolderPath;
 
-    public Agent(Form parentForm, string spritePath, string animationJsonPath,
-        string soundsJsonPath, string agentPath)
+    public Agent(Form parentForm, string agentPath)
     {
-        InitializeManagers(spritePath, animationJsonPath, soundsJsonPath, agentPath);
-
+        InitializeManagers(agentPath);
+        parentForm.BackColor = TransparencyKey;
+        parentForm.TransparencyKey = TransparencyKey;
 
         // Create the speech balloon
         speechBalloon = new BalloonView(parentForm);
@@ -39,6 +39,8 @@ public class Agent : IDisposable
         {
             currentInfo = characterDefinition.Character.Infos.First(info => info.LanguageCode.Equals(CultureInfo.GetCultureInfo(0x0009)));
         }
+
+        parentForm.Name = currentInfo.Name;
     }
 
     public AgentCharacterDefinition ReadFile(string path)
@@ -47,8 +49,7 @@ public class Agent : IDisposable
         return parser.ParseFromFile(path);
     }
 
-    private void InitializeManagers(string spritePath, string animationJsonPath,
-        string soundsJsonPath, string agentPath)
+    private void InitializeManagers(string agentPath)
     {
         characterDefinition = ReadFile(agentPath);
 

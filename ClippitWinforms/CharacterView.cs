@@ -35,20 +35,12 @@ namespace ClippitWinforms
 
         private void InitializeAgent()
         {
-            string spritePath = @"C:\Users\azayr\OneDrive\Documents\GitHub\ClippitWinforms\ClippitWinforms\AgentData\Clippit\map.png";
-            string animationJsonPath = @"C:\Users\azayr\OneDrive\Documents\GitHub\ClippitWinforms\ClippitWinforms\AgentData\Clippit\animation.json";
-            string soundsJsonPath = @"C:\Users\azayr\OneDrive\Documents\GitHub\ClippitWinforms\ClippitWinforms\AgentData\Clippit\sounds-mp3.json";
-            string stateJsonPath = @"C:\Users\azayr\OneDrive\Documents\GitHub\ClippitWinforms\ClippitWinforms\AgentData\Clippit\states.json";
-
 
             var locationPath = Path.Combine(defaultAgentFolderDirectory, defaultAgentFolderName, defaultAgentName);
             var acdFile = new DirectoryInfo(locationPath).GetFiles("*.acd").First();
 
-            agent = new Agent(this, spritePath, animationJsonPath, soundsJsonPath, acdFile.FullName);
+            agent = new Agent(this, acdFile.FullName);
             agent.FrameChanged += (s, e) => this.Invalidate();
-
-            BackColor = agent.TransparencyKey;
-            TransparencyKey = agent.TransparencyKey;
         }
 
         private void InitializeSelectionMenu()
