@@ -102,7 +102,7 @@ public class Agent : IDisposable
 
     public async Task PlayClosingAnimation()
     {
-        await PlayAnimation("GoodBye");
+        await stateManager.PlayClosingAnimation();
     }
 
     public async Task PlayAnimation(string animationName, int? timeoutMs = null, string stateName = "")

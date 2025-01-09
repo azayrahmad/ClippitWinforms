@@ -252,6 +252,12 @@ namespace ClippitWinforms.Managers
             idleTickCount = 0;
         }
 
+        public async Task PlayClosingAnimation()
+        {
+            stateTimer.Stop();
+            await PlayAnimation("Goodbye");
+        }
+
         public void Dispose()
         {
             stateTimer?.Dispose();
