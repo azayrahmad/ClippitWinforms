@@ -16,9 +16,9 @@ namespace ClippitWinforms.Managers
 
         public abstract int SpriteWidth { get; }
         public abstract int SpriteHeight { get; }
+        public abstract Color TransparencyKey { get; }
 
         public abstract void DrawSprite(Graphics graphics, int spritenum, int offsetX, int offsetY, int width, int height, Rectangle destRect);
-        public abstract Color GetTransparencyColor(string colorTablePath, int index);
         protected virtual void Dispose(bool disposing)
         {
             if (!isDisposed)
@@ -52,16 +52,19 @@ namespace ClippitWinforms.Managers
         private readonly ImageAttributes imageAttributes;
         private readonly int width;
         private readonly int height;
+        private readonly Color transparencyKey;
 
         public override int SpriteWidth => width;
         public override int SpriteHeight => height;
+        public override Color TransparencyKey => transparencyKey;
 
         public DirectorySpriteManager(string directoryPath, Character character)
         {
             width = character.Width;
             height = character.Height;
             sprites = new Dictionary<int, Bitmap>();
-            imageAttributes = CreateImageAttributes(directoryPath, character);
+            transparencyKey = GetTransparencyColor(Path.Combine(directoryPath, Path.GetFileName(character.ColorTable)), character.Transparency);
+            imageAttributes = CreateImageAttributes();
             LoadSprites(directoryPath);
         }
 
@@ -100,13 +103,10 @@ namespace ClippitWinforms.Managers
             }
         }
 
-        private ImageAttributes CreateImageAttributes(string directoryPath, Character character)
+        private ImageAttributes CreateImageAttributes()
         {
             var attrs = new ImageAttributes();
-            // Use transparency value 253
-            
-            Color transparencyColor = GetTransparencyColor(Path.Combine(directoryPath, Path.GetFileName(character.ColorTable)), character.Transparency);
-            attrs.SetColorKey(transparencyColor, transparencyColor);
+            attrs.SetColorKey(transparencyKey, transparencyKey);
             return attrs;
         }
 
@@ -116,7 +116,7 @@ namespace ClippitWinforms.Managers
         /// <param name="colorTablePath">The file path to the color table image.</param>
         /// <param name="index">The index of the color in the color table.</param>
         /// <returns>The Color at the specified index, or Color.Empty if invalid.</returns>
-        public override Color GetTransparencyColor(string colorTablePath, int index)
+        public static Color GetTransparencyColor(string colorTablePath, int index)
         {
             using (Bitmap colorTableBitmap = new Bitmap(colorTablePath))
             {
