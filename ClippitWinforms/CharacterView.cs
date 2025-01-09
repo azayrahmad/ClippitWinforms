@@ -45,6 +45,10 @@ namespace ClippitWinforms
 
         private void InitializeSelectionMenu()
         {
+            selectAnimationToolStripMenuItem.DropDownItems.Clear();
+            selectStateToolStripMenuItem.DropDownItems.Clear();
+            selectAgentToolStripMenuItem.DropDownItems.Clear();
+
             // Populate Select Animation
             foreach (var animation in agent.GetSelectableAnimations())
             {
@@ -59,6 +63,20 @@ namespace ClippitWinforms
                 var menuItem = new ToolStripMenuItem(state);
                 menuItem.Click += async (sender, e) => await agent.SetState(state);
                 selectStateToolStripMenuItem.DropDownItems.Add(menuItem);
+            }
+
+            var locationPath = Path.Combine(defaultAgentFolderDirectory, defaultAgentFolderName);
+            var agentList = Directory.GetDirectories(locationPath);
+            foreach (var agentName in agentList)
+            {
+                var menuItem = new ToolStripMenuItem(agentName);
+                menuItem.Click += async (sender, e) =>
+                {
+                    await agent.PlayClosingAnimation();
+                    InitializeAgent(agentName);
+                    InitializeSelectionMenu();
+                };
+                selectAgentToolStripMenuItem.DropDownItems.Add(menuItem);
             }
         }
 
@@ -138,6 +156,11 @@ namespace ClippitWinforms
         private async void animateToolStripMenuItem_Click(object sender, EventArgs e)
         {
             await agent.PlayRandomAnimation();
+        }
+
+        private void selectAgentToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

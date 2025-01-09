@@ -43,6 +43,7 @@
             hideToolStripMenuItem = new ToolStripMenuItem();
             controlsToolStripMenuItem1 = new ToolStripMenuItem();
             exitToolStripMenuItem1 = new ToolStripMenuItem();
+            selectAgentToolStripMenuItem = new ToolStripMenuItem();
             contextMenu.SuspendLayout();
             trayMenu.SuspendLayout();
             SuspendLayout();
@@ -50,50 +51,46 @@
             // contextMenu
             // 
             contextMenu.ImageScalingSize = new Size(20, 20);
-            contextMenu.Items.AddRange(new ToolStripItem[] { hideToolStripMenuItem1, animateToolStripMenuItem });
-            #if DEBUG
-            contextMenu.Items.AddRange(new ToolStripItem[] { selectAnimationToolStripMenuItem, selectStateToolStripMenuItem, controlsToolStripMenuItem });
-            #endif
-            contextMenu.Items.AddRange(new ToolStripItem[] { exitToolStripMenuItem });
+            contextMenu.Items.AddRange(new ToolStripItem[] { hideToolStripMenuItem1, animateToolStripMenuItem, selectAgentToolStripMenuItem, selectAnimationToolStripMenuItem, selectStateToolStripMenuItem, controlsToolStripMenuItem, exitToolStripMenuItem });
             contextMenu.Name = "contextMenuStrip1";
-            contextMenu.Size = new Size(192, 148);
+            contextMenu.Size = new Size(211, 200);
             // 
             // hideToolStripMenuItem1
             // 
             hideToolStripMenuItem1.Name = "hideToolStripMenuItem1";
-            hideToolStripMenuItem1.Size = new Size(191, 24);
+            hideToolStripMenuItem1.Size = new Size(210, 24);
             hideToolStripMenuItem1.Text = "Hide";
             hideToolStripMenuItem1.Click += hideToolStripMenuItem1_Click;
             // 
             // animateToolStripMenuItem
             // 
             animateToolStripMenuItem.Name = "animateToolStripMenuItem";
-            animateToolStripMenuItem.Size = new Size(191, 24);
+            animateToolStripMenuItem.Size = new Size(210, 24);
             animateToolStripMenuItem.Text = "Animate!";
             animateToolStripMenuItem.Click += animateToolStripMenuItem_Click;
             // 
             // selectAnimationToolStripMenuItem
             // 
             selectAnimationToolStripMenuItem.Name = "selectAnimationToolStripMenuItem";
-            selectAnimationToolStripMenuItem.Size = new Size(191, 24);
+            selectAnimationToolStripMenuItem.Size = new Size(210, 24);
             selectAnimationToolStripMenuItem.Text = "Select Animation";
             // 
             // selectStateToolStripMenuItem
             // 
             selectStateToolStripMenuItem.Name = "selectStateToolStripMenuItem";
-            selectStateToolStripMenuItem.Size = new Size(191, 24);
+            selectStateToolStripMenuItem.Size = new Size(210, 24);
             selectStateToolStripMenuItem.Text = "Select State";
             // 
             // controlsToolStripMenuItem
             // 
             controlsToolStripMenuItem.Name = "controlsToolStripMenuItem";
-            controlsToolStripMenuItem.Size = new Size(191, 24);
+            controlsToolStripMenuItem.Size = new Size(210, 24);
             controlsToolStripMenuItem.Text = "Controls";
             // 
             // exitToolStripMenuItem
             // 
             exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            exitToolStripMenuItem.Size = new Size(191, 24);
+            exitToolStripMenuItem.Size = new Size(210, 24);
             exitToolStripMenuItem.Text = "Exit";
             exitToolStripMenuItem.Click += exitToolStripMenuItem_Click;
             // 
@@ -137,7 +134,14 @@
             exitToolStripMenuItem1.Text = "Exit";
             exitToolStripMenuItem1.Click += exitToolStripMenuItem_Click;
             // 
-            // Clippy
+            // selectAgentToolStripMenuItem
+            // 
+            selectAgentToolStripMenuItem.Name = "selectAgentToolStripMenuItem";
+            selectAgentToolStripMenuItem.Size = new Size(210, 24);
+            selectAgentToolStripMenuItem.Text = "Select Agent";
+            selectAgentToolStripMenuItem.Click += selectAgentToolStripMenuItem_Click;
+            // 
+            // CharacterView
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -146,7 +150,7 @@
             ContextMenuStrip = contextMenu;
             DoubleBuffered = true;
             FormBorderStyle = FormBorderStyle.None;
-            Name = "Clippy";
+            Name = "CharacterView";
             ShowInTaskbar = false;
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Clippy";
@@ -171,5 +175,6 @@
         private ToolStripMenuItem selectStateToolStripMenuItem;
         private ToolStripMenuItem hideToolStripMenuItem1;
         private ToolStripMenuItem animateToolStripMenuItem;
+        private ToolStripMenuItem selectAgentToolStripMenuItem;
     }
 }
