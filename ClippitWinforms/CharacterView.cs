@@ -49,7 +49,7 @@ namespace ClippitWinforms
             foreach (var animation in agent.GetSelectableAnimations())
             {
                 var menuItem = new ToolStripMenuItem(animation);
-                menuItem.Click += async (sender, e) => await agent.PlayAnimation(animation);
+                menuItem.Click += async (sender, e) => await agent.PlayAnimation(animation, stateName: "Playing");
                 selectAnimationToolStripMenuItem.DropDownItems.Add(menuItem);
             }
 

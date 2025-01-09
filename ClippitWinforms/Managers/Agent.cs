@@ -92,7 +92,7 @@ public class Agent : IDisposable
     public async Task Start()
     {
         stateManager.SetState("Playing");
-        await animationManager.InterruptAndPlayAnimation("Greeting");
+        await PlayAnimation("Greeting");
         speechBalloon.ShowBalloon(
             currentInfo.Name,
             currentInfo.Greetings[new Random().Next(currentInfo.Greetings.Count) - 1],
@@ -102,12 +102,12 @@ public class Agent : IDisposable
 
     public async Task PlayClosingAnimation()
     {
-        await animationManager.InterruptAndPlayAnimation("GoodBye");
+        await PlayAnimation("GoodBye");
     }
 
-    public async Task PlayAnimation(string animationName, int? timeoutMs = null)
+    public async Task PlayAnimation(string animationName, int? timeoutMs = null, string stateName = "")
     {
-        await stateManager.PlayAnimation(animationName, timeoutMs);
+        await stateManager.PlayAnimation(animationName, timeoutMs, stateName);
     }
 
     public async Task PlayAnimationLoop(string animationName)

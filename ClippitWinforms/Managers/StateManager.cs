@@ -116,10 +116,19 @@ namespace ClippitWinforms.Managers
                 await UpdateStateAnimation();
             }
         }
-        public async Task PlayAnimation(string animationName, int? timeoutMs = null)
+        public async Task PlayAnimation(string animationName, int? timeoutMs = null, string stateName = "")
         {
-            // Cancel any existing animation
-            StopContinuousAnimation();
+            if (animationManager.CurrentAnimation == null || !animationManager.IsAnimating)
+            {
+                await animationManager.PlayAnimation(animationName, true);
+                return;
+            }
+            var queuedAnimation = animationName;
+            animationManager.isExiting = true;
+            if (animationManager.animationComplete != null)
+            {
+                await animationManager.animationComplete.Task;
+            }
 
             // Create new cancellation token source
             animationCancellation?.Cancel();
@@ -128,7 +137,10 @@ namespace ClippitWinforms.Managers
 
             try
             {
-                currentState = "Playing";
+                if (!string.IsNullOrEmpty(stateName))
+                {
+                    currentState = stateName;
+                }
                 animationManager.isExiting = false;
 
                 // Create a task to play the animation
@@ -157,7 +169,7 @@ namespace ClippitWinforms.Managers
             finally
             {
                 // Return to idle state
-                animationManager.isExiting = true;
+                if (currentState == "Playing") animationManager.isExiting = true;
                 await HandleAnimationCompleted();
             }
         }
@@ -197,7 +209,7 @@ namespace ClippitWinforms.Managers
                 if (animations?.Length > 0)
                 {
                     var randomAnimation = animations[random.Next(animations.Length)];
-                    await animationManager.InterruptAndPlayAnimation(randomAnimation);
+                    await PlayAnimation(randomAnimation);
                 }
             }
         }
@@ -208,7 +220,7 @@ namespace ClippitWinforms.Managers
             if (animations.Count > 0)
             {
                 var randomAnimation = animations[random.Next(animations.Count)];
-                await PlayAnimation(randomAnimation, 5000);
+                await PlayAnimation(randomAnimation, 5000, "Playing");
             }
         }
 

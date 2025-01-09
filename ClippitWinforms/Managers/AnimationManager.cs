@@ -9,13 +9,13 @@ namespace ClippitWinforms.Managers
     public class AnimationManager : IDisposable
     {
         private readonly ISpriteManager spriteManager;
-        private Dictionary<string, Animation> animations;
+        private Dictionary<string, Animation> animations = new Dictionary<string, Animation>(StringComparer.OrdinalIgnoreCase);
         private Animation currentAnimation;
         private int currentFrameIndex = 0;
         private long lastFrameTime;
         public bool isExiting = false;
         private Random random = new Random();
-        private TaskCompletionSource<bool> animationComplete;
+        public TaskCompletionSource<bool> animationComplete;
         // private string queuedAnimation = null;
         public const int Scale = 2;
 
@@ -28,7 +28,7 @@ namespace ClippitWinforms.Managers
         public AnimationManager(ISpriteManager spriteManager, Dictionary<string, Animation> animationsDefinition)
         {
             this.spriteManager = spriteManager;
-            animations = animationsDefinition;
+            this.animations = new Dictionary<string, Animation>(animationsDefinition, StringComparer.OrdinalIgnoreCase);
             lastFrameTime = Environment.TickCount64;
         }
         public IEnumerable<string> GetAvailableAnimations()
