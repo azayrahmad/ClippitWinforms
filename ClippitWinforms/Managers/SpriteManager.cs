@@ -5,7 +5,7 @@ namespace ClippitWinforms.Managers
 {
     public interface ISpriteManager : IDisposable
     {
-        void DrawSprite(Graphics graphics, int spritenum, int offsetX, int offsetY, int width, int height, Rectangle destRect);
+        void DrawFrame(Graphics graphics, FrameDefinition frame, int scale = 1);
         int SpriteWidth { get; }
         int SpriteHeight { get; }
     }
@@ -18,6 +18,7 @@ namespace ClippitWinforms.Managers
         public abstract int SpriteHeight { get; }
         public abstract Color TransparencyKey { get; }
 
+        public abstract void DrawFrame(Graphics graphics, FrameDefinition frame, int scale = 1);
         public abstract void DrawSprite(Graphics graphics, int spritenum, int offsetX, int offsetY, int width, int height, Rectangle destRect);
         protected virtual void Dispose(bool disposing)
         {
@@ -139,6 +140,39 @@ namespace ClippitWinforms.Managers
 
                 // Return the color at the specified index
                 return palette.Entries[index];
+            }
+        }
+
+        public override void DrawFrame(Graphics graphics, FrameDefinition frame, int scale)
+        {
+            if (frame.Images != null && frame.Images.Count > 0)
+            {
+                for (int i = frame.Images.Count - 1; i >= 0; i--)
+                {
+                    var image = frame.Images[i];
+                    if (int.TryParse(Path.GetFileNameWithoutExtension(image.Filename), out int frameNumber))
+                    {
+                        var position = image;
+                        int sourceX = position.OffsetX;
+                        int sourceY = position.OffsetY;
+
+                        Rectangle destRect = new Rectangle(
+                            sourceX * scale, sourceY * scale,
+                            SpriteWidth * scale,
+                            SpriteHeight * scale
+                        );
+
+                        DrawSprite(
+                            graphics,
+                            frameNumber,
+                            0,
+                            0,
+                            SpriteWidth,
+                            SpriteHeight,
+                            destRect
+                        );
+                    }
+                }
             }
         }
 
