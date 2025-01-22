@@ -73,6 +73,7 @@ namespace ClippitWinforms
                 menuItem.Click += async (sender, e) =>
                 {
                     await agent.PlayClosingAnimation();
+                    agent.Dispose();
                     InitializeAgent(agentName);
                     InitializeSelectionMenu();
                 };
