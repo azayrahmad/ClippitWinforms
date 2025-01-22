@@ -100,9 +100,11 @@ public class Agent : IDisposable
         await stateManager.SetState("IdlingLevel1");
     }
 
-    public async Task PlayClosingAnimation()
+    public async Task Stop()
     {
         await stateManager.PlayClosingAnimation();
+        speechBalloon.HideBalloon();
+        Dispose();
     }
 
     public async Task PlayAnimation(string animationName, int? timeoutMs = null, string stateName = "")

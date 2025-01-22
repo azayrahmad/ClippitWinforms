@@ -72,8 +72,7 @@ namespace ClippitWinforms
                 var menuItem = new ToolStripMenuItem(agentName);
                 menuItem.Click += async (sender, e) =>
                 {
-                    await agent.PlayClosingAnimation();
-                    agent.Dispose();
+                    await agent.Stop();
                     InitializeAgent(agentName);
                     InitializeSelectionMenu();
                 };
@@ -129,8 +128,7 @@ namespace ClippitWinforms
                 e.Cancel = true;
                 isClosing = true;
 
-                await agent.PlayClosingAnimation();
-                agent.Dispose();
+                await agent.Stop();
                 trayIcon.Dispose();
 
                 Application.Exit();
