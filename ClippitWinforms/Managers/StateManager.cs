@@ -125,7 +125,7 @@ namespace ClippitWinforms.Managers
             }
             var queuedAnimation = animationName;
             animationManager.isExiting = true;
-            if (animationManager.animationComplete != null)
+            if (animationManager.animationComplete != null && !animationManager.CurrentAnimation.Name.StartsWith("Idle"))
             {
                 await animationManager.animationComplete.Task;
             }
