@@ -161,5 +161,10 @@ namespace ClippitWinforms
         {
 
         }
+
+        private void CharacterView_Click(object sender, EventArgs e)
+        {
+            agent.SayGreetings();
+        }
     }
 }

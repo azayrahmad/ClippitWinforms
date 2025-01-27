@@ -101,6 +101,7 @@ public class Agent : IDisposable
     {
         await stateManager.PlayClosingAnimation();
         speechBalloon.HideBalloon();
+        speechBalloon.Close();
         Dispose();
     }
 

@@ -67,6 +67,7 @@ public class BalloonView : Form
 
     public void ShowBalloon(string title, string content, int displayDurationMs = 0)
     {
+        hideTimer.Stop();
         if (!string.IsNullOrEmpty(title))
         {
             titleLabel = new Label
@@ -100,7 +101,7 @@ public class BalloonView : Form
     public void HideBalloon()
     {
         hideTimer.Stop();
-        Close();
+        // Close();
     }
 
     private Size MeasureText(string text, Font font, int maxWidth)
