@@ -95,7 +95,7 @@ public class Agent : IDisposable
         await PlayAnimation("Greeting");
         speechBalloon.ShowBalloon(
             currentInfo.Name,
-            currentInfo.Greetings[new Random().Next(currentInfo.Greetings.Count) - 1],
+            currentInfo.Greetings[new Random().Next(currentInfo.Greetings.Count)],
             10000);
         await stateManager.SetState("IdlingLevel1");
     }
@@ -159,6 +159,15 @@ public class Agent : IDisposable
     public int GetCurrentFrameIndex()
     {
         return animationManager.CurrentFrameIndex;
+    }
+
+    public void SayGreetings()
+    {
+        speechBalloon.HideBalloon();
+        speechBalloon.ShowBalloon(
+            currentInfo.Name,
+            currentInfo.Greetings[new Random().Next(currentInfo.Greetings.Count)],
+            10000);
     }
 
     public void Dispose()
