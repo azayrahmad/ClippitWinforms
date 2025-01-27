@@ -93,10 +93,7 @@ public class Agent : IDisposable
     {
         stateManager.SetState("Playing");
         await PlayAnimation("Greeting");
-        speechBalloon.ShowBalloon(
-            currentInfo.Name,
-            currentInfo.Greetings[new Random().Next(currentInfo.Greetings.Count)],
-            10000);
+        SayGreetings();
         await stateManager.SetState("IdlingLevel1");
     }
 
