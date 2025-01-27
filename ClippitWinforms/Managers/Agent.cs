@@ -163,7 +163,6 @@ public class Agent : IDisposable
 
     public void SayGreetings()
     {
-        speechBalloon.HideBalloon();
         speechBalloon.ShowBalloon(
             currentInfo.Name,
             currentInfo.Greetings[new Random().Next(currentInfo.Greetings.Count)],
