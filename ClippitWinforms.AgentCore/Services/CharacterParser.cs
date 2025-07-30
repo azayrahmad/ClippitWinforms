@@ -1,11 +1,6 @@
 ﻿using ClippitWinforms.AgentCore.Models;
-using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace ClippitWinforms.AgentCore.Services
 {
@@ -60,7 +55,7 @@ namespace ClippitWinforms.AgentCore.Services
 
                 if (line == "EndCharacter")
                     break;
-                
+
             }
 
             return currentAgent;
@@ -413,7 +408,7 @@ namespace ClippitWinforms.AgentCore.Services
                             break;
                     }
                 }
-                if(branching.BranchTo > 0 && branching.Probability > 0)
+                if (branching.BranchTo > 0 && branching.Probability > 0)
                 {
                     branchingList.Add(branching);
                     branching = new BranchingDefinition();

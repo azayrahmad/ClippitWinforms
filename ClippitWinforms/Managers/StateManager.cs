@@ -1,5 +1,4 @@
 ﻿using ClippitWinforms.AgentCore.Models;
-using System.Text.Json;
 using Timer = System.Windows.Forms.Timer;
 
 namespace ClippitWinforms.Managers

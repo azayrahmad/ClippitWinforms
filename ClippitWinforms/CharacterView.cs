@@ -1,5 +1,4 @@
 using ClippitWinforms.Managers;
-using System.Drawing;
 
 namespace ClippitWinforms
 {

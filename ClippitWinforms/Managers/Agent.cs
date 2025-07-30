@@ -1,5 +1,4 @@
-﻿using ClippitWinforms.AgentCore;
-using ClippitWinforms.AgentCore.Models;
+﻿using ClippitWinforms.AgentCore.Models;
 using ClippitWinforms.AgentCore.Services;
 using System.Globalization;
 
@@ -11,11 +10,11 @@ public class Agent : IDisposable
     private IAudioManager audioManager;
     private StateManager stateManager;
     private BalloonView speechBalloon;
-    
+
     private AgentCharacterDefinition characterDefinition;
     private Info currentInfo;
 
-    public Color TransparencyKey {  get; set; }
+    public Color TransparencyKey { get; set; }
     public event EventHandler? FrameChanged;
     public event EventHandler<string>? AnimationCompleted;
 

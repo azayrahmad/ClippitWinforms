@@ -1,7 +1,4 @@
 ﻿using ClippitWinforms.AgentCore.Models;
-using ClippitWinforms.Data;
-using System.Drawing.Imaging;
-using System.Text.Json;
 using Animation = ClippitWinforms.AgentCore.Models.Animation;
 
 namespace ClippitWinforms.Managers
