@@ -1,14 +1,14 @@
 import {
-  AgentCharacterDefinition,
-  Character,
-  Balloon,
-  Animation,
-  FrameDefinition,
-  ImageDefinition,
-  BranchingDefinition,
-  State,
-  Info,
+  type Character,
+  type Balloon,
+  type Animation,
+  type FrameDefinition,
+  type ImageDefinition,
+  type BranchingDefinition,
+  type State,
+  type Info,
   CharacterStyle,
+  type AgentCharacterDefinition,
 } from './types';
 
 /**
@@ -201,7 +201,7 @@ export class CharacterParser {
     }
   }
 
-  private parseStyle(value: string): CharacterStyle {
+  private parseStyle(value: string): number {
     let style = CharacterStyle.None;
     const styleParts = value.split('|');
 

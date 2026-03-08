@@ -1,18 +1,3 @@
-/**
- * Represents the full definition of an agent character.
- * Maps to AgentCharacterDefinition in C#.
- */
-export interface AgentCharacterDefinition {
-  character: Character;
-  balloon: Balloon;
-  animations: Record<string, Animation>;
-  states: Record<string, State>;
-}
-
-/**
- * Basic character properties and metadata.
- * Maps to Character in C#.
- */
 export interface Character {
   infos: Info[];
   guid: string;
@@ -20,48 +5,37 @@ export interface Character {
   height: number;
   transparency: number;
   defaultFrameDuration: number;
-  style: CharacterStyle;
+  style: number;
   colorTable: string;
 }
 
-/**
- * Character style flags.
- * Maps to CharacterStyle in C#.
- */
-export enum CharacterStyle {
-  None = 0,
-  VoiceNone = 1,
-  BalloonRoundRect = 2,
-}
+export const CharacterStyle = {
+  None: 0,
+  VoiceNone: 1,
+  BalloonRoundRect: 2,
+} as const;
 
-/**
- * Configuration for the speech balloon.
- * Maps to Balloon in C#.
- */
 export interface Balloon {
   numLines: number;
   charsPerLine: number;
   fontName: string;
   fontHeight: number;
-  foreColor: string; // Represented as hex string in TS
+  foreColor: string;
   backColor: string;
   borderColor: string;
 }
 
-/**
- * A named sequence of frames.
- * Maps to Animation in C#.
- */
-export interface Animation {
-  name: string;
-  transitionType: number;
-  frames: FrameDefinition[];
+export interface ImageDefinition {
+  filename: string;
+  offsetX: number;
+  offsetY: number;
 }
 
-/**
- * A single frame within an animation.
- * Maps to FrameDefinition in C#.
- */
+export interface BranchingDefinition {
+  branchTo: number;
+  probability: number;
+}
+
 export interface FrameDefinition {
   duration: number;
   soundEffect?: string;
@@ -70,42 +44,28 @@ export interface FrameDefinition {
   branching?: BranchingDefinition[];
 }
 
-/**
- * An image layer within a frame.
- * Maps to ImageDefinition in C#.
- */
-export interface ImageDefinition {
-  filename: string;
-  offsetX: number;
-  offsetY: number;
+export interface Animation {
+  name: string;
+  transitionType: number;
+  frames: FrameDefinition[];
 }
 
-/**
- * Probabilistic branching for animations.
- * Maps to BranchingDefinition in C#.
- */
-export interface BranchingDefinition {
-  branchTo: number;
-  probability: number;
-}
-
-/**
- * A logical state that groups multiple animations (e.g., Idle).
- * Maps to State in C#.
- */
 export interface State {
   name: string;
   animations: string[];
 }
 
-/**
- * Localized information for the character.
- * Maps to Info in C#.
- */
 export interface Info {
-  languageCode: string; // Hexadecimal string like 0x0409
+  languageCode: string;
   name: string;
   description: string;
   greetings: string[];
   reminders: string[];
+}
+
+export interface AgentCharacterDefinition {
+  character: Character;
+  balloon: Balloon;
+  animations: Record<string, Animation>;
+  states: Record<string, State>;
 }
