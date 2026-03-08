@@ -1,7 +1,8 @@
 import { AgentCharacterDefinition } from '../models/AgentCharacterDefinition';
 import { CharacterParser } from '../services/CharacterParser';
 import { AnimationManager } from './AnimationManager';
-import { DirectorySpriteManager } from './SpriteManager';
+import { DirectorySpriteManager, ISpriteManager } from './SpriteManager';
+import { SpriteSheetManager } from './SpriteSheetManager';
 import { AudioManager } from './AudioManager';
 import { StateManager } from './StateManager';
 
@@ -104,8 +105,26 @@ export class Agent {
         }
 
         this.audioManager = new AudioManager(audioPath);
+
+        // Try Sprite Sheet first
+        let finalSpriteManager: ISpriteManager;
+        try {
+            const ssRes = await fetch(`${agentPath}/spritesheet.json`, { method: 'HEAD' });
+            if (ssRes.ok) {
+                const ssm = new SpriteSheetManager(agentPath);
+                await ssm.load();
+                finalSpriteManager = ssm;
+                console.log(`Using SpriteSheetManager for ${agentPath}`);
+            } else {
+                throw new Error("No spritesheet found");
+            }
+        } catch (e) {
+            console.log(`Falling back to DirectorySpriteManager for ${agentPath}`);
+            finalSpriteManager = spriteManager;
+        }
+
         this.animationManager = new AnimationManager(
-            spriteManager,
+            finalSpriteManager,
             this.characterDefinition.animations,
             (frame) => {
                 if (frame.soundEffect) {
