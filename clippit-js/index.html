@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clippit-JS Demo</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 20px;
+        background-color: #f0f0f0;
+      }
+      #controls {
+        margin-bottom: 20px;
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      #animation-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        margin-top: 10px;
+      }
+      button {
+        padding: 5px 10px;
+        cursor: pointer;
+      }
+      #agent-container {
+        position: relative;
+        height: 500px;
+        border: 1px dashed #ccc;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="controls">
+      <h1>Clippit-JS</h1>
+      <div id="status">Initializing...</div>
+      <div id="animation-list"></div>
+    </div>
+    <div id="agent-container"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

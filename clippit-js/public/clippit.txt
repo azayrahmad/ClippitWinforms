@@ -1,0 +1,41 @@
+DefineCharacter
+  GUID = {12345678-1234-1234-1234-123456789012}
+  Width = 124
+  Height = 93
+  Transparency = 255
+  DefaultFrameDuration = 10
+  Style = AXS_VOICE_NONE | AXS_BALLOON_ROUNDRECT
+  ColorTable = "clippit.cfg"
+
+  DefineInfo 0x0409
+    Name = "Clippit"
+    Description = "Clippit"
+    ExtraData = "Hello!^^Reminder"
+  EndInfo
+EndCharacter
+
+DefineAnimation "Greeting"
+  TransitionType = 0
+  DefineFrame
+    Duration = 10
+    DefineImage
+      Filename = "map.png"
+      OffsetX = 0
+      OffsetY = 0
+    EndImage
+  EndFrame
+EndAnimation
+
+DefineState "Idling"
+  Animation = "Greeting"
+EndState
+
+DefineBalloon
+  NumLines = 2
+  CharsPerLine = 32
+  FontName = "Arial"
+  FontHeight = 12
+  ForeColor = 00000000
+  BackColor = 00e1ffff
+  BorderColor = 00000000
+EndBalloon
