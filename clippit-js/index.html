@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clippit JS Demo</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background-color: #f0f0f0;
+        font-family: sans-serif;
+      }
+      #agent-container {
+        position: absolute;
+        cursor: move;
+        z-index: 1000;
+      }
+      #ui-panel {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background: rgba(255, 255, 255, 0.8);
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        z-index: 1100;
+      }
+      select {
+        margin-top: 10px;
+        padding: 5px;
+        width: 100%;
+      }
+      button {
+        margin-top: 10px;
+        padding: 8px;
+        width: 100%;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="ui-panel">
+      <h3>Clippit JS</h3>
+      <label for="animation-select">Select Animation:</label>
+      <select id="animation-select"></select>
+      <button id="play-button">Play</button>
+    </div>
+
+    <div id="agent-container">
+      <canvas id="agent-canvas"></canvas>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
