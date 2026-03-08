@@ -1,8 +1,12 @@
 import { Agent } from './managers/Agent';
 
 let agent: Agent | null = null;
+let isSwitching = false;
 
 async function loadAgent(agentName: string) {
+  if (isSwitching) return;
+  isSwitching = true;
+
   const canvas = document.getElementById('agent-canvas') as HTMLCanvasElement;
   const container = document.getElementById('agent-container') as HTMLDivElement;
   const animSelect = document.getElementById('animation-select') as HTMLSelectElement;
@@ -10,16 +14,18 @@ async function loadAgent(agentName: string) {
   const statusText = document.getElementById('status-text') as HTMLElement;
 
   if (agent) {
+    statusText.innerText = `Status: Stopping previous agent...`;
     await agent.stop();
+    agent = null;
   }
 
-  agent = new Agent(canvas);
+  const newAgent = new Agent(canvas);
   statusText.innerText = `Status: Loading ${agentName}...`;
 
   try {
-    // Avoid trailing slash to ensure correct agentName extraction in initialize
     const path = `/agents/${agentName}`.replace(/\/$/, "");
-    await agent.initialize(path);
+    await newAgent.initialize(path);
+    agent = newAgent;
 
     // Set canvas size based on agent size
     canvas.width = agent.width;
@@ -57,6 +63,8 @@ async function loadAgent(agentName: string) {
   } catch (e) {
       console.error(`Failed to load agent ${agentName}:`, e);
       statusText.innerText = `Status: Error loading ${agentName}.`;
+  } finally {
+      isSwitching = false;
   }
 }
 

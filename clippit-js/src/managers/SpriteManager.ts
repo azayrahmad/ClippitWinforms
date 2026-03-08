@@ -93,12 +93,15 @@ export class DirectorySpriteManager implements ISpriteManager {
                 if (sprite) {
                     const destX = imageDef.offsetX * scale;
                     const destY = imageDef.offsetY * scale;
-                    const destW = this.width * scale;
-                    const destH = this.height * scale;
+                    // Important: use sprite's actual dimensions for source and destW/H
+                    const sw = sprite.width;
+                    const sh = sprite.height;
+                    const destW = sw * scale;
+                    const destH = sh * scale;
 
                     ctx.drawImage(
                         sprite,
-                        0, 0, this.width, this.height,
+                        0, 0, sw, sh,
                         destX, destY, destW, destH
                     );
                 }

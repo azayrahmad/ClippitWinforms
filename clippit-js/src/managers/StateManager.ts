@@ -42,6 +42,11 @@ export class StateManager {
             return;
         }
 
+        // If currently animating a non-idle animation, wait
+        if (this.animationManager.isAnimating && !this.animationManager.currentAnimationName.toLowerCase().startsWith("idle")) {
+            return;
+        }
+
         if (this.isIdleState(this.currentState)) {
             this.idleTickCount++;
 
@@ -82,11 +87,13 @@ export class StateManager {
         this.currentState = stateName;
 
         if (stateName !== "Playing") {
-            await this.updateStateAnimation();
+            // Don't await the first animation of a state to avoid blocking callers (like agent.start)
+            this.updateStateAnimation();
         }
     }
 
     public async playAnimation(animationName: string, timeoutMs?: number, stateName: string = "") {
+        console.log(`StateManager: playing animation ${animationName} (state: ${stateName || this.currentState})`);
         if (stateName) {
             this.currentState = stateName;
         }
@@ -106,8 +113,9 @@ export class StateManager {
         } finally {
             if (this.currentState === "Playing") {
                 this.animationManager.setExiting(true);
+                // Trigger transition to idle without blocking the current animation's completion
+                setTimeout(() => this.handleAnimationCompleted(), 0);
             }
-            await this.handleAnimationCompleted();
         }
     }
 
@@ -174,7 +182,14 @@ export class StateManager {
 
     public async playClosingAnimation() {
         this.stopTimer();
-        await this.playAnimation("Goodbye");
+        const anims = this.animationManager.getSelectableAnimations();
+        if (anims.includes("GoodBye")) {
+             await this.playAnimation("GoodBye");
+        } else if (anims.includes("Goodbye")) {
+             await this.playAnimation("Goodbye");
+        } else if (anims.includes("Hide")) {
+             await this.playAnimation("Hide");
+        }
     }
 
     public dispose() {

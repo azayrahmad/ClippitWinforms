@@ -12,13 +12,7 @@ import {
 } from '../models/AgentCharacterDefinition';
 
 export class CharacterParser {
-    private currentAgent!: AgentCharacterDefinition;
-    private currentCharacter!: Character;
-    private currentLanguageInfo: Info | null = null;
-
     public parseFromText(text: string): AgentCharacterDefinition {
-        // Character definitions can be large, and sometimes contain binary or non-UTF8 data.
-        // We split by lines but handle each line carefully.
         const lines = text.split(/\r?\n/);
         console.log(`Parsing ACD file with ${lines.length} lines`);
         const result = this.parseFromLines(lines);
@@ -27,7 +21,7 @@ export class CharacterParser {
     }
 
     private parseFromLines(lines: string[]): AgentCharacterDefinition {
-        this.currentAgent = {
+        const agent: AgentCharacterDefinition = {
             character: {
                 infos: [],
                 guid: "",
@@ -43,112 +37,63 @@ export class CharacterParser {
             states: {}
         };
 
-        console.log(`Starting parse of ${lines.length} lines`);
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i].trim();
-            if (i < 10) console.log(`Line ${i}: [${line}]`);
+            const lowerLine = line.toLowerCase();
+            if (!line || line.startsWith("//")) continue;
 
-            if (!line || line.startsWith("//"))
-                continue;
-
-            if (line.startsWith("DefineCharacter")) {
-                i = this.parseCharacterSection(lines, i);
-                continue;
+            if (lowerLine.startsWith("definecharacter")) {
+                i = this.parseCharacterSection(lines, i, agent);
+            } else if (lowerLine.startsWith("defineballoon")) {
+                i = this.parseBalloonSection(lines, i, agent);
+            } else if (lowerLine.startsWith("defineanimation")) {
+                i = this.parseAnimationSection(lines, i, agent);
+            } else if (lowerLine.startsWith("definestate")) {
+                i = this.parseStateSection(lines, i, agent);
             }
-            if (line.startsWith("DefineBalloon")) {
-                i = this.parseBalloonSection(lines, i);
-                continue;
-            }
-            if (line.startsWith("DefineAnimation")) {
-                i = this.parseAnimationSection(lines, i);
-                continue;
-            }
-            if (line.startsWith("DefineState")) {
-                i = this.parseStateSection(lines, i);
-                continue;
-            }
-            if (line.startsWith("DefineAnimation")) {
-                i = this.parseAnimationSection(lines, i);
-                continue;
-            }
-            if (line.startsWith("DefineState")) {
-                i = this.parseStateSection(lines, i);
-                continue;
-            }
-
-            if (line === "EndCharacter")
-                break;
         }
 
-        return this.currentAgent;
+        return agent;
     }
 
-    private parseCharacterSection(lines: string[], i: number): number {
-        this.currentCharacter = this.currentAgent.character;
+    private parseCharacterSection(lines: string[], i: number, agent: AgentCharacterDefinition): number {
         i++;
-
-        while (i < lines.length && lines[i].trim() !== "EndCharacter") {
+        while (i < lines.length && !lines[i].trim().toLowerCase().startsWith("endcharacter")) {
             const line = lines[i].trim();
-            if (line.startsWith("DefineInfo")) {
-                i = this.parseCharacterInfo(lines, i);
-                continue;
-            }
-            if (line.startsWith("DefineAnimation")) {
-                i = this.parseAnimationSection(lines, i);
-                continue;
-            }
-            if (line.startsWith("DefineState")) {
-                i = this.parseStateSection(lines, i);
-                continue;
-            }
-
-            if (line === "EndInfo") {
-                if (this.currentLanguageInfo) {
-                    this.currentCharacter.infos.push(this.currentLanguageInfo);
-                    this.currentLanguageInfo = null;
+            const lowerLine = line.toLowerCase();
+            if (lowerLine.startsWith("defineinfo")) {
+                i = this.parseCharacterInfo(lines, i, agent.character);
+            } else if (lowerLine.startsWith("defineanimation")) {
+                i = this.parseAnimationSection(lines, i, agent);
+            } else if (lowerLine.startsWith("definestate")) {
+                i = this.parseStateSection(lines, i, agent);
+            } else {
+                const parts = line.split('=');
+                if (parts.length >= 2) {
+                    const key = parts[0].trim().toUpperCase();
+                    const value = parts.slice(1).join('=').trim().replace(/^"|"$/g, '');
+                    switch (key) {
+                        case "GUID": agent.character.guid = value.replace(/[{}]/g, ''); break;
+                        case "WIDTH": agent.character.width = parseInt(value); break;
+                        case "HEIGHT": agent.character.height = parseInt(value); break;
+                        case "TRANSPARENCY": agent.character.transparency = parseInt(value); break;
+                        case "DEFAULTFRAMEDURATION": agent.character.defaultFrameDuration = parseInt(value); break;
+                        case "STYLE": agent.character.style = this.parseStyle(value); break;
+                        case "COLORTABLE": agent.character.colorTable = value; break;
+                    }
                 }
+                i++;
             }
-
-            const parts = line.split('=');
-            if (parts.length >= 2) {
-                const key = parts[0].trim();
-                const value = parts.slice(1).join('=').trim().replace(/^"|"$/g, '');
-
-                switch (key) {
-                    case "GUID":
-                        this.currentCharacter.guid = value.replace(/[{}]/g, '');
-                        break;
-                    case "Width":
-                        this.currentCharacter.width = parseInt(value);
-                        break;
-                    case "Height":
-                        this.currentCharacter.height = parseInt(value);
-                        break;
-                    case "Transparency":
-                        this.currentCharacter.transparency = parseInt(value);
-                        break;
-                    case "DefaultFrameDuration":
-                        this.currentCharacter.defaultFrameDuration = parseInt(value);
-                        break;
-                    case "Style":
-                        this.currentCharacter.style = this.parseStyle(value);
-                        break;
-                    case "ColorTable":
-                        this.currentCharacter.colorTable = value;
-                        break;
-                }
-            }
-            i++;
         }
         return i;
     }
 
-    private parseCharacterInfo(lines: string[], i: number): number {
+    private parseCharacterInfo(lines: string[], i: number, character: Character): number {
         const line = lines[i].trim();
         const match = line.match(/0x([0-9A-Fa-f]{4})/);
         if (!match) return i;
 
-        this.currentLanguageInfo = {
+        const info: Info = {
             languageCode: parseInt(match[1], 16),
             name: "",
             description: "",
@@ -157,33 +102,21 @@ export class CharacterParser {
         };
 
         i++;
-
-        while (i < lines.length && lines[i].trim() !== "EndInfo") {
-            const line = lines[i].trim();
-            const parts = line.split('=');
+        while (i < lines.length && !lines[i].trim().toLowerCase().startsWith("endinfo")) {
+            const l = lines[i].trim();
+            const parts = l.split('=');
             if (parts.length >= 2) {
-                const key = parts[0].trim();
+                const key = parts[0].trim().toUpperCase();
                 const value = parts.slice(1).join('=').trim().replace(/^"|"$/g, '');
-
                 switch (key) {
-                    case "Name":
-                        this.currentLanguageInfo.name = value;
-                        break;
-                    case "Description":
-                        this.currentLanguageInfo.description = value;
-                        break;
-                    case "ExtraData":
-                        this.parseExtraData(value, this.currentLanguageInfo);
-                        break;
+                    case "NAME": info.name = value; break;
+                    case "DESCRIPTION": info.description = value; break;
+                    case "EXTRADATA": this.parseExtraData(value, info); break;
                 }
             }
             i++;
         }
-
-        if (this.currentLanguageInfo) {
-            this.currentCharacter.infos.push(this.currentLanguageInfo);
-            this.currentLanguageInfo = null;
-        }
+        character.infos.push(info);
         return i;
     }
 
@@ -198,61 +131,42 @@ export class CharacterParser {
     private parseStyle(value: string): CharacterStyle {
         let style = CharacterStyle.None;
         const styleParts = value.split('|');
-
         for (const part of styleParts) {
             const trimmedPart = part.trim();
-            if (trimmedPart === "AXS_VOICE_NONE")
-                style |= CharacterStyle.VoiceNone;
-            else if (trimmedPart === "AXS_BALLOON_ROUNDRECT")
-                style |= CharacterStyle.BalloonRoundRect;
+            if (trimmedPart === "AXS_VOICE_NONE") style |= CharacterStyle.VoiceNone;
+            else if (trimmedPart === "AXS_BALLOON_ROUNDRECT") style |= CharacterStyle.BalloonRoundRect;
         }
         return style;
     }
 
-    private parseBalloonSection(lines: string[], i: number): number {
+    private parseBalloonSection(lines: string[], i: number, agent: AgentCharacterDefinition): number {
         const balloon = {} as Balloon;
         i++;
-
-        while (i < lines.length && lines[i].trim() !== "EndBalloon") {
+        while (i < lines.length && !lines[i].trim().toLowerCase().startsWith("endballoon")) {
             const line = lines[i].trim();
             const parts = line.split('=');
             if (parts.length >= 2) {
-                const key = parts[0].trim();
+                const key = parts[0].trim().toUpperCase();
                 const value = parts.slice(1).join('=').trim().replace(/^"|"$/g, '');
-
                 switch (key) {
-                    case "NumLines":
-                        balloon.numLines = parseInt(value);
-                        break;
-                    case "CharsPerLine":
-                        balloon.charsPerLine = parseInt(value);
-                        break;
-                    case "FontName":
-                        balloon.fontName = value;
-                        break;
-                    case "FontHeight":
-                        balloon.fontHeight = parseInt(value);
-                        break;
-                    case "ForeColor":
-                        balloon.foreColor = this.parseColor(value);
-                        break;
-                    case "BackColor":
-                        balloon.backColor = this.parseColor(value);
-                        break;
-                    case "BorderColor":
-                        balloon.borderColor = this.parseColor(value);
-                        break;
+                    case "NUMLINES": balloon.numLines = parseInt(value); break;
+                    case "CHARSPERLINE": balloon.charsPerLine = parseInt(value); break;
+                    case "FONTNAME": balloon.fontName = value; break;
+                    case "FONTHEIGHT": balloon.fontHeight = parseInt(value); break;
+                    case "FORECOLOR": balloon.foreColor = this.parseColor(value); break;
+                    case "BACKCOLOR": balloon.backColor = this.parseColor(value); break;
+                    case "BORDERCOLOR": balloon.borderColor = this.parseColor(value); break;
                 }
             }
             i++;
         }
-        this.currentAgent.balloon = balloon;
+        agent.balloon = balloon;
         return i;
     }
 
-    private parseAnimationSection(lines: string[], i: number): number {
+    private parseAnimationSection(lines: string[], i: number, agent: AgentCharacterDefinition): number {
         const line = lines[i].trim();
-        const match = line.match(/DefineAnimation\s+"([^"]+)"/);
+        const match = line.match(/DefineAnimation\s+"([^"]+)"/i);
         if (!match) return i;
 
         const animation: Animation = {
@@ -262,22 +176,21 @@ export class CharacterParser {
         };
 
         i++;
-
-        while (i < lines.length && lines[i].trim() !== "EndAnimation") {
-            const line = lines[i].trim();
-
-            if (line.startsWith("TransitionType")) {
-                const value = line.split('=')[1].trim();
+        while (i < lines.length && !lines[i].trim().toLowerCase().startsWith("endanimation")) {
+            const l = lines[i].trim();
+            const lowerL = l.toLowerCase();
+            if (lowerL.startsWith("transitiontype")) {
+                const value = l.split('=')[1].trim();
                 animation.transitionType = parseInt(value);
                 i++;
-            } else if (line.startsWith("DefineFrame")) {
+            } else if (lowerL.startsWith("defineframe")) {
                 i = this.parseFrameSection(lines, i, animation);
             } else {
                 i++;
             }
         }
 
-        this.currentAgent.animations[animation.name] = animation;
+        agent.animations[animation.name] = animation;
         return i;
     }
 
@@ -287,31 +200,29 @@ export class CharacterParser {
             images: []
         };
         i++;
-
-        while (i < lines.length && lines[i].trim() !== "EndFrame") {
+        while (i < lines.length && !lines[i].trim().toLowerCase().startsWith("endframe")) {
             const line = lines[i].trim();
-
-            if (line.startsWith("Duration")) {
+            const lowerLine = line.toLowerCase();
+            if (lowerLine.startsWith("duration")) {
                 const value = line.split('=')[1].trim();
                 frame.duration = parseInt(value);
                 i++;
-            } else if (line.startsWith("ExitBranch")) {
+            } else if (lowerLine.startsWith("exitbranch")) {
                 const value = line.split('=')[1].trim();
                 frame.exitBranch = parseInt(value);
                 i++;
-            } else if (line.startsWith("SoundEffect")) {
+            } else if (lowerLine.startsWith("soundeffect")) {
                 const value = line.split('=')[1].trim().replace(/^"|"$/g, '');
                 frame.soundEffect = value;
                 i++;
-            } else if (line.startsWith("DefineImage")) {
+            } else if (lowerLine.startsWith("defineimage")) {
                 i = this.parseImageSection(lines, i, frame);
-            } else if (line.startsWith("DefineBranching")) {
+            } else if (lowerLine.startsWith("definebranching")) {
                 i = this.parseBranchingSection(lines, i, frame);
             } else {
                 i++;
             }
         }
-
         animation.frames.push(frame);
         return i;
     }
@@ -319,24 +230,16 @@ export class CharacterParser {
     private parseImageSection(lines: string[], i: number, frame: FrameDefinition): number {
         const image = {} as ImageDefinition;
         i++;
-
-        while (i < lines.length && lines[i].trim() !== "EndImage") {
+        while (i < lines.length && !lines[i].trim().toLowerCase().startsWith("endimage")) {
             const line = lines[i].trim();
             const parts = line.split('=');
             if (parts.length >= 2) {
-                const key = parts[0].trim();
+                const key = parts[0].trim().toUpperCase();
                 const value = parts.slice(1).join('=').trim().replace(/^"|"$/g, '');
-
                 switch (key) {
-                    case "Filename":
-                        image.filename = value;
-                        break;
-                    case "OffsetX":
-                        image.offsetX = parseInt(value);
-                        break;
-                    case "OffsetY":
-                        image.offsetY = parseInt(value);
-                        break;
+                    case "FILENAME": image.filename = value; break;
+                    case "OFFSETX": image.offsetX = parseInt(value); break;
+                    case "OFFSETY": image.offsetY = parseInt(value); break;
                 }
             }
             i++;
@@ -349,21 +252,15 @@ export class CharacterParser {
         const branchingList: BranchingDefinition[] = [];
         let branching = {} as BranchingDefinition;
         i++;
-
-        while (i < lines.length && lines[i].trim() !== "EndBranching") {
+        while (i < lines.length && !lines[i].trim().toLowerCase().startsWith("endbranching")) {
             const line = lines[i].trim();
             const parts = line.split('=');
             if (parts.length >= 2) {
-                const key = parts[0].trim();
+                const key = parts[0].trim().toUpperCase();
                 const value = parseInt(parts.slice(1).join('=').trim());
-
                 switch (key) {
-                    case "BranchTo":
-                        branching.branchTo = value;
-                        break;
-                    case "Probability":
-                        branching.probability = value;
-                        break;
+                    case "BRANCHTO": branching.branchTo = value; break;
+                    case "PROBABILITY": branching.probability = value; break;
                 }
             }
             if (branching.branchTo !== undefined && branching.probability !== undefined) {
@@ -376,26 +273,25 @@ export class CharacterParser {
         return i;
     }
 
-    private parseStateSection(lines: string[], i: number): number {
+    private parseStateSection(lines: string[], i: number, agent: AgentCharacterDefinition): number {
         const line = lines[i].trim();
-        const match = line.match(/DefineState\s+"([^"]+)"/);
+        const match = line.match(/DefineState\s+"([^"]+)"/i);
         if (!match) return i;
 
         const stateName = match[1];
         const stateAnimations: string[] = [];
 
         i++;
-
-        while (i < lines.length && lines[i].trim() !== "EndState") {
-            const line = lines[i].trim();
-            const parts = line.split('=');
-            if (parts.length >= 2 && parts[0].trim() === "Animation") {
+        while (i < lines.length && !lines[i].trim().toLowerCase().startsWith("endstate")) {
+            const l = lines[i].trim();
+            const parts = l.split('=');
+            if (parts.length >= 2 && parts[0].trim().toUpperCase() === "ANIMATION") {
                 stateAnimations.push(parts.slice(1).join('=').trim().replace(/^"|"$/g, ''));
             }
             i++;
         }
 
-        this.currentAgent.states[stateName] = {
+        agent.states[stateName] = {
             name: stateName,
             animations: stateAnimations
         };
@@ -403,7 +299,6 @@ export class CharacterParser {
     }
 
     private parseColor(hexColor: string): string {
-        // Convert from "00e1ffff" format to CSS rgba
         if (hexColor.length === 8) {
             const a = parseInt(hexColor.substring(0, 2), 16);
             const b = parseInt(hexColor.substring(2, 4), 16);

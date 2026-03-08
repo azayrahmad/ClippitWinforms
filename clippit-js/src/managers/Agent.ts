@@ -10,13 +10,15 @@ export class Agent {
     private audioManager!: AudioManager;
     private stateManager!: StateManager;
     private characterDefinition!: AgentCharacterDefinition;
+    private animationFrameId: number | null = null;
 
     constructor(private canvas: HTMLCanvasElement) {}
 
     public async initialize(agentPath: string): Promise<void> {
-        // Handle trailing slashes in agentPath
+        // Handle trailing slashes in agentPath and ensure we get a valid name
         const normalizedPath = agentPath.replace(/\/$/, "");
-        const agentName = normalizedPath.split('/').pop() || "agent";
+        const pathSegments = normalizedPath.split('/');
+        const agentName = pathSegments[pathSegments.length - 1] || "agent";
         console.log(`Initializing agent ${agentName} at ${normalizedPath}`);
 
         const tryPaths = [
@@ -27,25 +29,30 @@ export class Agent {
 
         let response: Response | null = null;
         for (const path of tryPaths) {
-            console.log(`Trying to fetch ACD from ${path}`);
-            const res = await fetch(path);
-            if (res.ok) {
-                // Double check it's not HTML (Vite fallback)
-                const text = await res.clone().text();
-                if (!text.trim().startsWith("<!DOCTYPE html>")) {
+            try {
+                const res = await fetch(path);
+                if (res.ok) {
+                    const contentType = res.headers.get("content-type");
+                    if (contentType && contentType.includes("text/html")) {
+                        continue;
+                    }
+                    const textSample = await res.clone().text();
+                    if (textSample.trim().startsWith("<!DOCTYPE html>")) {
+                         continue;
+                    }
                     response = res;
                     console.log(`Found ACD at ${path}`);
                     break;
-                } else {
-                    console.log(`Fetch returned HTML instead of ACD at ${path}`);
                 }
+            } catch (e) {
+                console.warn(`Error fetching ${path}`, e);
             }
         }
 
         if (!response || !response.ok) {
-            console.error(`Failed to fetch agent definition from ${normalizedPath}`);
-            return;
+            throw new Error(`Failed to fetch agent definition from ${normalizedPath}`);
         }
+
         const buffer = await response.arrayBuffer();
         const decoder = new TextDecoder('windows-1252');
         const text = decoder.decode(buffer);
@@ -53,10 +60,17 @@ export class Agent {
         const parser = new CharacterParser();
         this.characterDefinition = parser.parseFromText(text);
 
+        if (!this.characterDefinition || !this.characterDefinition.character) {
+             throw new Error("Invalid character definition");
+        }
+
+        console.log(`Character dimensions: ${this.characterDefinition.character.width}x${this.characterDefinition.character.height}, Transparency index: ${this.characterDefinition.character.transparency}`);
+
         // Robust path and asset detection
         let imagesPath = `${normalizedPath}/images`;
         let audioPath = `${normalizedPath}/audio`;
 
+        // Find correct Images directory and ColorTable
         const colorTable = this.characterDefinition.character.colorTable || "ColorTable.bmp";
         const cleanColorTable = colorTable.split(/[\\/]/).pop() || "ColorTable.bmp";
 
@@ -73,47 +87,57 @@ export class Agent {
             try {
                 const res = await fetch(option);
                 if (res.ok) {
-                    const text = await res.clone().text();
-                    if (!text.trim().startsWith("<!DOCTYPE html>")) {
-                        imagesPath = option.substring(0, option.lastIndexOf('/'));
-                        const fileName = option.substring(option.lastIndexOf('/') + 1);
-                        this.characterDefinition.character.colorTable = fileName;
-                        break;
-                    }
+                    const contentType = res.headers.get("content-type");
+                    if (contentType && contentType.includes("text/html")) continue;
+
+                    imagesPath = option.substring(0, option.lastIndexOf('/'));
+                    const fileName = option.substring(option.lastIndexOf('/') + 1);
+                    this.characterDefinition.character.colorTable = fileName;
+                    console.log(`Found images path: ${imagesPath}, colorTable: ${fileName}`);
+                    break;
                 }
             } catch(e) {}
         }
 
         const spriteManager = new DirectorySpriteManager(imagesPath, this.characterDefinition.character);
 
-        // Load the color table to get the transparency color
-        const colorTableImg = new Image();
-        colorTableImg.src = `${imagesPath}/${this.characterDefinition.character.colorTable}`;
-
-        await new Promise<void>((resolve) => {
-            colorTableImg.onload = () => {
-                try {
-                    const tempCanvas = document.createElement('canvas');
-                    tempCanvas.width = colorTableImg.width;
-                    tempCanvas.height = colorTableImg.height;
-                    const tempCtx = tempCanvas.getContext('2d');
-                    if (tempCtx) {
-                        tempCtx.drawImage(colorTableImg, 0, 0);
-                        const imageData = tempCtx.getImageData(this.characterDefinition.character.transparency, 0, 1, 1).data;
-                        spriteManager.setTransparencyColor(imageData[0], imageData[1], imageData[2]);
+        // Load the color table to get the transparency color by reading BMP palette directly
+        // This is more reliable than canvas for 8-bit indexed BMPs
+        try {
+            const colorTablePath = `${imagesPath}/${this.characterDefinition.character.colorTable}`;
+            const res = await fetch(colorTablePath);
+            if (res.ok) {
+                const buffer = await res.arrayBuffer();
+                const view = new DataView(buffer);
+                // Check for 'BM' signature
+                if (view.getUint16(0, true) === 0x4D42) {
+                    const bpp = view.getUint16(28, true);
+                    if (bpp === 8) {
+                        const index = this.characterDefinition.character.transparency;
+                        // BMP Palette starts at 54 (14 file header + 40 info header)
+                        // Each entry is 4 bytes (B, G, R, reserved)
+                        const offset = 54 + (index * 4);
+                        if (offset + 2 < buffer.byteLength) {
+                            const b = view.getUint8(offset);
+                            const g = view.getUint8(offset + 1);
+                            const r = view.getUint8(offset + 2);
+                            console.log(`Transparency index ${index} resolved from BMP palette to RGB: ${r},${g},${b}`);
+                            spriteManager.setTransparencyColor(r, g, b);
+                        } else {
+                            throw new Error("Transparency index out of palette bounds");
+                        }
+                    } else {
+                        // For non-8bit color tables (unusual), fallback to middle pixel or magenta
+                        spriteManager.setTransparencyColor(255, 0, 255);
                     }
-                } catch (e) {
-                    console.warn("Failed to process color table, using default pink transparency", e);
-                    spriteManager.setTransparencyColor(255, 0, 255);
                 }
-                resolve();
-            };
-            colorTableImg.onerror = () => {
-                console.warn(`Failed to load color table image from ${colorTableImg.src}, using default pink transparency`);
-                spriteManager.setTransparencyColor(255, 0, 255);
-                resolve();
-            };
-        });
+            } else {
+                throw new Error("Could not fetch color table");
+            }
+        } catch (e) {
+            console.warn("Failed to read color table BMP, using default pink transparency", e);
+            spriteManager.setTransparencyColor(255, 0, 255);
+        }
 
         // Detect audio path
         const audioOptions = [`${normalizedPath}/Audio`, `${normalizedPath}/audio`];
@@ -121,11 +145,12 @@ export class Agent {
             try {
                 const resWav = await fetch(`${option}/0001.wav`);
                 if (resWav.ok) {
-                    const text = await resWav.clone().text();
-                    if (!text.trim().startsWith("<!DOCTYPE html>")) {
-                        audioPath = option;
-                        break;
-                    }
+                    const contentType = resWav.headers.get("content-type");
+                    if (contentType && contentType.includes("text/html")) continue;
+
+                    audioPath = option;
+                    console.log(`Found audio path: ${audioPath}`);
+                    break;
                 }
             } catch(e) {}
         }
@@ -142,6 +167,14 @@ export class Agent {
         );
 
         this.stateManager = new StateManager(this.characterDefinition.states, this.animationManager);
+
+        // Preload the first frame so it's visible immediately
+        try {
+            await spriteManager.loadSprite("0000.bmp");
+        } catch (e) {
+            console.warn("Could not preload frame 0000.bmp", e);
+        }
+
         this.startLoop();
     }
 
@@ -152,9 +185,9 @@ export class Agent {
         const loop = () => {
             this.update();
             this.draw(ctx);
-            requestAnimationFrame(loop);
+            this.animationFrameId = requestAnimationFrame(loop);
         };
-        requestAnimationFrame(loop);
+        this.animationFrameId = requestAnimationFrame(loop);
     }
 
     private update(): void {
@@ -187,26 +220,30 @@ export class Agent {
     }
 
     public async start(): Promise<void> {
-        await this.stateManager.setState("Playing");
-
         const anims = this.getSelectableAnimations();
         if (anims.includes("Greeting")) {
-            await this.playAnimation("Greeting");
+            await this.playAnimation("Greeting", undefined, "Playing");
         } else if (anims.includes("Show")) {
-            await this.playAnimation("Show");
-        }
-
-        const states = this.getAvailableStates();
-        if (states.includes("IdlingLevel1")) {
+            await this.playAnimation("Show", undefined, "Playing");
+        } else {
             await this.stateManager.setState("IdlingLevel1");
-        } else if (states.length > 0) {
-            await this.stateManager.setState(states[0]);
         }
     }
 
     public async stop(): Promise<void> {
-        await this.stateManager.playClosingAnimation();
-        this.stateManager.dispose();
+        if (this.stateManager) {
+            await this.stateManager.playClosingAnimation();
+            this.stateManager.dispose();
+        }
+        if (this.animationFrameId !== null) {
+            cancelAnimationFrame(this.animationFrameId);
+            this.animationFrameId = null;
+        }
+        // Clear canvas on stop
+        const ctx = this.canvas.getContext('2d');
+        if (ctx) {
+            ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        }
     }
 
     public async playRandomAnimation(): Promise<void> {
@@ -218,10 +255,10 @@ export class Agent {
     }
 
     public get width(): number {
-        return this.characterDefinition.character.width * AnimationManager.Scale;
+        return (this.characterDefinition?.character?.width || 124) * AnimationManager.Scale;
     }
 
     public get height(): number {
-        return this.characterDefinition.character.height * AnimationManager.Scale;
+        return (this.characterDefinition?.character?.height || 93) * AnimationManager.Scale;
     }
 }
