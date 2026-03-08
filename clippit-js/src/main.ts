@@ -16,41 +16,46 @@ async function loadAgent(agentName: string) {
   agent = new Agent(canvas);
   statusText.innerText = `Status: Loading ${agentName}...`;
 
-  await agent.initialize(`/agents/${agentName}`);
+  try {
+    await agent.initialize(`/agents/${agentName}`);
 
-  // Set canvas size based on agent size
-  canvas.width = agent.width;
-  canvas.height = agent.height;
+    // Set canvas size based on agent size
+    canvas.width = agent.width;
+    canvas.height = agent.height;
 
-  // Position agent at bottom right if not already positioned
-  if (!container.style.left) {
-    container.style.left = `${window.innerWidth - agent.width - 20}px`;
-    container.style.top = `${window.innerHeight - agent.height - 20}px`;
+    // Position agent at bottom right if not already positioned
+    if (!container.style.left) {
+        container.style.left = `${window.innerWidth - agent.width - 20}px`;
+        container.style.top = `${window.innerHeight - agent.height - 20}px`;
+    }
+
+    // Populate animations
+    animSelect.innerHTML = '';
+    const animations = agent.getSelectableAnimations().sort();
+    animations.forEach(anim => {
+        const option = document.createElement('option');
+        option.value = anim;
+        option.textContent = anim;
+        animSelect.appendChild(option);
+    });
+
+    // Populate states
+    stateSelect.innerHTML = '';
+    const states = agent.getAvailableStates().sort();
+    states.forEach(state => {
+        const option = document.createElement('option');
+        option.value = state;
+        option.textContent = state;
+        stateSelect.appendChild(option);
+    });
+
+    await agent.start();
+    statusText.innerText = `Status: ${agentName} ready.`;
+    console.log(`${agentName} loaded and started.`);
+  } catch (e) {
+      console.error(`Failed to load agent ${agentName}:`, e);
+      statusText.innerText = `Status: Error loading ${agentName}.`;
   }
-
-  // Populate animations
-  animSelect.innerHTML = '';
-  const animations = agent.getSelectableAnimations();
-  animations.forEach(anim => {
-    const option = document.createElement('option');
-    option.value = anim;
-    option.textContent = anim;
-    animSelect.appendChild(option);
-  });
-
-  // Populate states
-  stateSelect.innerHTML = '';
-  const states = agent.getAvailableStates();
-  states.forEach(state => {
-    const option = document.createElement('option');
-    option.value = state;
-    option.textContent = state;
-    stateSelect.appendChild(option);
-  });
-
-  await agent.start();
-  statusText.innerText = `Status: ${agentName} ready.`;
-  console.log(`${agentName} loaded and started.`);
 }
 
 async function init() {
@@ -64,9 +69,9 @@ async function init() {
 
   await loadAgent(agentSelect.value);
 
-  agentSelect.onchange = async () => {
+  agentSelect.addEventListener('change', async () => {
     await loadAgent(agentSelect.value);
-  };
+  });
 
   playButton.onclick = async () => {
     if (agent) {
@@ -83,13 +88,6 @@ async function init() {
   stateSelect.onchange = async () => {
       if (agent) {
           await agent.setState(stateSelect.value);
-      }
-  }
-
-  canvas.onclick = async () => {
-      if (agent) {
-          // Trigger a random animation or say greeting
-          await agent.playRandomAnimation();
       }
   }
 

@@ -33,9 +33,8 @@ export class Agent {
         let imagesPath = `${agentPath}/images`;
         let audioPath = `${agentPath}/audio`;
 
-        const colorTable = this.characterDefinition.character.colorTable;
-        // Clean up color table filename (handle Windows backslashes)
-        const cleanColorTable = colorTable.split(/[\\/]/).pop() || "";
+        const colorTable = this.characterDefinition.character.colorTable || "ColorTable.bmp";
+        const cleanColorTable = colorTable.split(/[\\/]/).pop() || "ColorTable.bmp";
 
         const colorTableOptions = [
             `${agentPath}/Images/${cleanColorTable}`,
@@ -46,7 +45,6 @@ export class Agent {
             `${agentPath}/images/0000.bmp`
         ];
 
-        let foundColorTable = false;
         for (const option of colorTableOptions) {
             try {
                 const res = await fetch(option);
@@ -54,7 +52,6 @@ export class Agent {
                     imagesPath = option.substring(0, option.lastIndexOf('/'));
                     const fileName = option.substring(option.lastIndexOf('/') + 1);
                     this.characterDefinition.character.colorTable = fileName;
-                    foundColorTable = true;
                     break;
                 }
             } catch(e) {}
@@ -95,8 +92,16 @@ export class Agent {
         const audioOptions = [`${agentPath}/Audio`, `${agentPath}/audio`];
         for (const option of audioOptions) {
             try {
+                // Some agents might not have 0000.wav, let's just check if we can fetch the directory (some servers allow this)
+                // or check for a common file.
                 const res = await fetch(`${option}/`);
                 if (res.ok) {
+                    audioPath = option;
+                    break;
+                }
+                // Fallback: check for a common wav
+                const resWav = await fetch(`${option}/0001.wav`);
+                if (resWav.ok) {
                     audioPath = option;
                     break;
                 }

@@ -15,9 +15,6 @@ export class CharacterParser {
     private currentAgent!: AgentCharacterDefinition;
     private currentCharacter!: Character;
     private currentLanguageInfo: Info | null = null;
-    private currentAnimation!: Animation;
-    private currentFrame!: FrameDefinition;
-    private currentState!: State;
 
     public parseFromText(text: string): AgentCharacterDefinition {
         const lines = text.split(/\r?\n/);
@@ -26,7 +23,16 @@ export class CharacterParser {
 
     private parseFromLines(lines: string[]): AgentCharacterDefinition {
         this.currentAgent = {
-            character: {} as Character,
+            character: {
+                infos: [],
+                guid: "",
+                width: 0,
+                height: 0,
+                transparency: 0,
+                defaultFrameDuration: 0,
+                style: CharacterStyle.None,
+                colorTable: ""
+            } as Character,
             balloon: {} as Balloon,
             animations: {},
             states: {}
@@ -46,6 +52,10 @@ export class CharacterParser {
                 i = this.parseBalloonSection(lines, i);
                 continue;
             }
+            if (line.startsWith("DefineAnimation")) {
+                i = this.parseAnimationSection(lines, i);
+                continue;
+            }
             if (line.startsWith("DefineState")) {
                 i = this.parseStateSection(lines, i);
                 continue;
@@ -59,16 +69,7 @@ export class CharacterParser {
     }
 
     private parseCharacterSection(lines: string[], i: number): number {
-        this.currentCharacter = {
-            infos: [],
-            guid: "",
-            width: 0,
-            height: 0,
-            transparency: 0,
-            defaultFrameDuration: 0,
-            style: CharacterStyle.None,
-            colorTable: ""
-        };
+        this.currentCharacter = this.currentAgent.character;
         i++;
 
         while (i < lines.length && lines[i].trim() !== "EndCharacter") {
@@ -124,7 +125,6 @@ export class CharacterParser {
             }
             i++;
         }
-        this.currentAgent.character = this.currentCharacter;
         return i;
     }
 
@@ -238,12 +238,9 @@ export class CharacterParser {
     private parseAnimationSection(lines: string[], i: number): number {
         const line = lines[i].trim();
         const match = line.match(/DefineAnimation\s+"([^"]+)"/);
-        if (!match) {
-            console.error(`Failed to match DefineAnimation at line ${i}: ${line}`);
-            return i;
-        }
+        if (!match) return i;
 
-        this.currentAnimation = {
+        const animation: Animation = {
             name: match[1],
             transitionType: 0,
             frames: []
@@ -256,21 +253,21 @@ export class CharacterParser {
 
             if (line.startsWith("TransitionType")) {
                 const value = line.split('=')[1].trim();
-                this.currentAnimation.transitionType = parseInt(value);
+                animation.transitionType = parseInt(value);
                 i++;
             } else if (line.startsWith("DefineFrame")) {
-                i = this.parseFrameSection(lines, i);
+                i = this.parseFrameSection(lines, i, animation);
             } else {
                 i++;
             }
         }
 
-        this.currentAgent.animations[this.currentAnimation.name] = this.currentAnimation;
+        this.currentAgent.animations[animation.name] = animation;
         return i;
     }
 
-    private parseFrameSection(lines: string[], i: number): number {
-        this.currentFrame = {
+    private parseFrameSection(lines: string[], i: number, animation: Animation): number {
+        const frame: FrameDefinition = {
             duration: 0,
             images: []
         };
@@ -281,30 +278,30 @@ export class CharacterParser {
 
             if (line.startsWith("Duration")) {
                 const value = line.split('=')[1].trim();
-                this.currentFrame.duration = parseInt(value);
+                frame.duration = parseInt(value);
                 i++;
             } else if (line.startsWith("ExitBranch")) {
                 const value = line.split('=')[1].trim();
-                this.currentFrame.exitBranch = parseInt(value);
+                frame.exitBranch = parseInt(value);
                 i++;
             } else if (line.startsWith("SoundEffect")) {
                 const value = line.split('=')[1].trim().replace(/^"|"$/g, '');
-                this.currentFrame.soundEffect = value;
+                frame.soundEffect = value;
                 i++;
             } else if (line.startsWith("DefineImage")) {
-                i = this.parseImageSection(lines, i);
+                i = this.parseImageSection(lines, i, frame);
             } else if (line.startsWith("DefineBranching")) {
-                i = this.parseBranchingSection(lines, i);
+                i = this.parseBranchingSection(lines, i, frame);
             } else {
                 i++;
             }
         }
 
-        this.currentAnimation.frames.push(this.currentFrame);
+        animation.frames.push(frame);
         return i;
     }
 
-    private parseImageSection(lines: string[], i: number): number {
+    private parseImageSection(lines: string[], i: number, frame: FrameDefinition): number {
         const image = {} as ImageDefinition;
         i++;
 
@@ -329,11 +326,11 @@ export class CharacterParser {
             }
             i++;
         }
-        this.currentFrame.images.push(image);
+        frame.images.push(image);
         return i;
     }
 
-    private parseBranchingSection(lines: string[], i: number): number {
+    private parseBranchingSection(lines: string[], i: number, frame: FrameDefinition): number {
         const branchingList: BranchingDefinition[] = [];
         let branching = {} as BranchingDefinition;
         i++;
@@ -360,7 +357,7 @@ export class CharacterParser {
             }
             i++;
         }
-        this.currentFrame.branching = branchingList;
+        frame.branching = branchingList;
         return i;
     }
 
