@@ -1,5 +1,5 @@
 import { Animation, FrameDefinition } from '../models/AgentCharacterDefinition';
-import { ISpriteManager } from './SpriteManager';
+import { ISpriteManager, DirectorySpriteManager } from './SpriteManager';
 
 export class AnimationManager {
     private currentAnimation: Animation | null = null;
@@ -23,6 +23,18 @@ export class AnimationManager {
         return this.currentFrameIndex;
     }
 
+    public get isAnimating(): boolean {
+        return this.currentAnimation !== null;
+    }
+
+    public setExiting(exiting: boolean): void {
+        this.isExiting = exiting;
+    }
+
+    public getIsExiting(): boolean {
+        return this.isExiting;
+    }
+
     public async playAnimation(animationName: string, useExitBranch: boolean = false): Promise<void> {
         if (this.animationCompleteResolver) {
             this.animationCompleteResolver(false);
@@ -32,6 +44,21 @@ export class AnimationManager {
         if (!animation) {
             console.error(`Animation ${animationName} not found`);
             return;
+        }
+
+        // Load sprites for this animation if they are not already loaded
+        if (this.spriteManager instanceof DirectorySpriteManager) {
+            const spriteFilenames = new Set<string>();
+            animation.frames.forEach(frame => {
+                frame.images.forEach(image => {
+                    spriteFilenames.add(image.filename);
+                });
+            });
+            try {
+                await (this.spriteManager as DirectorySpriteManager).loadSprites(Array.from(spriteFilenames));
+            } catch (e) {
+                console.warn(`Failed to load some sprites for animation ${animationName}`, e);
+            }
         }
 
         this.currentAnimation = animation;
@@ -106,7 +133,11 @@ export class AnimationManager {
         this.spriteManager.drawFrame(ctx, currentFrame, AnimationManager.Scale);
     }
 
-    public getSelectedAnimations(): string[] {
+    public getSelectableAnimations(): string[] {
         return Object.keys(this.animations).filter(name => !name.toLowerCase().startsWith('idle'));
+    }
+
+    public async interruptAndPlayAnimation(animationName: string): Promise<void> {
+        await this.playAnimation(animationName, false);
     }
 }

@@ -3,18 +3,25 @@ import { CharacterParser } from '../services/CharacterParser';
 import { AnimationManager } from './AnimationManager';
 import { DirectorySpriteManager } from './SpriteManager';
 import { AudioManager } from './AudioManager';
+import { StateManager } from './StateManager';
 
 export class Agent {
     private animationManager!: AnimationManager;
     private audioManager!: AudioManager;
+    private stateManager!: StateManager;
     private characterDefinition!: AgentCharacterDefinition;
 
     constructor(private canvas: HTMLCanvasElement) {}
 
     public async initialize(agentPath: string): Promise<void> {
-        const response = await fetch(`${agentPath}/agent.acd`);
+        let response = await fetch(`${agentPath}/agent.acd`);
         if (!response.ok) {
-            console.error(`Failed to fetch agent definition: ${response.statusText}`);
+            const agentName = agentPath.split('/').pop();
+            response = await fetch(`${agentPath}/${agentName}.acd`);
+        }
+
+        if (!response.ok) {
+            console.error(`Failed to fetch agent definition from ${agentPath}`);
             return;
         }
         const text = await response.text();
@@ -22,40 +29,81 @@ export class Agent {
         const parser = new CharacterParser();
         this.characterDefinition = parser.parseFromText(text);
 
-        const spriteManager = new DirectorySpriteManager(`${agentPath}/images`, this.characterDefinition.character);
+        // Robust path and asset detection
+        let imagesPath = `${agentPath}/images`;
+        let audioPath = `${agentPath}/audio`;
+
+        const colorTable = this.characterDefinition.character.colorTable;
+        // Clean up color table filename (handle Windows backslashes)
+        const cleanColorTable = colorTable.split(/[\\/]/).pop() || "";
+
+        const colorTableOptions = [
+            `${agentPath}/Images/${cleanColorTable}`,
+            `${agentPath}/images/${cleanColorTable}`,
+            `${agentPath}/Images/ColorTable.bmp`,
+            `${agentPath}/images/ColorTable.bmp`,
+            `${agentPath}/Images/0000.bmp`,
+            `${agentPath}/images/0000.bmp`
+        ];
+
+        let foundColorTable = false;
+        for (const option of colorTableOptions) {
+            try {
+                const res = await fetch(option);
+                if (res.ok) {
+                    imagesPath = option.substring(0, option.lastIndexOf('/'));
+                    const fileName = option.substring(option.lastIndexOf('/') + 1);
+                    this.characterDefinition.character.colorTable = fileName;
+                    foundColorTable = true;
+                    break;
+                }
+            } catch(e) {}
+        }
+
+        const spriteManager = new DirectorySpriteManager(imagesPath, this.characterDefinition.character);
 
         // Load the color table to get the transparency color
         const colorTableImg = new Image();
-        colorTableImg.src = `${agentPath}/images/${this.characterDefinition.character.colorTable}`;
+        colorTableImg.src = `${imagesPath}/${this.characterDefinition.character.colorTable}`;
+
         await new Promise<void>((resolve) => {
             colorTableImg.onload = () => {
-                const tempCanvas = document.createElement('canvas');
-                tempCanvas.width = colorTableImg.width;
-                tempCanvas.height = colorTableImg.height;
-                const tempCtx = tempCanvas.getContext('2d');
-                if (tempCtx) {
-                    tempCtx.drawImage(colorTableImg, 0, 0);
-                    // The transparency index is used to look up the color in the color table.
-                    // Assuming color table is a 1D or 2D array of colors.
-                    // For Microsoft Agent, it's often a small image where each pixel is a palette entry.
-                    const imageData = tempCtx.getImageData(this.characterDefinition.character.transparency, 0, 1, 1).data;
-                    spriteManager.setTransparencyColor(imageData[0], imageData[1], imageData[2]);
+                try {
+                    const tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = colorTableImg.width;
+                    tempCanvas.height = colorTableImg.height;
+                    const tempCtx = tempCanvas.getContext('2d');
+                    if (tempCtx) {
+                        tempCtx.drawImage(colorTableImg, 0, 0);
+                        const imageData = tempCtx.getImageData(this.characterDefinition.character.transparency, 0, 1, 1).data;
+                        spriteManager.setTransparencyColor(imageData[0], imageData[1], imageData[2]);
+                    }
+                } catch (e) {
+                    console.warn("Failed to process color table, using default pink transparency", e);
+                    spriteManager.setTransparencyColor(255, 0, 255);
                 }
                 resolve();
             };
             colorTableImg.onerror = () => {
-                console.warn("Failed to load color table, using default pink transparency");
-                // Magenta/Pink often used as transparency key
+                console.warn(`Failed to load color table image from ${colorTableImg.src}, using default pink transparency`);
                 spriteManager.setTransparencyColor(255, 0, 255);
                 resolve();
             };
         });
 
-        // In a real scenario, we'd list files. For demo, we might need a manifest or known files.
-        // For now, let's assume we know what to load or load on demand.
-        // To keep it simple, let's just load some if we had a list.
+        // Detect audio path
+        const audioOptions = [`${agentPath}/Audio`, `${agentPath}/audio`];
+        for (const option of audioOptions) {
+            try {
+                const res = await fetch(`${option}/`);
+                if (res.ok) {
+                    audioPath = option;
+                    break;
+                }
+            } catch(e) {}
+        }
 
-        this.audioManager = new AudioManager(`${agentPath}/audio`);
+        this.audioManager = new AudioManager(audioPath);
         this.animationManager = new AnimationManager(
             spriteManager,
             this.characterDefinition.animations,
@@ -66,9 +114,7 @@ export class Agent {
             }
         );
 
-        // Pre-load frames for demo
-        await spriteManager.loadSprites(['0001.bmp', '0002.bmp']);
-
+        this.stateManager = new StateManager(this.characterDefinition.states, this.animationManager);
         this.startLoop();
     }
 
@@ -97,12 +143,52 @@ export class Agent {
         }
     }
 
-    public async playAnimation(name: string): Promise<void> {
-        await this.animationManager.playAnimation(name);
+    public async playAnimation(name: string, timeoutMs?: number, stateName: string = ""): Promise<void> {
+        await this.stateManager.playAnimation(name, timeoutMs, stateName);
     }
 
     public getSelectableAnimations(): string[] {
-        return this.animationManager.getSelectedAnimations();
+        return this.animationManager.getSelectableAnimations();
+    }
+
+    public getAvailableStates(): string[] {
+        return this.stateManager.getAvailableStates();
+    }
+
+    public async setState(state: string): Promise<void> {
+        await this.stateManager.setState(state);
+    }
+
+    public async start(): Promise<void> {
+        await this.stateManager.setState("Playing");
+
+        // Try Greeting, then Show, then fallback
+        const anims = this.getSelectableAnimations();
+        if (anims.includes("Greeting")) {
+            await this.playAnimation("Greeting");
+        } else if (anims.includes("Show")) {
+            await this.playAnimation("Show");
+        }
+
+        const states = this.getAvailableStates();
+        if (states.includes("IdlingLevel1")) {
+            await this.stateManager.setState("IdlingLevel1");
+        } else if (states.length > 0) {
+            await this.stateManager.setState(states[0]);
+        }
+    }
+
+    public async stop(): Promise<void> {
+        await this.stateManager.playClosingAnimation();
+        this.stateManager.dispose();
+    }
+
+    public async playRandomAnimation(): Promise<void> {
+        await this.stateManager.playRandomAnimation();
+    }
+
+    public async handleVisibilityChange(isVisible: boolean): Promise<void> {
+        await this.stateManager.handleVisibilityChange(isVisible);
     }
 
     public get width(): number {

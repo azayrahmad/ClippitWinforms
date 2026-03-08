@@ -369,10 +369,8 @@ export class CharacterParser {
         const match = line.match(/DefineState\s+"([^"]+)"/);
         if (!match) return i;
 
-        this.currentState = {
-            name: match[1],
-            animations: []
-        };
+        const stateName = match[1];
+        const stateAnimations: string[] = [];
 
         i++;
 
@@ -380,12 +378,15 @@ export class CharacterParser {
             const line = lines[i].trim();
             const parts = line.split('=');
             if (parts.length >= 2 && parts[0].trim() === "Animation") {
-                this.currentState.animations.push(parts.slice(1).join('=').trim().replace(/^"|"$/g, ''));
+                stateAnimations.push(parts.slice(1).join('=').trim().replace(/^"|"$/g, ''));
             }
             i++;
         }
 
-        this.currentAgent.states[this.currentState.name] = this.currentState;
+        this.currentAgent.states[stateName] = {
+            name: stateName,
+            animations: stateAnimations
+        };
         return i;
     }
 

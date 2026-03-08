@@ -25,20 +25,28 @@ export class DirectorySpriteManager implements ISpriteManager {
         // For simplicity, this should be called before loadSprites.
     }
 
-    public async loadSprites(filenames: string[]): Promise<void> {
-        const promises = filenames.map(filename => {
-            return new Promise<void>((resolve, reject) => {
-                const img = new Image();
-                img.onload = () => {
-                    const frameNumber = parseInt(filename.split('.')[0]);
-                    const processedImg = this.processTransparency(img);
-                    this.sprites.set(frameNumber, processedImg);
-                    resolve();
-                };
-                img.onerror = reject;
-                img.src = `${this.directoryPath}/${filename}`;
-            });
+    public async loadSprite(fullFilename: string): Promise<void> {
+        const filename = fullFilename.split(/[\\/]/).pop() || "";
+        const frameNumber = parseInt(filename.split('.')[0]);
+        if (this.sprites.has(frameNumber)) return;
+
+        return new Promise<void>((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => {
+                const processedImg = this.processTransparency(img);
+                this.sprites.set(frameNumber, processedImg);
+                resolve();
+            };
+            img.onerror = (e) => {
+                console.error(`Failed to load sprite: ${filename} from ${this.directoryPath}`);
+                reject(e);
+            };
+            img.src = `${this.directoryPath}/${filename}`;
         });
+    }
+
+    public async loadSprites(filenames: string[]): Promise<void> {
+        const promises = filenames.map(filename => this.loadSprite(filename));
         await Promise.all(promises);
     }
 
@@ -74,26 +82,24 @@ export class DirectorySpriteManager implements ISpriteManager {
 
     public drawFrame(ctx: CanvasRenderingContext2D, frame: FrameDefinition, scale: number): void {
         if (frame.images && frame.images.length > 0) {
-            for (let i = frame.images.length - 1; i >= 0; i--) {
+            // Match C# rendering order (first image is bottom-most)
+            for (let i = 0; i < frame.images.length; i++) {
                 const imageDef = frame.images[i];
-                const frameNumber = parseInt(imageDef.filename.split('.')[0]);
+                // Handle both "Images\0001.bmp" and "0001.bmp"
+                const filename = imageDef.filename.split(/[\\/]/).pop() || "";
+                const frameNumber = parseInt(filename.split('.')[0]);
                 const sprite = this.sprites.get(frameNumber);
 
                 if (sprite) {
-                    // Use a temporary canvas to scale if needed, or draw directly
                     const destX = imageDef.offsetX * scale;
                     const destY = imageDef.offsetY * scale;
                     const destW = this.width * scale;
                     const destH = this.height * scale;
 
-                    // If the sprite is larger than the character dimensions, it's likely a sprite sheet.
-                    // But in DirectorySpriteManager, each 'frameNumber' maps to one file.
-                    // The issue in the demo was that I used the full map.png as 0001.bmp.
-
                     ctx.drawImage(
                         sprite,
-                        0, 0, this.width, this.height, // Source: assume file contains one frame
-                        destX, destY, destW, destH     // Destination
+                        0, 0, this.width, this.height,
+                        destX, destY, destW, destH
                     );
                 }
             }

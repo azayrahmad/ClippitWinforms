@@ -20,8 +20,17 @@ export class AudioManager {
         await Promise.all(promises);
     }
 
-    public playFrameSound(soundName: string): void {
-        const audio = this.audioCache.get(soundName) || this.audioCache.get(`${soundName}.wav`);
+    public playFrameSound(soundPath: string): void {
+        const soundName = soundPath.split(/[\\/]/).pop() || "";
+        let audio = this.audioCache.get(soundName) || this.audioCache.get(`${soundName}.wav`);
+
+        if (!audio) {
+            // Try to load on demand if not cached
+            const filename = soundName.toLowerCase().endsWith('.wav') ? soundName : `${soundName}.wav`;
+            audio = new Audio(`${this.audioPath}/${filename}`);
+            this.audioCache.set(soundName, audio);
+        }
+
         if (audio) {
             audio.currentTime = 0;
             audio.play().catch(e => console.warn("Audio play failed", e));
