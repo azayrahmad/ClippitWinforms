@@ -14,45 +14,72 @@ export class Agent {
     constructor(private canvas: HTMLCanvasElement) {}
 
     public async initialize(agentPath: string): Promise<void> {
-        let response = await fetch(`${agentPath}/agent.acd`);
-        if (!response.ok) {
-            const agentName = agentPath.split('/').pop();
-            response = await fetch(`${agentPath}/${agentName}.acd`);
+        // Handle trailing slashes in agentPath
+        const normalizedPath = agentPath.replace(/\/$/, "");
+        const agentName = normalizedPath.split('/').pop() || "agent";
+        console.log(`Initializing agent ${agentName} at ${normalizedPath}`);
+
+        const tryPaths = [
+            `${normalizedPath}/${agentName.toUpperCase()}.acd`,
+            `${normalizedPath}/${agentName}.acd`,
+            `${normalizedPath}/agent.acd`
+        ];
+
+        let response: Response | null = null;
+        for (const path of tryPaths) {
+            console.log(`Trying to fetch ACD from ${path}`);
+            const res = await fetch(path);
+            if (res.ok) {
+                // Double check it's not HTML (Vite fallback)
+                const text = await res.clone().text();
+                if (!text.trim().startsWith("<!DOCTYPE html>")) {
+                    response = res;
+                    console.log(`Found ACD at ${path}`);
+                    break;
+                } else {
+                    console.log(`Fetch returned HTML instead of ACD at ${path}`);
+                }
+            }
         }
 
-        if (!response.ok) {
-            console.error(`Failed to fetch agent definition from ${agentPath}`);
+        if (!response || !response.ok) {
+            console.error(`Failed to fetch agent definition from ${normalizedPath}`);
             return;
         }
-        const text = await response.text();
+        const buffer = await response.arrayBuffer();
+        const decoder = new TextDecoder('windows-1252');
+        const text = decoder.decode(buffer);
 
         const parser = new CharacterParser();
         this.characterDefinition = parser.parseFromText(text);
 
         // Robust path and asset detection
-        let imagesPath = `${agentPath}/images`;
-        let audioPath = `${agentPath}/audio`;
+        let imagesPath = `${normalizedPath}/images`;
+        let audioPath = `${normalizedPath}/audio`;
 
         const colorTable = this.characterDefinition.character.colorTable || "ColorTable.bmp";
         const cleanColorTable = colorTable.split(/[\\/]/).pop() || "ColorTable.bmp";
 
         const colorTableOptions = [
-            `${agentPath}/Images/${cleanColorTable}`,
-            `${agentPath}/images/${cleanColorTable}`,
-            `${agentPath}/Images/ColorTable.bmp`,
-            `${agentPath}/images/ColorTable.bmp`,
-            `${agentPath}/Images/0000.bmp`,
-            `${agentPath}/images/0000.bmp`
+            `${normalizedPath}/Images/${cleanColorTable}`,
+            `${normalizedPath}/images/${cleanColorTable}`,
+            `${normalizedPath}/Images/ColorTable.bmp`,
+            `${normalizedPath}/images/ColorTable.bmp`,
+            `${normalizedPath}/Images/0000.bmp`,
+            `${normalizedPath}/images/0000.bmp`
         ];
 
         for (const option of colorTableOptions) {
             try {
                 const res = await fetch(option);
                 if (res.ok) {
-                    imagesPath = option.substring(0, option.lastIndexOf('/'));
-                    const fileName = option.substring(option.lastIndexOf('/') + 1);
-                    this.characterDefinition.character.colorTable = fileName;
-                    break;
+                    const text = await res.clone().text();
+                    if (!text.trim().startsWith("<!DOCTYPE html>")) {
+                        imagesPath = option.substring(0, option.lastIndexOf('/'));
+                        const fileName = option.substring(option.lastIndexOf('/') + 1);
+                        this.characterDefinition.character.colorTable = fileName;
+                        break;
+                    }
                 }
             } catch(e) {}
         }
@@ -89,21 +116,16 @@ export class Agent {
         });
 
         // Detect audio path
-        const audioOptions = [`${agentPath}/Audio`, `${agentPath}/audio`];
+        const audioOptions = [`${normalizedPath}/Audio`, `${normalizedPath}/audio`];
         for (const option of audioOptions) {
             try {
-                // Some agents might not have 0000.wav, let's just check if we can fetch the directory (some servers allow this)
-                // or check for a common file.
-                const res = await fetch(`${option}/`);
-                if (res.ok) {
-                    audioPath = option;
-                    break;
-                }
-                // Fallback: check for a common wav
                 const resWav = await fetch(`${option}/0001.wav`);
                 if (resWav.ok) {
-                    audioPath = option;
-                    break;
+                    const text = await resWav.clone().text();
+                    if (!text.trim().startsWith("<!DOCTYPE html>")) {
+                        audioPath = option;
+                        break;
+                    }
                 }
             } catch(e) {}
         }
@@ -167,7 +189,6 @@ export class Agent {
     public async start(): Promise<void> {
         await this.stateManager.setState("Playing");
 
-        // Try Greeting, then Show, then fallback
         const anims = this.getSelectableAnimations();
         if (anims.includes("Greeting")) {
             await this.playAnimation("Greeting");

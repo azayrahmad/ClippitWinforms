@@ -17,8 +17,13 @@ export class CharacterParser {
     private currentLanguageInfo: Info | null = null;
 
     public parseFromText(text: string): AgentCharacterDefinition {
+        // Character definitions can be large, and sometimes contain binary or non-UTF8 data.
+        // We split by lines but handle each line carefully.
         const lines = text.split(/\r?\n/);
-        return this.parseFromLines(lines);
+        console.log(`Parsing ACD file with ${lines.length} lines`);
+        const result = this.parseFromLines(lines);
+        console.log(`Parsed ${Object.keys(result.animations).length} animations and ${Object.keys(result.states).length} states`);
+        return result;
     }
 
     private parseFromLines(lines: string[]): AgentCharacterDefinition {
@@ -38,8 +43,10 @@ export class CharacterParser {
             states: {}
         };
 
+        console.log(`Starting parse of ${lines.length} lines`);
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i].trim();
+            if (i < 10) console.log(`Line ${i}: [${line}]`);
 
             if (!line || line.startsWith("//"))
                 continue;
@@ -50,6 +57,14 @@ export class CharacterParser {
             }
             if (line.startsWith("DefineBalloon")) {
                 i = this.parseBalloonSection(lines, i);
+                continue;
+            }
+            if (line.startsWith("DefineAnimation")) {
+                i = this.parseAnimationSection(lines, i);
+                continue;
+            }
+            if (line.startsWith("DefineState")) {
+                i = this.parseStateSection(lines, i);
                 continue;
             }
             if (line.startsWith("DefineAnimation")) {

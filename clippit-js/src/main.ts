@@ -17,7 +17,9 @@ async function loadAgent(agentName: string) {
   statusText.innerText = `Status: Loading ${agentName}...`;
 
   try {
-    await agent.initialize(`/agents/${agentName}`);
+    // Avoid trailing slash to ensure correct agentName extraction in initialize
+    const path = `/agents/${agentName}`.replace(/\/$/, "");
+    await agent.initialize(path);
 
     // Set canvas size based on agent size
     canvas.width = agent.width;
