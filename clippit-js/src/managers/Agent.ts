@@ -66,8 +66,16 @@ export class Agent {
             }
         );
 
-        // Pre-load frames for demo
-        await spriteManager.loadSprites(['0001.bmp', '0002.bmp']);
+        // Pre-load all frames
+        const allFilenames = new Set<string>();
+        Object.values(this.characterDefinition.animations).forEach(anim => {
+            anim.frames.forEach(frame => {
+                frame.images.forEach(img => {
+                    allFilenames.add(img.filename);
+                });
+            });
+        });
+        await spriteManager.loadSprites(Array.from(allFilenames));
 
         this.startLoop();
     }

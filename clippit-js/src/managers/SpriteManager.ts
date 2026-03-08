@@ -74,7 +74,7 @@ export class DirectorySpriteManager implements ISpriteManager {
 
     public drawFrame(ctx: CanvasRenderingContext2D, frame: FrameDefinition, scale: number): void {
         if (frame.images && frame.images.length > 0) {
-            for (let i = frame.images.length - 1; i >= 0; i--) {
+            for (let i = 0; i < frame.images.length; i++) {
                 const imageDef = frame.images[i];
                 const frameNumber = parseInt(imageDef.filename.split('.')[0]);
                 const sprite = this.sprites.get(frameNumber);
