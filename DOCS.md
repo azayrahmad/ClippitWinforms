@@ -1,6 +1,6 @@
 # Clippit Agent Logic Documentation
 
-This document provides a high-level overview of the logic and data structures used in the `ClippitWinforms` project, intended to assist in converting the project to Vite/TypeScript.
+This document provides a high-level overview of the logic and data structures used in the `ClippitWinforms` project, intended to assist in converting the project to a **Vite/TypeScript Library**.
 
 ## Overview
 
@@ -88,12 +88,15 @@ The main coordinator that brings all managers together.
 
 ---
 
-## Logic Flow for Conversion
+## Logic Flow for Conversion (Library Focus)
 
-1.  **Parsing**: Implement a parser for the `.acd` format or convert the `.acd` to JSON during the build step.
+1.  **Parsing**: Implement a parser for the `.acd` format. As a library, it should ideally fetch the `.acd` file at runtime and parse it, allowing for dynamic loading of different agents.
 2.  **Asset Pipeline**:
-    - Convert `.bmp` images to a web-friendly format (PNG or SVG) or handle BMP loading in JS.
-    - Extract the transparency color from the palette and apply it (e.g., using a Canvas or CSS masking).
-3.  **Rendering**: Use the HTML5 `<canvas>` API. Implement a render loop (using `requestAnimationFrame`) that calls the animation update logic.
-4.  **State Machine**: Port the `StateManager` logic, using `setTimeout` or `setInterval` for the idle ticks.
-5.  **Branching**: Ensure the random branching logic is preserved for "natural" feeling animations.
+    - Handle `.bmp` loading in JS (browsers often struggle with indexed bitmaps).
+    - Dynamically apply transparency by reading the palette from the color table.
+3.  **Encapsulation**:
+    - The `Agent` should manage its own `<canvas>` element.
+    - Avoid global styles; use specific classes or inline styles for positioning.
+4.  **API**: Provide a clean JS/TS API for host pages: `agent.load()`, `agent.play()`, etc.
+5.  **Rendering**: Use the HTML5 `<canvas>` API with `image-rendering: pixelated` for that classic look.
+6.  **State Machine**: Port the `StateManager` logic, ensuring it can be paused or reset.
