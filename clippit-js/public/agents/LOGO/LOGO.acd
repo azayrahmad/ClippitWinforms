@@ -1,0 +1,7395 @@
+//-------------------------------------------------------------------//
+//
+//	Microsoft Agent Character Description
+//
+//	Character Version 2.1
+//	Copyright (c) 1996-98, Microsoft Corporation
+//
+//-------------------------------------------------------------------//
+
+DefineCharacter
+
+	DefineInfo 0x0401
+		Name = "‘⁄«— Office"
+		Description = "Ì⁄ÿÌﬂ ‘⁄«— Office «·„”«⁄œ… „’«Õ»… »œÊ—… »”Ìÿ… ·√Ã“«∆Â «·„·Ê‰…."
+		ExtraData = "«‰ﬁ— ›Êﬁ ‘⁄«— Office ﬂ·„« «Õ Ã  ≈·Ï „”«⁄œ….^^Â–« ÂÊ  –ﬂÌ—ﬂ."
+	EndInfo
+
+	DefineInfo 0x0404
+		Name = "Office ´˜πœ"
+		Description = "Office ´˜πœ∑|ßQ•Œ¬≤≥Ê™∫§Ë∂Ù±€¬‡§Ë¶°¥£®—±z•≤≠n™∫ª°©˙°C"
+		ExtraData = "∑Ì±zª›≠n®ÛßUÆ…°A•u≠n´ˆ§@§U Office ´˜πœßY•i°C^^±z™∫¥£•‹¶b≥o®‡°I"
+	EndInfo
+
+	DefineInfo 0x0405
+		Name = "Logo Office"
+		Description = "P¯i poskytov·nÌ n·povÏdy je Logo Office velice klidnÈ. Nebude proto rozptylovat vaöi soust¯edÏnost na pr·ci."
+		ExtraData = "KlepnÏte na Logo Office kdykoliv budete pot¯ebovat poradit.^^A je to tady."
+	EndInfo
+
+	DefineInfo 0x0406
+		Name = "Office-logoet"
+		Description = "Office-logoet giver dig hjÊlp uden andre effekter end de farvede elementer, der drejer rundt. Det vil ikke forstyrre dig i dit arbejde."
+		ExtraData = "Klik pÂ Office-logoet, nÂr du har brug for hjÊlp.^^Her er pÂmindelsen."
+	EndInfo
+
+	DefineInfo 0x0407
+		Name = "Office Logo"
+		Description = "Das Office-Logo mit seinen sich drehenden, farbigen Puzzleteilen begleitet Sie durch Ihre t‰glichen Aufgaben, ohne Sie von Ihrer Arbeit abzulenken."
+		ExtraData = "Wenn Sie Hilfe brauchen, klicken Sie auf das Office-Logo.^^Laut Terminplan:"
+	EndInfo
+
+	DefineInfo 0x0408
+		Name = "ÀÔ„¸ÙıÔ ÙÔı Office"
+		Description = "‘Ô ÀÔ„¸ÙıÔ ÙÔı Office Û‹Ú ÒÔÛˆ›ÒÂÈ ÙÁ ‚ÔﬁËÂÈ‹ ÙÔı, Ï·Êﬂ ÏÂ ÏÈ· ·Îﬁ ÂÒÈÛÙÒÔˆﬁ Ù˘Ì ˜Ò˘Ï·ÙÈÛÙ˛Ì ÙÏÁÏ‹Ù˘Ì ÙÔı. ƒÂÌ Ë· Û·Ú ·ÔÛ‹ ÙÁÌ ÒÔÛÔ˜ﬁ Í·Ë˛Ú Ë· ˆÒÔÌÙﬂÊÂÙÂ ÙÁÌ ÂÒ„·Ûﬂ· Û·Ú."
+		ExtraData = "ºÔÙÂ ˜ÒÂÈ‹ÊÂÛÙÂ ‚ÔﬁËÂÈ·, Í‹ÌÂÙÂ ÍÎÈÍ ÛÙÔ ÀÔ„¸ÙıÔ ÙÔı Office.^^¡ıÙﬁ ÂﬂÌ·È Á ıÂÌË˝ÏÈÛﬁ Û·Ú."
+	EndInfo
+
+	DefineInfo 0x0009
+		Name = "Office Logo"
+		Description = "The Office Logo gives you help accompanied by a simple spin of its colored pieces."
+		ExtraData = "Click the Office Logo whenever you need help.^^Here's your reminder."
+	EndInfo
+
+	DefineInfo 0x040B
+		Name = "Office-logo"
+		Description = "V‰rik‰s Office-logo auttaa sovittamaan palaset yhteen."
+		ExtraData = "Kun tarvitset ohjeita, napsauta Office-logoa.^^Muistin virkist‰miseksi."
+	EndInfo
+
+	DefineInfo 0x040C
+		Name = "Logo Office"
+		Description = "Le logo Office n'a pas beaucoup de personnalitÈ, mais il sera un compagnon idÈal si vous ne voulez pas Ítre perturbÈ pendant votre travail."
+		ExtraData = "¿ chaque fois que vous avez besoin d'aide, cliquez sur le Logo Office.†^^Voici votre rappel."
+	EndInfo
+
+	DefineInfo 0x040D
+		Name = "ÒÓÏ Office"
+		Description = "ÒÓÏ Office ÓÒÙ˜ ÏÍ ÚÊ¯‰ ˙ÂÍ ÒÈ·Â· Ù˘ÂË ˘Ï ‰ÁÏ˜ÈÌ ‰ˆ·ÚÂÈÈÌ ˘ÏÂ."
+		ExtraData = "ÏÁı ÚÏ ÒÓÏ Office ·ÎÏ ÙÚÌ ˘‡˙‰ Ê˜Â˜ ÏÚÊ¯‰.^^‰‰ ‰˙ÊÎÂ¯˙ ˘ÏÍ."
+	EndInfo
+
+	DefineInfo 0x040E
+		Name = "Office EmblÈma"
+		Description = "Office EmblÈma - a megfontolt Ès komoly dˆntÈshozÛk segÌtıt·rsa."
+		ExtraData = "Kattintson az Office EmblÈm·ra, ha segÌtsÈgre van sz¸ksÈge.^^EmlÈkeztetı."
+	EndInfo
+
+	DefineInfo 0x0410
+		Name = "Logo Office animato"
+		Description = "Il logo Office animato vi aiuter‡ mentre gira su se stesso."
+		ExtraData = "Fare clic sul logo Office animato ogni volta che si desidera il suo aiuto.^^Promemoria."
+	EndInfo
+
+	DefineInfo 0x0411
+		Name = "Office ÉçÉS"
+		Description = "Ç≠ÇÈÇ≠ÇÈâÒì]ÇµÇ»Ç™ÇÁÅAïKóvÇ»ÉwÉãÉvÇíTÇµÇ‹Ç∑ÅB"
+		ExtraData = "ÉwÉãÉvÇéQè∆ÇµÇΩÇ¢Ç∆Ç´ÇÕÅAÉçÉSÇÉNÉäÉbÉNÇµÇƒÇ≠ÇæÇ≥Ç¢ÅB^^évÇ¢èoÇµÇΩÅH"
+	EndInfo
+
+	DefineInfo 0x0412
+		Name = "Office ∑Œ∞Ì"
+		Description = "¡∂∞¢¿∏∑Œ ∏∏µÈæÓ¡¯ Office ∑Œ∞Ì∞° ø∑ø°º≠ µµøÕ µÂ∏≥¥œ¥Ÿ."
+		ExtraData = "µµøÚ¿Ã « ø‰«“ ∂ß∏È Office ∑Œ∞Ì∏¶ ¥≠∑Ø¡÷ººø‰.^^¥Ÿ¿Ω¿ª ±‚æÔ«œΩ√¡ˆø‰?"
+	EndInfo
+
+	DefineInfo 0x0413
+		Name = "Office Logo"
+		Description = "Het Office Logo helpt u met een eenvoudige draai van zijn gekleurde puzzelstukjes. Het leidt u niet af terwijl u orde op zaken stelt."
+		ExtraData = "Klik op Office Logo als u hulp nodig hebt.^^Hier is uw herinnering."
+	EndInfo
+
+	DefineInfo 0x0414
+		Name = "Office-logo"
+		Description = "Den fargesprakende Office-logoen spinner rundt og hjelper deg, men den forstyrrer deg ikke i arbeidet."
+		ExtraData = "Klikk Office-logoen nÂr du trenger hjelp.^^Her er pÂminnelsen."
+	EndInfo
+
+	DefineInfo 0x0415
+		Name = "Logo Office"
+		Description = "Logo Office wesprze CiÍ w kalejdoskopie swych barwnych elementÛw. Nie przeszkodzi Ci to w skutecznej pracy."
+		ExtraData = "Kliknij logo Office zawsze, kiedy bÍdziesz potrzebowaÊ pomocy.^^Oto Twoje przypomnienie:"
+	EndInfo
+
+	DefineInfo 0x0416
+		Name = "Office Logo"
+		Description = "Mesmo brincando com as suas cores, o Office Logo oferece ajuda sem distraÌ-lo."
+		ExtraData = "Sempre que precisar, clique no Office Logo.^^Aqui est· o seu lembrete."
+	EndInfo
+
+	DefineInfo 0x0418
+		Name = "Sigla Office"
+		Description = "Sigla Office v„ ofer„ ajutor Ómpreun„ cu o simpl„ rotire a pieselor ei colorate."
+		ExtraData = "Face˛i clic pe sigla Office ori de c‚te ori ave˛i nevoie de ajutor.^^Iat„ memento-ul."
+	EndInfo
+
+	DefineInfo 0x0419
+		Name = "›Ï·ÎÂÏ‡ Office"
+		Description = "›Ï·ÎÂÏ‡ Office ÒÓÔÓ‚ÓÊ‰‡ÂÚ ‚˚‰‡˜Û ÒÔ‡‚ÍË Ë„ÓÈ ˆ‚ÂÚÌ˚ÏË ‰ÂÚ‡Î¸Í‡ÏË."
+		ExtraData = " ‡Í ÚÓÎ¸ÍÓ ‚‡Ï ÔÓÌ‡‰Ó·ËÚÒˇ ÒÔ‡‚Í‡, ˘ÂÎÍÌËÚÂ ˝Ï·ÎÂÏÛ Office.^^Õ‡ÔÓÏËÌ‡ÌËÂ."
+	EndInfo
+
+	DefineInfo 0x041A
+		Name = "Office Logo"
+		Description = "Office Logo pomaûe vam uz pratnju jednostavne vrtnje svojih obojenih dijelova."
+		ExtraData = "Pritisnite Office Logo kad god vam zatreba pomoÊ.^^Ovdje je vaö podsjetnik."
+	EndInfo
+
+	DefineInfo 0x041B
+		Name = "Logo Office"
+		Description = "Logo Office v·m pomÙûe jednoduch˝m otoËenÌm svojich farebn˝ch ËastÌ a nebude odv·dzaù vaöu pozornosù od pr·ce."
+		ExtraData = "Kliknite na logo Office vûdy keÔ budete potrebovaù poradiù.^^Tak a je to tu."
+	EndInfo
+
+	DefineInfo 0x041D
+		Name = "Office-logon"
+		Description = "Office-logon ger dig hj‰lp, ackompanjerad av en stilla piruett. "
+		ExtraData = "Klicka pÂ Office-logon n‰r du behˆver hj‰lp.^^H‰r ‰r din pÂminnelse."
+	EndInfo
+
+	DefineInfo 0x041E
+		Name = "Office ‚≈‚°"
+		Description = "Office ‚≈‚° ®–„ÀÈ§«“¡™Ë«¬‡À≈◊Õ·°Ë§ÿ≥ æ√ÈÕ¡°—∫°“√À¡ÿπ√Õ∫µ—«‡Õß"
+		ExtraData = "§≈‘°∑’Ë Office ‚≈‚° ‡¡◊ËÕ‰√°Áµ“¡∑’Ë§ÿ≥µÈÕß°“√§«“¡™Ë«¬‡À≈◊Õ^^π’Ë§◊Õµ—«‡µ◊Õπ¢Õß§ÿ≥"
+	EndInfo
+
+	DefineInfo 0x041F
+		Name = "Office Logo"
+		Description = "Office Logo, renkli parÁalar˝n˝ ˝˛˝ldatarak size yard˝m eder."
+		ExtraData = "Yard˝ma gerek duyduunuzda Office Logo'yu t˝klat˝n.^^›˛te an˝msat˝c˝n˝z."
+	EndInfo
+
+	DefineInfo 0x0424
+		Name = "Officeov logotip"
+		Description = "PomoË Officeovega logotipa spremlja vrtenje njegovih delov."
+		ExtraData = "Ko potrebujete pomoË, kliknite Officeov logotip.^^Tukaj je vaö opomin."
+	EndInfo
+
+	DefineInfo 0x042D
+		Name = "Office Logo"
+		Description = "Bere kolorezko piezek buelta ematearekin batera, Office Logo-k laguntza ematen dizu."
+		ExtraData = "Klik egin Office Logo-n laguntza behar duzun guztietan.^^Hemen duzu gogorarazlea."
+	EndInfo
+
+	DefineInfo 0x0804
+		Name = "∆ﬂ«…∞Â"
+		Description = "°∞∆ﬂ«…∞Â°±≤ªΩˆƒ‹Œ™ƒ˙Ã·π©∞Ô÷˙£¨ªπª·“‘∆‰ÁÕ∑◊µƒ…´≤ ¿¥œÚƒ˙Ï≈“´À˝√¿¿ˆµƒ…Ì◊À°£"
+		ExtraData = "»Áπ˚ƒ˙–Ë“™∞Ô÷˙£¨æÕµ•ª˜°∞∆ﬂ«…∞Â°±∞…°£^^œ÷‘⁄Ã·–—ƒ˙“ªœ¬°£"
+	EndInfo
+
+	DefineInfo 0x0816
+		Name = "LogÛtipo do Office"
+		Description = "O LogÛtipo do Office fornece ajuda acompanhada de uma simples rotaÁ„o das suas peÁas coloridas."
+		ExtraData = "FaÁa clique sobre o LogÛtipo do Office para obter ajuda.^^Aqui est· o seu lembrete."
+	EndInfo
+
+	DefineInfo 0x0C0A
+		Name = "Logotipo de Office"
+		Description = "El Logotipo de Office le ayudar· al tiempo que gira sus piezas de colores."
+		ExtraData = "Haga clic en el logotipo de Office cuando necesite ayuda.^^Esto es un aviso."
+	EndInfo
+
+	GUID = {CBEA79A1-9670-11D1-84B9-004033E0B089}
+	Width = 124
+	Height = 93
+	Transparency = 253
+	DefaultFrameDuration = 10
+	Style = AXS_VOICE_NONE | AXS_BALLOON_ROUNDRECT
+	ColorTable = "Images\ColorTable.bmp"
+
+EndCharacter
+
+//-------------------------------------------------------------------//
+
+DefineBalloon
+	NumLines = 2
+	CharsPerLine = 28
+	FontName = "MS Sans Serif"
+	FontHeight = 13
+	ForeColor = 00000000
+	BackColor = 00e1ffff
+	BorderColor = 00000000
+EndBalloon
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "Show"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 10
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0000.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0001.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0002.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0003.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0004.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0005.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0006.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0007.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0008.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0009.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0010.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 14
+		DefineImage
+			Filename = "Images\0011.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "Hide"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0011.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0010.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0009.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0008.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0007.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0006.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0005.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0004.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0003.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0002.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0001.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 14
+		DefineImage
+			Filename = "Images\0000.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "RestPose"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "Greeting"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 10
+		SoundEffect = "Audio\0000.wav"
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0000.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		SoundEffect = "Audio\0001.wav"
+		DefineImage
+			Filename = "Images\0001.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0002.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0003.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0004.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0005.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0006.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0007.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0008.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0009.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0010.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0011.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0013.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0014.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0015.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0016.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0017.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0018.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0019.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0020.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0021.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0022.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0023.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0024.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0025.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0026.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0027.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0028.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0029.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0030.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0031.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0032.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0033.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0034.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0035.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0036.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0037.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0038.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0039.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0040.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0041.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0042.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0043.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0044.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0045.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0046.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0047.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0048.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0049.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0050.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0051.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0052.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0053.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0054.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0055.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0056.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0057.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0058.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0059.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0060.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0061.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0062.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0063.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0064.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0065.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0066.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0067.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0068.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0069.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0070.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 74
+		DefineImage
+			Filename = "Images\0071.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "Save"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 10
+		SoundEffect = "Audio\0000.wav"
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		SoundEffect = "Audio\0002.wav"
+		DefineImage
+			Filename = "Images\0072.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0073.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0074.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0075.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0076.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0077.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0078.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0079.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0080.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0081.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0082.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0083.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0084.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0085.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0086.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0087.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0088.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0089.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 21
+		DefineBranching
+			BranchTo = 7
+			Probability = 100
+		EndBranching
+		DefineImage
+			Filename = "Images\0090.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0091.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0092.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0093.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0094.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0095.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0096.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0097.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0098.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0099.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0100.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0101.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0102.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0103.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0104.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0105.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0106.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0107.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0108.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0109.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		SoundEffect = "Audio\0001.wav"
+		DefineImage
+			Filename = "Images\0110.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0111.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0112.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0113.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0114.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0115.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0116.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0117.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0118.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0119.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0120.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 52
+		DefineImage
+			Filename = "Images\0121.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0122.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "Goodbye"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 10
+		SoundEffect = "Audio\0000.wav"
+		DefineBranching
+			BranchTo = 43
+			Probability = 50
+		EndBranching
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0123.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		SoundEffect = "Audio\0002.wav"
+		DefineImage
+			Filename = "Images\0072.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0073.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0074.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0075.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0076.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0077.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0078.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0079.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0080.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0081.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0082.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0083.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0084.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0085.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0086.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0087.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0088.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0089.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0090.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0091.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0092.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0093.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0094.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0095.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0096.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0097.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0098.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0099.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0100.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0101.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0102.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0103.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0104.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0105.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0106.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0107.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0108.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0109.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		SoundEffect = "Audio\0001.wav"
+		DefineImage
+			Filename = "Images\0110.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineBranching
+			BranchTo = 102
+			Probability = 100
+		EndBranching
+		DefineImage
+			Filename = "Images\0124.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0013.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0014.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0015.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0016.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0017.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0018.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0019.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0020.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0021.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0022.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0023.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0024.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0025.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0026.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0027.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0028.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0029.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0030.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0031.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0032.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0033.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0034.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0035.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0036.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0037.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0038.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0039.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0040.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0041.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0042.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0043.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0044.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0045.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0046.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0047.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0048.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0049.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0050.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0051.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0052.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0053.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0054.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0055.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0056.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0057.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0058.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0059.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0060.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0061.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0062.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0063.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0064.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0065.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0066.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0067.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0068.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0069.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		SoundEffect = "Audio\0001.wav"
+		DefineImage
+			Filename = "Images\0070.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0071.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0011.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0010.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0009.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0008.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0007.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0006.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0005.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0004.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0003.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0002.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0001.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 115
+		DefineImage
+			Filename = "Images\0000.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "Idle1_1"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 50
+		ExitBranch = 2
+		DefineBranching
+			BranchTo = 1
+			Probability = 90
+			BranchTo = 60
+			Probability = 9
+		EndBranching
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0014.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 9
+		DefineImage
+			Filename = "Images\0015.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0016.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0017.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0018.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0019.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0020.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 15
+		DefineImage
+			Filename = "Images\0021.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0022.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0023.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0024.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0025.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0026.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 21
+		DefineImage
+			Filename = "Images\0027.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0028.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0029.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0030.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0031.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0032.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 27
+		DefineImage
+			Filename = "Images\0033.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0034.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0035.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0036.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0037.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0038.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 33
+		DefineImage
+			Filename = "Images\0039.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0040.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0041.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0042.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0043.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0044.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 39
+		DefineImage
+			Filename = "Images\0045.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0046.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0047.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0048.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0049.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0050.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 45
+		DefineImage
+			Filename = "Images\0051.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0052.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0053.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0054.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0055.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0056.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 51
+		DefineImage
+			Filename = "Images\0057.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0058.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0059.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0060.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0061.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0062.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 57
+		DefineImage
+			Filename = "Images\0063.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0064.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0065.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0066.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0067.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0068.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 60
+		DefineImage
+			Filename = "Images\0069.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0070.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 60
+		DefineImage
+			Filename = "Images\0071.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "Idle2"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 10
+		ExitBranch = 3
+		DefineBranching
+			BranchTo = 1
+			Probability = 90
+			BranchTo = 23
+			Probability = 7
+		EndBranching
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 0
+		DefineImage
+			Filename = "Images\0111.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0125.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 0
+		DefineImage
+			Filename = "Images\0112.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0126.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 0
+		DefineImage
+			Filename = "Images\0113.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0127.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 0
+		DefineImage
+			Filename = "Images\0114.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0128.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 0
+		DefineImage
+			Filename = "Images\0115.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0129.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 0
+		DefineImage
+			Filename = "Images\0116.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0130.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 0
+		DefineImage
+			Filename = "Images\0117.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0131.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 0
+		DefineImage
+			Filename = "Images\0118.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0132.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 0
+		DefineImage
+			Filename = "Images\0119.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0120.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0133.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0134.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 23
+		DefineImage
+			Filename = "Images\0135.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "Explain"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0111.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0125.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0112.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0126.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0113.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0127.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0114.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0128.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0115.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0129.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0116.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0130.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0117.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0131.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0118.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0132.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0119.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 20
+		DefineImage
+			Filename = "Images\0120.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "Congratulate"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 5
+		SoundEffect = "Audio\0000.wav"
+		ExitBranch = 44
+		DefineImage
+			Filename = "Images\0136.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0137.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		SoundEffect = "Audio\0003.wav"
+		DefineImage
+			Filename = "Images\0138.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0139.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0140.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0141.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0142.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0143.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0144.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0145.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0146.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 44
+		DefineImage
+			Filename = "Images\0147.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0148.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		SoundEffect = "Audio\0004.wav"
+		DefineImage
+			Filename = "Images\0149.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0150.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0151.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0152.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0153.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0154.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0155.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0156.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 44
+		DefineImage
+			Filename = "Images\0157.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0158.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0159.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0160.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		SoundEffect = "Audio\0005.wav"
+		DefineImage
+			Filename = "Images\0161.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0162.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0163.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0164.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0165.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0166.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0167.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0168.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 44
+		DefineImage
+			Filename = "Images\0169.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0170.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0171.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		SoundEffect = "Audio\0006.wav"
+		DefineImage
+			Filename = "Images\0172.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0173.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0174.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0175.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0176.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0177.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 44
+		DefineImage
+			Filename = "Images\0178.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0179.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "GestureDown"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0158.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0159.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0160.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0161.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0162.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0163.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0164.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0165.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0166.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 11
+		DefineImage
+			Filename = "Images\0167.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0168.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "GestureLeft"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0169.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0170.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0171.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0172.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0173.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0174.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0175.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0176.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0177.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 11
+		DefineImage
+			Filename = "Images\0178.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0179.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "GestureRight"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0147.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0148.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0149.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0150.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0151.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0152.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0153.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0154.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0155.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 11
+		DefineImage
+			Filename = "Images\0156.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0157.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "GestureUp"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0136.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0137.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0138.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0139.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0140.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0141.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0142.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0143.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0144.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 11
+		DefineImage
+			Filename = "Images\0145.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0146.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "GetArtsy"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 5
+		SoundEffect = "Audio\0000.wav"
+		DefineImage
+			Filename = "Images\0180.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		SoundEffect = "Audio\0002.wav"
+		DefineImage
+			Filename = "Images\0181.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0182.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0183.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0184.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0185.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0186.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0187.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0188.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0189.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0190.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0191.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0192.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0193.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0194.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0195.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0196.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0197.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0198.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0199.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0200.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0201.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0202.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0203.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0204.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0205.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0206.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0207.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0208.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0209.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0210.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0211.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		SoundEffect = "Audio\0007.wav"
+		DefineImage
+			Filename = "Images\0212.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0213.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0214.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0215.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0216.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0217.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0218.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 41
+		DefineImage
+			Filename = "Images\0219.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		SoundEffect = "Audio\0008.wav"
+		DefineImage
+			Filename = "Images\0220.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "GetAttention"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 5
+		SoundEffect = "Audio\0000.wav"
+		DefineImage
+			Filename = "Images\0221.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		SoundEffect = "Audio\0001.wav"
+		DefineImage
+			Filename = "Images\0222.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0223.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0224.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0225.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0226.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0227.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0228.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0229.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 11
+		DefineImage
+			Filename = "Images\0230.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0231.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "GetWizardy"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 10
+		SoundEffect = "Audio\0000.wav"
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0111.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0112.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0113.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0114.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0115.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0116.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0117.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0118.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0119.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0133.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0135.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		SoundEffect = "Audio\0001.wav"
+		DefineImage
+			Filename = "Images\0232.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0233.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0234.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0235.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0236.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0237.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0238.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0238.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0239.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0240.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0241.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0240.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0239.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0238.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0238.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0237.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0236.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0235.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0234.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0233.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		ExitBranch = 34
+		DefineImage
+			Filename = "Images\0232.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "LookDown"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "LookDownLeft"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "LookDownRight"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "LookLeft"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "LookRight"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "LookUp"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "LookUpLeft"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "LookUpRight"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "Writing"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0111.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0125.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0112.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0126.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0113.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0127.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0114.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0128.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0115.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0129.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0116.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0130.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0117.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0131.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0118.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0132.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0119.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 20
+		DefineImage
+			Filename = "Images\0120.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "Idle3"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 10
+		DefineBranching
+			BranchTo = 19
+			Probability = 80
+		EndBranching
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0242.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0243.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0244.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0245.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0246.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0247.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0248.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0249.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0250.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0251.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0252.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0253.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0254.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0255.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0256.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0257.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 19
+		DefineImage
+			Filename = "Images\0258.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "Wave"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 5
+		SoundEffect = "Audio\0009.wav"
+		DefineImage
+			Filename = "Images\0136.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0138.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0140.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0142.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0144.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0146.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0148.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0150.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0152.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0154.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0156.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0158.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0160.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0162.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0164.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0166.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0168.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0170.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0172.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0174.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 22
+		DefineImage
+			Filename = "Images\0176.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0178.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "Searching"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 45
+		DefineBranching
+			BranchTo = 35
+			Probability = 25
+			BranchTo = 24
+			Probability = 25
+			BranchTo = 13
+			Probability = 25
+		EndBranching
+		DefineImage
+			Filename = "Images\0136.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0137.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0138.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0139.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0140.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0141.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0142.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0143.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0144.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0145.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0146.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 45
+		DefineBranching
+			BranchTo = 1
+			Probability = 25
+			BranchTo = 35
+			Probability = 25
+			BranchTo = 24
+			Probability = 25
+		EndBranching
+		DefineImage
+			Filename = "Images\0147.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0148.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0149.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0150.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0151.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0152.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0153.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0154.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0155.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0156.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0157.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 45
+		DefineBranching
+			BranchTo = 13
+			Probability = 25
+			BranchTo = 2
+			Probability = 25
+			BranchTo = 35
+			Probability = 25
+		EndBranching
+		DefineImage
+			Filename = "Images\0158.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0159.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0160.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0161.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0162.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0163.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0164.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0165.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0166.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0167.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0168.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 45
+		DefineBranching
+			BranchTo = 24
+			Probability = 25
+			BranchTo = 13
+			Probability = 25
+			BranchTo = 2
+			Probability = 25
+		EndBranching
+		DefineImage
+			Filename = "Images\0169.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0170.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0171.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0172.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0173.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0174.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0175.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0176.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0177.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0178.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 45
+		DefineBranching
+			BranchTo = 1
+			Probability = 100
+		EndBranching
+		DefineImage
+			Filename = "Images\0179.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0179.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "Processing"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 45
+		DefineBranching
+			BranchTo = 35
+			Probability = 25
+			BranchTo = 24
+			Probability = 25
+			BranchTo = 13
+			Probability = 25
+		EndBranching
+		DefineImage
+			Filename = "Images\0136.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0137.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0138.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0139.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0140.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0141.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0142.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0143.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0144.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0145.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0146.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 45
+		DefineBranching
+			BranchTo = 1
+			Probability = 25
+			BranchTo = 35
+			Probability = 25
+			BranchTo = 24
+			Probability = 25
+		EndBranching
+		DefineImage
+			Filename = "Images\0147.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0148.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0149.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0150.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0151.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0152.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0153.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0154.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0155.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0156.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0157.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 45
+		DefineBranching
+			BranchTo = 13
+			Probability = 25
+			BranchTo = 2
+			Probability = 25
+			BranchTo = 35
+			Probability = 25
+		EndBranching
+		DefineImage
+			Filename = "Images\0158.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0159.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0160.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0161.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0162.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0163.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0164.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0165.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0166.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0167.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0168.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 45
+		DefineBranching
+			BranchTo = 24
+			Probability = 25
+			BranchTo = 13
+			Probability = 25
+			BranchTo = 2
+			Probability = 25
+		EndBranching
+		DefineImage
+			Filename = "Images\0169.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0170.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0171.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0172.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0173.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0174.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0175.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0176.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0177.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0178.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 45
+		DefineBranching
+			BranchTo = 1
+			Probability = 100
+		EndBranching
+		DefineImage
+			Filename = "Images\0179.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0179.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "Thinking"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 45
+		DefineBranching
+			BranchTo = 35
+			Probability = 25
+			BranchTo = 24
+			Probability = 25
+			BranchTo = 13
+			Probability = 25
+		EndBranching
+		DefineImage
+			Filename = "Images\0136.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0137.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0138.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0139.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0140.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0141.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0142.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0143.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0144.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0145.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0146.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 45
+		DefineBranching
+			BranchTo = 1
+			Probability = 25
+			BranchTo = 35
+			Probability = 25
+			BranchTo = 24
+			Probability = 25
+		EndBranching
+		DefineImage
+			Filename = "Images\0147.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0148.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0149.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0150.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0151.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0152.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0153.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0154.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0155.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0156.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0157.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 45
+		DefineBranching
+			BranchTo = 13
+			Probability = 25
+			BranchTo = 2
+			Probability = 25
+			BranchTo = 35
+			Probability = 25
+		EndBranching
+		DefineImage
+			Filename = "Images\0158.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0159.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0160.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0161.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0162.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0163.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0164.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0165.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0166.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0167.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0168.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 45
+		DefineBranching
+			BranchTo = 24
+			Probability = 25
+			BranchTo = 13
+			Probability = 25
+			BranchTo = 2
+			Probability = 25
+		EndBranching
+		DefineImage
+			Filename = "Images\0169.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0170.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0171.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0172.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0173.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0174.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0175.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0176.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0177.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0178.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 45
+		DefineBranching
+			BranchTo = 1
+			Probability = 100
+		EndBranching
+		DefineImage
+			Filename = "Images\0179.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0179.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "CheckingSomething"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 45
+		DefineBranching
+			BranchTo = 35
+			Probability = 25
+			BranchTo = 24
+			Probability = 25
+			BranchTo = 13
+			Probability = 25
+		EndBranching
+		DefineImage
+			Filename = "Images\0136.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0137.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0138.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0139.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0140.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0141.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0142.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0143.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0144.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0145.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0146.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 45
+		DefineBranching
+			BranchTo = 1
+			Probability = 25
+			BranchTo = 35
+			Probability = 25
+			BranchTo = 24
+			Probability = 25
+		EndBranching
+		DefineImage
+			Filename = "Images\0147.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0148.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0149.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0150.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0151.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0152.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0153.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0154.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0155.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0156.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0157.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 45
+		DefineBranching
+			BranchTo = 13
+			Probability = 25
+			BranchTo = 2
+			Probability = 25
+			BranchTo = 35
+			Probability = 25
+		EndBranching
+		DefineImage
+			Filename = "Images\0158.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0159.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0160.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0161.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0162.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0163.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0164.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0165.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0166.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0167.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0168.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 45
+		DefineBranching
+			BranchTo = 24
+			Probability = 25
+			BranchTo = 13
+			Probability = 25
+			BranchTo = 2
+			Probability = 25
+		EndBranching
+		DefineImage
+			Filename = "Images\0169.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0170.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0171.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0172.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0173.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0174.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0175.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0176.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0177.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0178.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 45
+		DefineBranching
+			BranchTo = 1
+			Probability = 100
+		EndBranching
+		DefineImage
+			Filename = "Images\0179.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0179.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "Hearing_1"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 10
+		DefineBranching
+			BranchTo = 19
+			Probability = 80
+		EndBranching
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0242.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0243.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0244.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0245.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0246.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0247.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0248.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0249.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0250.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0251.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0252.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0253.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0254.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0255.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0256.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0257.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 19
+		DefineImage
+			Filename = "Images\0258.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "Print"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 44
+		DefineImage
+			Filename = "Images\0136.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0137.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0138.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0139.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0140.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0141.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0142.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0143.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0144.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0145.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0146.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 44
+		DefineImage
+			Filename = "Images\0147.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0148.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0149.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0150.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0151.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0152.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0153.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0154.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0155.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0156.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 44
+		DefineImage
+			Filename = "Images\0157.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0158.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0159.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0160.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0161.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0162.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0163.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0164.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0165.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0166.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0167.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0168.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 44
+		DefineImage
+			Filename = "Images\0169.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0170.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0171.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0172.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0173.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0174.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0175.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0176.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0177.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 44
+		DefineImage
+			Filename = "Images\0178.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineBranching
+			BranchTo = 1
+			Probability = 60
+		EndBranching
+		DefineImage
+			Filename = "Images\0179.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "Alert"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 10
+		DefineBranching
+			BranchTo = 19
+			Probability = 80
+		EndBranching
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0242.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0243.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0244.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0245.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0246.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0247.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0248.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0249.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0250.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0251.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0252.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0253.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0254.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0255.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0256.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0257.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 19
+		DefineImage
+			Filename = "Images\0258.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "EmptyTrash"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 5
+		SoundEffect = "Audio\0000.wav"
+		DefineImage
+			Filename = "Images\0221.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		SoundEffect = "Audio\0001.wav"
+		DefineImage
+			Filename = "Images\0222.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0223.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0224.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0225.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0226.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0227.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0228.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0229.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 11
+		DefineImage
+			Filename = "Images\0230.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0231.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "SendMail"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 5
+		SoundEffect = "Audio\0000.wav"
+		DefineImage
+			Filename = "Images\0221.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		SoundEffect = "Audio\0001.wav"
+		DefineImage
+			Filename = "Images\0222.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0223.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0224.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0225.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0226.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0227.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0228.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0229.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		ExitBranch = 11
+		DefineImage
+			Filename = "Images\0230.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0231.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineAnimation "GetTechy"
+
+	TransitionType = 2
+
+	DefineFrame
+		Duration = 10
+		SoundEffect = "Audio\0000.wav"
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0111.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0112.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0113.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0114.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0115.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0116.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0117.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0118.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0119.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0133.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 5
+		DefineImage
+			Filename = "Images\0135.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		SoundEffect = "Audio\0001.wav"
+		DefineImage
+			Filename = "Images\0232.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0233.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0234.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0235.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0236.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0237.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0238.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0238.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0239.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0240.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0241.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0240.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0239.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0238.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0238.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0237.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0236.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0235.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0234.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0233.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		ExitBranch = 34
+		DefineImage
+			Filename = "Images\0232.bmp"
+		EndImage
+	EndFrame
+
+	DefineFrame
+		Duration = 10
+		DefineImage
+			Filename = "Images\0012.bmp"
+		EndImage
+	EndFrame
+
+EndAnimation
+
+//-------------------------------------------------------------------//
+
+DefineState "Showing"
+	Animation = "Show"
+EndState
+
+//-------------------------------------------------------------------//
+
+DefineState "Hiding"
+	Animation = "Hide"
+EndState
+
+//-------------------------------------------------------------------//
+
+DefineState "IdlingLevel1"
+	Animation = "Idle2"
+	Animation = "Idle3"
+EndState
+
+//-------------------------------------------------------------------//
+
+DefineState "IdlingLevel2"
+	Animation = "Idle2"
+	Animation = "Idle3"
+	Animation = "Idle1_1"
+EndState
+
+//-------------------------------------------------------------------//
+
+DefineState "IdlingLevel3"
+	Animation = "Idle2"
+	Animation = "Idle3"
+	Animation = "Idle1_1"
+EndState
+
+//-------------------------------------------------------------------//
+
+DefineState "GesturingLeft"
+	Animation = "GestureLeft"
+EndState
+
+//-------------------------------------------------------------------//
+
+DefineState "GesturingRight"
+	Animation = "GestureRight"
+EndState
+
+//-------------------------------------------------------------------//
+
+DefineState "GesturingUp"
+	Animation = "GestureUp"
+EndState
+
+//-------------------------------------------------------------------//
+
+DefineState "GesturingDown"
+	Animation = "GestureDown"
+EndState
+
+//-------------------------------------------------------------------//
+
+DefineState "Listening"
+	Animation = "Alert"
+EndState
+
+//-------------------------------------------------------------------//
+
+DefineState "Hearing"
+	Animation = "Hearing_1"
+EndState
+
+//-------------------------------------------------------------------//
+

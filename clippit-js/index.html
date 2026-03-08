@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clippit JS - Win98</title>
+    <link rel="stylesheet" href="https://jdan.github.io/98.css/98.css">
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background-color: #008080;
+        font-family: "MS Sans Serif", Arial, sans-serif;
+      }
+      #agent-container {
+        position: absolute;
+        cursor: move;
+        z-index: 1000;
+        user-select: none;
+      }
+      #agent-canvas {
+        pointer-events: auto;
+      }
+      #ui-panel {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        width: 300px;
+        z-index: 1100;
+      }
+      .window-body {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .field-row {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .field-row select {
+        width: 100%;
+      }
+      .button-row {
+        display: flex;
+        gap: 5px;
+        justify-content: flex-end;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="ui-panel" class="window">
+      <div class="title-bar">
+        <div class="title-bar-text">Clippit JS Control Panel</div>
+        <div class="title-bar-controls">
+          <button aria-label="Minimize"></button>
+          <button aria-label="Maximize"></button>
+          <button aria-label="Close"></button>
+        </div>
+      </div>
+      <div class="window-body">
+        <div class="field-row">
+            <label for="agent-select">Select Agent:</label>
+            <select id="agent-select">
+                <option value="Clippit">Clippit</option>
+                <option value="DOT">Dot</option>
+                <option value="GENIUS">Genius</option>
+                <option value="LOGO">Logo</option>
+                <option value="MNATURE">Mother Nature</option>
+                <option value="OFFCAT">Office Cat</option>
+            </select>
+        </div>
+        <div class="field-row">
+          <label for="animation-select">Select Animation:</label>
+          <select id="animation-select"></select>
+        </div>
+        <div class="field-row">
+            <label for="state-select">Select State:</label>
+            <select id="state-select"></select>
+          </div>
+        <div class="button-row">
+          <button id="play-random-button">Animate</button>
+          <button id="play-button">Play</button>
+        </div>
+        <div class="status-bar">
+            <p class="status-bar-field" id="status-text">Status: Ready</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="agent-container">
+      <canvas id="agent-canvas"></canvas>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
