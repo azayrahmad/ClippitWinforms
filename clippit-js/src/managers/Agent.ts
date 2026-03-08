@@ -23,6 +23,34 @@ export class Agent {
         this.characterDefinition = parser.parseFromText(text);
 
         const spriteManager = new DirectorySpriteManager(`${agentPath}/images`, this.characterDefinition.character);
+
+        // Load the color table to get the transparency color
+        const colorTableImg = new Image();
+        colorTableImg.src = `${agentPath}/images/${this.characterDefinition.character.colorTable}`;
+        await new Promise<void>((resolve) => {
+            colorTableImg.onload = () => {
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = colorTableImg.width;
+                tempCanvas.height = colorTableImg.height;
+                const tempCtx = tempCanvas.getContext('2d');
+                if (tempCtx) {
+                    tempCtx.drawImage(colorTableImg, 0, 0);
+                    // The transparency index is used to look up the color in the color table.
+                    // Assuming color table is a 1D or 2D array of colors.
+                    // For Microsoft Agent, it's often a small image where each pixel is a palette entry.
+                    const imageData = tempCtx.getImageData(this.characterDefinition.character.transparency, 0, 1, 1).data;
+                    spriteManager.setTransparencyColor(imageData[0], imageData[1], imageData[2]);
+                }
+                resolve();
+            };
+            colorTableImg.onerror = () => {
+                console.warn("Failed to load color table, using default pink transparency");
+                // Magenta/Pink often used as transparency key
+                spriteManager.setTransparencyColor(255, 0, 255);
+                resolve();
+            };
+        });
+
         // In a real scenario, we'd list files. For demo, we might need a manifest or known files.
         // For now, let's assume we know what to load or load on demand.
         // To keep it simple, let's just load some if we had a list.

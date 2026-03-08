@@ -7,16 +7,22 @@ export interface ISpriteManager {
 }
 
 export class DirectorySpriteManager implements ISpriteManager {
-    private sprites: Map<number, HTMLImageElement> = new Map();
+    private sprites: Map<number, HTMLImageElement | HTMLCanvasElement> = new Map();
     private width: number;
     private height: number;
     private transparencyKey: string | null = null;
 
+    private transparencyRGB: { r: number, g: number, b: number } | null = null;
+
     constructor(private directoryPath: string, character: any) {
         this.width = character.width;
         this.height = character.height;
-        // In web version, we might handle transparency differently (e.g., pre-processed images)
-        // or using canvas to filter. For now, assuming standard images.
+    }
+
+    public setTransparencyColor(r: number, g: number, b: number): void {
+        this.transparencyRGB = { r, g, b };
+        // If we already loaded sprites, we'd need to re-process them.
+        // For simplicity, this should be called before loadSprites.
     }
 
     public async loadSprites(filenames: string[]): Promise<void> {
@@ -25,7 +31,8 @@ export class DirectorySpriteManager implements ISpriteManager {
                 const img = new Image();
                 img.onload = () => {
                     const frameNumber = parseInt(filename.split('.')[0]);
-                    this.sprites.set(frameNumber, img);
+                    const processedImg = this.processTransparency(img);
+                    this.sprites.set(frameNumber, processedImg);
                     resolve();
                 };
                 img.onerror = reject;
@@ -33,6 +40,33 @@ export class DirectorySpriteManager implements ISpriteManager {
             });
         });
         await Promise.all(promises);
+    }
+
+    private processTransparency(img: HTMLImageElement): HTMLCanvasElement | HTMLImageElement {
+        if (!this.transparencyRGB) return img;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return img;
+
+        ctx.drawImage(img, 0, 0);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+
+        for (let i = 0; i < data.length; i += 4) {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+
+            if (r === this.transparencyRGB.r && g === this.transparencyRGB.g && b === this.transparencyRGB.b) {
+                data[i + 3] = 0; // Set alpha to 0
+            }
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+        return canvas;
     }
 
     public get spriteWidth(): number { return this.width; }
@@ -46,6 +80,7 @@ export class DirectorySpriteManager implements ISpriteManager {
                 const sprite = this.sprites.get(frameNumber);
 
                 if (sprite) {
+                    // Use a temporary canvas to scale if needed, or draw directly
                     const destX = imageDef.offsetX * scale;
                     const destY = imageDef.offsetY * scale;
                     const destW = this.width * scale;
