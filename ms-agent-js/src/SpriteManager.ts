@@ -27,13 +27,38 @@ export class SpriteManager {
 
   private async loadTransparencyColor(): Promise<void> {
     const colorTablePath = this.definition.character.colorTable;
-    // The color table is usually in the agent root
-    const colorTableUrl = colorTablePath.startsWith('http') ? colorTablePath : `${this.agentRoot}/${colorTablePath}`;
-    const response = await fetch(colorTableUrl);
-    if (!response.ok) {
-      throw new Error(`Failed to load color table: ${response.statusText}`);
+    // The color table path from ACD is relative to the agent root,
+    // but often contains backslashes or lacks the 'images/' prefix if it's placed there.
+    const normalizedPath = colorTablePath.replace(/\\/g, '/');
+    const colorTableUrl = normalizedPath.startsWith('http') ? normalizedPath : `${this.agentRoot}/${normalizedPath}`;
+
+    let response = await fetch(colorTableUrl);
+    let buffer = await response.arrayBuffer();
+
+    // Check if we got a valid BMP
+    const isBmp = (buf: ArrayBuffer) => {
+        if (buf.byteLength < 2) return false;
+        const view = new DataView(buf);
+        return view.getUint16(0, true) === 0x4d42; // 'BM'
+    };
+
+    // Fallback if not found at root or returned non-BMP (e.g. check images/ folder)
+    if ((!response.ok || !isBmp(buffer)) && !normalizedPath.startsWith('images/')) {
+        const fallbackUrl = `${this.agentRoot}/images/${normalizedPath.split('/').pop()}`;
+        const fallbackResponse = await fetch(fallbackUrl);
+        if (fallbackResponse.ok) {
+            const fallbackBuffer = await fallbackResponse.arrayBuffer();
+            if (isBmp(fallbackBuffer)) {
+                response = fallbackResponse;
+                buffer = fallbackBuffer;
+            }
+        }
     }
-    const buffer = await response.arrayBuffer();
+
+    if (!response.ok || !isBmp(buffer)) {
+      const magic = buffer.byteLength >= 2 ? new DataView(buffer).getUint16(0, true).toString(16) : 'none';
+      throw new Error(`Failed to load color table: ${response.statusText} (BMP magic check failed: 0x${magic})`);
+    }
     this.transparencyColor = this.getPaletteColor(buffer, this.definition.character.transparency);
   }
 

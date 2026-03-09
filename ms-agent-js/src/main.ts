@@ -1,15 +1,11 @@
 import './style.css';
-import { CharacterParser } from './CharacterParser';
-import { SpriteManager } from './SpriteManager';
-import { AnimationManager } from './AnimationManager';
-import { AudioManager } from './AudioManager';
-import { StateManager } from './StateManager';
+import { Agent } from './Agent';
 
 async function initDemo() {
   const app = document.querySelector<HTMLDivElement>('#app')!;
   app.innerHTML = `
     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px;">
-      <h1>MSAgentJS - Phase 5: State & Branching</h1>
+      <h1>MSAgentJS - Phase 6: Library API</h1>
 
       <div id="dashboard" style="background: #f0f0f0; border: 1px solid #ccc; padding: 10px; margin-bottom: 20px; font-family: monospace;">
         <strong>Agent Dashboard</strong><br/>
@@ -32,41 +28,36 @@ async function initDemo() {
           <select id="state-select"></select>
           <button id="visibility-btn">Hide</button>
         </div>
+        <div style="margin-bottom: 8px;">
+          <button id="move-btn">Move to Random Position</button>
+        </div>
       </div>
 
-      <div id="canvas-container" style="position: relative;"></div>
+      <div id="canvas-container" style="position: relative; height: 300px; border: 1px dashed #ccc;"></div>
 
       <p style="font-size: 0.8em; color: #666; margin-top: 20px;">
-        Note: The agent is currently in automatic mode. It will play idle animations every 10 seconds.
-        Manual animations use the "Exit Branch" for smooth transitions.
+        Note: The agent is currently using the new <strong>Agent</strong> library class.
       </p>
     </div>
   `;
 
   try {
     const agentRoot = '/agents/Clippit';
-    const definition = await CharacterParser.load(`${agentRoot}/CLIPPIT.acd`);
+    const container = document.getElementById('canvas-container')!;
 
-    // Normalized path for web environment
-    if (!definition.character.colorTable.startsWith('images/')) {
-        definition.character.colorTable = 'images/ColorTable.bmp';
-    }
-
-    const spriteManager = new SpriteManager(agentRoot, definition);
-    await spriteManager.init();
-
-    const audioManager = new AudioManager(agentRoot);
-    const animationManager = new AnimationManager(spriteManager, audioManager, definition.animations);
-    const stateManager = new StateManager(definition.states, animationManager, {
-        idleIntervalMs: 5000, // Faster for demo purposes
-        ticksPerLevel: 3
+    const agent = new Agent({
+        container,
+        scale: 2
     });
+
+    await agent.load(`${agentRoot}/CLIPPIT.acd`);
 
     const controlsEl = document.getElementById('controls')!;
     const animationSelect = document.getElementById('animation-select') as HTMLSelectElement;
     const playBtn = document.getElementById('play-btn')!;
     const randomBtn = document.getElementById('random-btn')!;
     const visibilityBtn = document.getElementById('visibility-btn')!;
+    const moveBtn = document.getElementById('move-btn')!;
 
     const dashState = document.getElementById('dash-state')!;
     const dashAnim = document.getElementById('dash-anim')!;
@@ -75,6 +66,8 @@ async function initDemo() {
     const dashNextTick = document.getElementById('dash-next-tick')!;
 
     const stateSelect = document.getElementById('state-select') as HTMLSelectElement;
+
+    const definition = agent.characterDefinition!;
 
     // Populate animation dropdown
     const animNames = Object.keys(definition.animations).sort();
@@ -97,32 +90,32 @@ async function initDemo() {
     });
 
     controlsEl.style.display = 'block';
-
-    const container = document.getElementById('canvas-container')!;
-    const scale = 2;
-    const canvas = document.createElement('canvas');
-    canvas.width = spriteManager.getSpriteWidth() * scale;
-    canvas.height = spriteManager.getSpriteHeight() * scale;
-    canvas.style.imageRendering = 'pixelated';
-    canvas.style.display = 'block';
-    canvas.style.margin = '0 auto';
-    // Transparent checkered background
-    canvas.style.background = 'url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAAXNSR0IArs4c6QAAACBJREFUGFdjZEADJghG4CH8/z8DE6Y8mI6BBZghGEIHAMYICAn3m09WAAAAAElFTkSuQmCC") repeat';
-    container.appendChild(canvas);
-
-    const ctx = canvas.getContext('2d')!;
+    agent.show();
+    agent.moveTo(100, 100);
 
     playBtn.addEventListener('click', async () => {
       const selectedAnim = animationSelect.value;
-      stateManager.playAnimation(selectedAnim, 'Playing');
+      agent.play(selectedAnim);
     });
 
     randomBtn.addEventListener('click', () => {
-        stateManager.playRandomAnimation();
+        const allAnimations = Object.keys(definition.animations);
+        const selectableAnimations = allAnimations.filter(name => !name.toLowerCase().startsWith('idlinglevel'));
+
+        if (selectableAnimations.length > 0) {
+          const randomAnimation = selectableAnimations[Math.floor(Math.random() * selectableAnimations.length)];
+          agent.play(randomAnimation);
+        }
     });
 
     stateSelect.addEventListener('change', () => {
-        stateManager.setState(stateSelect.value);
+        agent.setState(stateSelect.value);
+    });
+
+    moveBtn.addEventListener('click', () => {
+        const x = Math.random() * (container.clientWidth - 100);
+        const y = Math.random() * (container.clientHeight - 100);
+        agent.moveTo(x, y);
     });
 
     let isVisible = true;
@@ -132,46 +125,25 @@ async function initDemo() {
         visibilityBtn.setAttribute('disabled', 'true');
 
         if (isVisible) {
-            canvas.style.display = 'block';
-        }
-
-        await stateManager.handleVisibilityChange(isVisible);
-
-        if (!isVisible) {
-            canvas.style.display = 'none';
+            await agent.show();
+        } else {
+            await agent.hide();
         }
 
         visibilityBtn.removeAttribute('disabled');
     });
 
-    // Animation Loop
-    let lastTime = performance.now();
-    function loop(currentTime: number) {
-      const deltaTime = currentTime - lastTime;
-      lastTime = currentTime;
+    // Loop to update dashboard (since Agent has its own internal loop)
+    function updateDashboard() {
+      dashState.textContent = agent.currentStateName;
+      dashAnim.textContent = agent.currentAnimationName || '-';
+      dashLevel.textContent = agent.idleLevel.toString();
+      dashTicks.textContent = agent.ticksToNextLevel.toString();
+      dashNextTick.textContent = (agent.timeUntilNextTick / 1000).toFixed(1);
 
-      animationManager.update(currentTime);
-      stateManager.update(deltaTime);
-
-      // Update Dashboard
-      dashState.textContent = stateManager.currentStateName;
-      dashAnim.textContent = animationManager.currentAnimationName || '-';
-      dashLevel.textContent = stateManager.idleLevel.toString();
-      dashTicks.textContent = stateManager.ticksToNextLevel.toString();
-      dashNextTick.textContent = (stateManager.timeUntilNextTick / 1000).toFixed(1);
-
-      // Clear and draw
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      animationManager.draw(ctx, 0, 0);
-
-      requestAnimationFrame(loop);
+      requestAnimationFrame(updateDashboard);
     }
-
-    // Start
-    stateManager.setState('IdlingLevel1').then(() => {
-        console.log('State set to IdlingLevel1');
-    });
-    requestAnimationFrame(loop);
+    updateDashboard();
 
   } catch (error) {
     console.error(error);
