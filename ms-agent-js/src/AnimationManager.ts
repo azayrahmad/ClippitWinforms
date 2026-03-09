@@ -191,10 +191,10 @@ export class AnimationManager {
   /**
    * Draws the current frame onto the provided context.
    */
-  public draw(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+  public draw(ctx: CanvasRenderingContext2D, x: number, y: number, scale: number = this.scale): void {
     const frame = this.currentFrame;
     if (frame) {
-      this.spriteManager.drawFrame(ctx, frame, x, y, this.scale);
+      this.spriteManager.drawFrame(ctx, frame, x, y, scale);
     }
   }
 

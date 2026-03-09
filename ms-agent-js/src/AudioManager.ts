@@ -9,9 +9,14 @@ export class AudioManager {
     private soundBuffers: Map<string, AudioBuffer> = new Map();
     private loadingPromises: Map<string, Promise<void>> = new Map();
     private audioPath: string;
+    private enabled: boolean = true;
 
     constructor(audioPath: string) {
         this.audioPath = audioPath.endsWith('/') ? `${audioPath}Audio` : `${audioPath}/Audio`;
+    }
+
+    public setEnabled(value: boolean): void {
+        this.enabled = value;
     }
 
     private getContext(): AudioContext {
@@ -105,6 +110,8 @@ export class AudioManager {
     }
 
     public playFrameSound(soundPath: string): void {
+        if (!this.enabled) return;
+
         const soundName = soundPath.split(/[\\/]/).pop() || "";
         const buffer = this.soundBuffers.get(soundName) || this.soundBuffers.get(`${soundName}.wav`);
 
