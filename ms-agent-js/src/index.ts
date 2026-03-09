@@ -1,2 +1,3 @@
-export const name = 'MSAgentJS';
-console.log(`${name} library initialized`);
+export { CharacterParser } from './CharacterParser';
+export { SpriteManager } from './SpriteManager';
+export * from './types';
