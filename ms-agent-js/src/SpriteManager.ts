@@ -28,7 +28,7 @@ export class SpriteManager {
   private async loadTransparencyColor(): Promise<void> {
     const colorTablePath = this.definition.character.colorTable;
     // The color table is usually in the agent root
-    const colorTableUrl = `${this.agentRoot}/${colorTablePath}`;
+    const colorTableUrl = colorTablePath.startsWith('http') ? colorTablePath : `${this.agentRoot}/${colorTablePath}`;
     const response = await fetch(colorTableUrl);
     if (!response.ok) {
       throw new Error(`Failed to load color table: ${response.statusText}`);
@@ -70,7 +70,7 @@ export class SpriteManager {
 
     // Fix path separators and normalization
     const normalizedFilename = filename.replace(/\\/g, '/').split('/').pop() || filename;
-    const url = `${this.agentRoot}/images/${normalizedFilename}`;
+    const url = filename.startsWith('http') ? filename : `${this.agentRoot}/images/${normalizedFilename}`;
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`Failed to load sprite ${filename}: ${response.statusText}`);
