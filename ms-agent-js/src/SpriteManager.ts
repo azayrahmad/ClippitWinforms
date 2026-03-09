@@ -92,24 +92,12 @@ export class SpriteManager {
     const isBottomUp = view.getInt32(22, true) > 0;
     const bitCount = view.getUint16(28, true);
 
-    if (bitCount !== 8) {
-      throw new Error(`Only 8-bit indexed BMPs are supported, got ${bitCount}-bit`);
+    if (bitCount !== 8 && bitCount !== 24 && bitCount !== 32) {
+      throw new Error(`Unsupported BMP bit count: ${bitCount}-bit. Supported: 8, 24, 32.`);
     }
 
     const offsetToPixels = view.getUint32(10, true);
     const infoHeaderSize = view.getUint32(14, true);
-    const offsetToPalette = 14 + infoHeaderSize;
-
-    const palette: { r: number; g: number; b: number }[] = [];
-    const numColors = 256; // For 8-bit
-    for (let i = 0; i < numColors; i++) {
-      const pIdx = offsetToPalette + i * 4;
-      palette.push({
-        b: view.getUint8(pIdx),
-        g: view.getUint8(pIdx + 1),
-        r: view.getUint8(pIdx + 2),
-      });
-    }
 
     const canvas = document.createElement('canvas');
     canvas.width = width;
@@ -117,38 +105,79 @@ export class SpriteManager {
     const ctx = canvas.getContext('2d')!;
     const imageData = ctx.createImageData(width, height);
 
-    // Row size is rounded up to the nearest 4 bytes
-    const rowSize = Math.floor((8 * width + 31) / 32) * 4;
+    if (bitCount === 8) {
+      const offsetToPalette = 14 + infoHeaderSize;
+      const palette: { r: number; g: number; b: number }[] = [];
+      const numColors = 256;
+      for (let i = 0; i < numColors; i++) {
+        const pIdx = offsetToPalette + i * 4;
+        palette.push({
+          b: view.getUint8(pIdx),
+          g: view.getUint8(pIdx + 1),
+          r: view.getUint8(pIdx + 2),
+        });
+      }
 
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        // BMP stores rows bottom-to-top by default
-        const bmpY = isBottomUp ? height - 1 - y : y;
-        const pixelOffset = offsetToPixels + bmpY * rowSize + x;
-        const paletteIndex = view.getUint8(pixelOffset);
-        const color = palette[paletteIndex];
-
-        const targetIndex = (y * width + x) * 4;
-        imageData.data[targetIndex] = color.r;
-        imageData.data[targetIndex + 1] = color.g;
-        imageData.data[targetIndex + 2] = color.b;
-
-        // Apply transparency
-        if (
-          this.transparencyColor &&
-          color.r === this.transparencyColor.r &&
-          color.g === this.transparencyColor.g &&
-          color.b === this.transparencyColor.b
-        ) {
-          imageData.data[targetIndex + 3] = 0;
-        } else {
-          imageData.data[targetIndex + 3] = 255;
+      const rowSize = Math.floor((8 * width + 31) / 32) * 4;
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const bmpY = isBottomUp ? height - 1 - y : y;
+          const pixelOffset = offsetToPixels + bmpY * rowSize + x;
+          const paletteIndex = view.getUint8(pixelOffset);
+          const color = palette[paletteIndex];
+          const targetIndex = (y * width + x) * 4;
+          this.setPixel(imageData, targetIndex, color.r, color.g, color.b);
+        }
+      }
+    } else if (bitCount === 24) {
+      const rowSize = Math.floor((24 * width + 31) / 32) * 4;
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const bmpY = isBottomUp ? height - 1 - y : y;
+          const pixelOffset = offsetToPixels + bmpY * rowSize + x * 3;
+          const b = view.getUint8(pixelOffset);
+          const g = view.getUint8(pixelOffset + 1);
+          const r = view.getUint8(pixelOffset + 2);
+          const targetIndex = (y * width + x) * 4;
+          this.setPixel(imageData, targetIndex, r, g, b);
+        }
+      }
+    } else if (bitCount === 32) {
+      // 32-bit BMPs usually don't have row padding as they are already 4-byte aligned
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const bmpY = isBottomUp ? height - 1 - y : y;
+          const pixelOffset = offsetToPixels + (bmpY * width + x) * 4;
+          const b = view.getUint8(pixelOffset);
+          const g = view.getUint8(pixelOffset + 1);
+          const r = view.getUint8(pixelOffset + 2);
+          // 32-bit usually has Alpha as the 4th byte, but we often ignore it for MS Agents
+          // or use it if available. Here we prioritize the transparencyColor logic.
+          const targetIndex = (y * width + x) * 4;
+          this.setPixel(imageData, targetIndex, r, g, b);
         }
       }
     }
 
     ctx.putImageData(imageData, 0, 0);
     return canvas;
+  }
+
+  private setPixel(imageData: ImageData, index: number, r: number, g: number, b: number): void {
+    imageData.data[index] = r;
+    imageData.data[index + 1] = g;
+    imageData.data[index + 2] = b;
+
+    if (
+      this.transparencyColor &&
+      r === this.transparencyColor.r &&
+      g === this.transparencyColor.g &&
+      b === this.transparencyColor.b
+    ) {
+      imageData.data[index + 3] = 0;
+    } else {
+      imageData.data[index + 3] = 255;
+    }
   }
 
   /**
