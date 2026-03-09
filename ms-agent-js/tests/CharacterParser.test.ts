@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CharacterParser } from './CharacterParser';
+import { CharacterParser } from '../src/CharacterParser';
 
 describe('CharacterParser', () => {
   it('should parse ACD content correctly', () => {
