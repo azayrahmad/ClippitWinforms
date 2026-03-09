@@ -29,10 +29,13 @@ This document lists the logic differences between the TypeScript implementation 
     *   **TS:** Uses `requestAnimationFrame` and `performance.now()` for a smooth, high-precision web-native loop.
     *   **CS:** Relies on a `System.Windows.Forms.Timer` with a fixed interval (16ms).
 *   **Interruption Optimization:**
-    *   **TS:** **Optimization:** If an "Idle" animation is interrupted (e.g., by a user click), it skips the "Exit Branch" logic to provide immediate feedback.
-    *   **CS:** Always attempts to play the "Exit Branch" if the exit flag is set, regardless of the animation type.
+    *   **TS (Optimized):** If an "Idle" animation is playing, the engine **skips** the exit path logic. The new animation starts immediately on the next frame.
+    *   **CS (Strict):** Always respects the animation's "Exit Branch" or end-of-sequence logic. The new animation is queued and only starts after the current animation finishes its current loop or exits via an `ExitBranch` frame.
+    *   **Example Scenario:** A user clicks "Wave" while Clippit is doing a 100-frame "Idle" animation.
+        *   **CS:** Clippit continues idling until he hits a frame with an `ExitBranch` (which might be 20 frames away), making the click feel unresponsive.
+        *   **TS:** Clippit stops idling and starts the "Wave" animation on the very next frame update (~16ms later).
 *   **Interruption Implementation:**
-    *   **TS:** `interruptAndPlayAnimation` returns a promise that awaits the completion of the *current* animation's exit branch before starting the next one.
+    *   **TS:** `interruptAndPlayAnimation` returns a promise that awaits the completion of the *current* animation's exit branch (if non-idle) before starting the next one.
     *   **CS:** Uses `TaskCompletionSource` and a `queuedAnimation` variable to handle hand-offs.
 *   **Sound Triggering:**
     *   **TS:** The `AnimationManager` is responsible for checking the frame for `soundEffect` and calling the `AudioManager` during its `update` loop.
