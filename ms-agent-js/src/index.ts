@@ -1,3 +1,4 @@
+export { Agent } from './Agent';
 export { CharacterParser } from './CharacterParser';
 export { SpriteManager } from './SpriteManager';
 export { AnimationManager } from './AnimationManager';
