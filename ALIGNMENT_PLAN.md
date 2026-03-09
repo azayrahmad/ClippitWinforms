@@ -45,3 +45,12 @@ This document outlines the proposed technical changes to bring the `ms-agent-js`
             - Play the `"Hiding"` animation.
             - Once complete, set `isPaused = true` and hide the canvas.
 - **Benefit:** Achieves visual parity with the C# implementation, where the agent smoothly appears and disappears rather than simply popping in/out of existence.
+
+## 5. Strict Interruption Logic
+**Goal:** Revert the "Idle Optimization" to strictly follow the C# interruption behavior.
+
+- **Proposed Change:** Remove the immediate interruption of Idle animations in `AnimationManager.ts`.
+- **Implementation:**
+    - Modify `interruptAndPlayAnimation` to remove the check that skips exit branches for animations starting with "Idle".
+    - Ensure all animations (including Idle) set `isExiting = true` and wait for either an `ExitBranch` frame or the end of the animation loop before the next animation begins.
+- **Benefit:** Functional parity with the original .NET implementation, ensuring transitions follow the paths defined in the agent's `.acd` file.
