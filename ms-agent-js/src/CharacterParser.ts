@@ -129,7 +129,7 @@ export class CharacterParser {
             this.currentCharacter.style = this.parseStyle(value);
             break;
           case 'ColorTable':
-            this.currentCharacter.colorTable = value;
+            this.currentCharacter.colorTable = value.replace(/\\/g, '/');
             break;
         }
       }
@@ -348,7 +348,7 @@ export class CharacterParser {
 
         switch (key) {
           case 'Filename':
-            image.filename = value;
+            image.filename = value.replace(/\\/g, '/');
             break;
           case 'OffsetX':
             image.offsetX = parseInt(value, 10);

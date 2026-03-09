@@ -20,6 +20,18 @@ export class AnimationManager {
   private animationPromise: { resolve: (val: boolean) => void; reject: (err: any) => void } | null = null;
   private scale: number = 2;
 
+  public get currentAnimationName(): string {
+    return this.currentAnimation?.name || '';
+  }
+
+  public get isExitingFlag(): boolean {
+    return this.isExiting;
+  }
+
+  public set isExitingFlag(value: boolean) {
+    this.isExiting = value;
+  }
+
   public onFrameChanged: (() => void) | null = null;
   public onAnimationCompleted: ((animationName: string) => void) | null = null;
 
@@ -77,10 +89,9 @@ export class AnimationManager {
   /**
    * Updates the animation frame based on elapsed time.
    */
-  public update(): void {
+  public update(currentTime: number = performance.now()): void {
     if (!this.currentAnimation || this.currentAnimation.frames.length === 0) return;
 
-    const currentTime = performance.now();
     const currentFrame = this.currentAnimation.frames[this.currentFrameIndex];
 
     // Frame duration is in centiseconds, convert to milliseconds
@@ -104,11 +115,56 @@ export class AnimationManager {
     }
   }
 
-  private getNextFrameIndex(_currentFrame: FrameDefinition): number {
-    // Branching and exit branches are for later phases, but keeping it simple for now
-    // as per current instruction to ignore them in Phase 4.
-    // However, the C# logic for normal progression is just (currentFrameIndex + 1) % frames.count
+  private getNextFrameIndex(currentFrame: FrameDefinition): number {
+    if (this.isExiting && currentFrame.exitBranch !== undefined) {
+      return currentFrame.exitBranch - 1;
+    }
+
+    if (currentFrame.branching && currentFrame.branching.length > 0) {
+      const randomValue = Math.floor(Math.random() * 100);
+      let cumulative = 0;
+
+      for (const branch of currentFrame.branching) {
+        cumulative += branch.probability;
+        if (randomValue < cumulative) {
+          return branch.branchTo - 1;
+        }
+      }
+    }
+
     return (this.currentFrameIndex + 1) % this.currentAnimation!.frames.length;
+  }
+
+  public async interruptAndPlayAnimation(newAnimationName: string): Promise<boolean> {
+    if (!this.isAnimating) {
+      return this.playAnimation(newAnimationName);
+    }
+
+    // If the animation being interrupted is an Idle animation, we can skip the exit branch
+    // to make manual interactions feel more responsive.
+    const isIdle = this.currentAnimation?.name.toLowerCase().startsWith('idle');
+
+    if (!isIdle) {
+      // Trigger exit branch of current animation
+      this.isExiting = true;
+
+      // Wait for current animation to complete its exit branch
+      if (this.animationPromise) {
+        await new Promise((resolve) => {
+          const checkCompletion = () => {
+            if (!this.isAnimating || !this.isExiting) {
+               resolve(true);
+            } else {
+               setTimeout(checkCompletion, 16);
+            }
+          };
+          checkCompletion();
+        });
+      }
+    }
+
+    // Play the new animation
+    return this.playAnimation(newAnimationName);
   }
 
   private completeAnimation(): void {
