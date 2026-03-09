@@ -51,7 +51,7 @@ export class AnimationManager {
   }
 
   public get isAnimating(): boolean {
-    return this.currentAnimation !== null;
+    return this.currentAnimation !== null && (!this.isExiting || this.animationPromise !== null);
   }
 
   /**
@@ -92,6 +92,9 @@ export class AnimationManager {
   public update(currentTime: number = performance.now()): void {
     if (!this.currentAnimation || this.currentAnimation.frames.length === 0) return;
 
+    // If we've completed an exit animation, don't update further
+    if (this.isExiting && !this.animationPromise) return;
+
     const currentFrame = this.currentAnimation.frames[this.currentFrameIndex];
 
     // Frame duration is in centiseconds, convert to milliseconds
@@ -99,6 +102,12 @@ export class AnimationManager {
       const nextFrameIndex = this.getNextFrameIndex(currentFrame);
 
       if (this.isExiting && currentFrame.exitBranch === undefined && nextFrameIndex === 0) {
+        this.completeAnimation();
+        return;
+      }
+
+      // If we are exiting and reached the end of the ExitBranch sequence
+      if (this.isExiting && currentFrame.exitBranch !== undefined && nextFrameIndex === 0) {
         this.completeAnimation();
         return;
       }
@@ -135,36 +144,33 @@ export class AnimationManager {
     return (this.currentFrameIndex + 1) % this.currentAnimation!.frames.length;
   }
 
-  public async interruptAndPlayAnimation(newAnimationName: string): Promise<boolean> {
+  public async interruptAndPlayAnimation(
+    newAnimationName: string,
+    useExitBranch: boolean = false
+  ): Promise<boolean> {
     if (!this.isAnimating) {
-      return this.playAnimation(newAnimationName);
+      return this.playAnimation(newAnimationName, useExitBranch);
     }
 
-    // If the animation being interrupted is an Idle animation, we can skip the exit branch
-    // to make manual interactions feel more responsive.
-    const isIdle = this.currentAnimation?.name.toLowerCase().startsWith('idle');
+    // Trigger exit branch of current animation
+    this.isExiting = true;
 
-    if (!isIdle) {
-      // Trigger exit branch of current animation
-      this.isExiting = true;
-
-      // Wait for current animation to complete its exit branch
-      if (this.animationPromise) {
-        await new Promise((resolve) => {
-          const checkCompletion = () => {
-            if (!this.isAnimating || !this.isExiting) {
-               resolve(true);
-            } else {
-               setTimeout(checkCompletion, 16);
-            }
-          };
-          checkCompletion();
-        });
-      }
+    // Wait for current animation to complete its exit branch
+    if (this.animationPromise) {
+      await new Promise((resolve) => {
+        const checkCompletion = () => {
+          if (!this.isAnimating || !this.isExiting) {
+            resolve(true);
+          } else {
+            setTimeout(checkCompletion, 16);
+          }
+        };
+        checkCompletion();
+      });
     }
 
     // Play the new animation
-    return this.playAnimation(newAnimationName);
+    return this.playAnimation(newAnimationName, useExitBranch);
   }
 
   private completeAnimation(): void {

@@ -104,6 +104,8 @@ async function initDemo() {
     canvas.width = spriteManager.getSpriteWidth() * scale;
     canvas.height = spriteManager.getSpriteHeight() * scale;
     canvas.style.imageRendering = 'pixelated';
+    canvas.style.display = 'block';
+    canvas.style.margin = '0 auto';
     // Transparent checkered background
     canvas.style.background = 'url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAAXNSR0IArs4c6QAAACBJREFUGFdjZEADJghG4CH8/z8DE6Y8mI6BBZghGEIHAMYICAn3m09WAAAAAElFTkSuQmCC") repeat';
     container.appendChild(canvas);
@@ -127,8 +129,19 @@ async function initDemo() {
     visibilityBtn.addEventListener('click', async () => {
         isVisible = !isVisible;
         visibilityBtn.textContent = isVisible ? 'Hide' : 'Show';
-        canvas.style.display = isVisible ? 'block' : 'none';
+        visibilityBtn.setAttribute('disabled', 'true');
+
+        if (isVisible) {
+            canvas.style.display = 'block';
+        }
+
         await stateManager.handleVisibilityChange(isVisible);
+
+        if (!isVisible) {
+            canvas.style.display = 'none';
+        }
+
+        visibilityBtn.removeAttribute('disabled');
     });
 
     // Animation Loop

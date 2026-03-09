@@ -10,6 +10,25 @@ import {
   CharacterStyle,
   type AgentCharacterDefinition,
 } from './types';
+import { validate as uuidValidate } from 'uuid';
+
+/**
+ * Mapping from Windows LCID to BCP 47 language tags.
+ */
+const LCID_MAP: Record<string, string> = {
+  '0x0409': 'en-US', // English - United States
+  '0x0809': 'en-GB', // English - United Kingdom
+  '0x040c': 'fr-FR', // French - France
+  '0x0407': 'de-DE', // German - Germany
+  '0x0410': 'it-IT', // Italian - Italy
+  '0x040a': 'es-ES', // Spanish - Spain
+  '0x0411': 'ja-JP', // Japanese - Japan
+  '0x0412': 'ko-KR', // Korean - Korea
+  '0x0404': 'zh-TW', // Chinese - Taiwan
+  '0x0804': 'zh-CN', // Chinese - China
+  '0x0416': 'pt-BR', // Portuguese - Brazil
+  '0x0419': 'ru-RU', // Russian - Russia
+};
 
 /**
  * CharacterParser class for parsing .acd files into AgentCharacterDefinition.
@@ -110,9 +129,14 @@ export class CharacterParser {
         const value = parts.slice(1).join('=').trim().replace(/"/g, '');
 
         switch (key) {
-          case 'GUID':
-            this.currentCharacter.guid = value.replace(/{|}/g, '');
+          case 'GUID': {
+            const normalizedGuid = value.replace(/{|}/g, '');
+            if (!uuidValidate(normalizedGuid)) {
+              console.warn(`Invalid GUID found in .acd file: ${value}. Using raw string as fallback.`);
+            }
+            this.currentCharacter.guid = normalizedGuid;
             break;
+          }
           case 'Width':
             this.currentCharacter.width = parseInt(value, 10);
             break;
@@ -144,8 +168,12 @@ export class CharacterParser {
     const match = line.match(/0x([0-9A-Fa-f]{4})/);
     if (!match) return i;
 
+    const lcid = `0x${match[1].toLowerCase()}`;
+    const localeTag = LCID_MAP[lcid] || 'en-US'; // Default to en-US if unknown
+
     this.currentLanguageInfo = {
-      languageCode: `0x${match[1]}`,
+      languageCode: lcid,
+      locale: new Intl.Locale(localeTag),
       name: '',
       description: '',
       greetings: [],

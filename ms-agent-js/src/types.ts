@@ -57,6 +57,7 @@ export interface State {
 
 export interface Info {
   languageCode: string;
+  locale: Intl.Locale;
   name: string;
   description: string;
   greetings: string[];
