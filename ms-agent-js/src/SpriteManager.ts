@@ -69,7 +69,7 @@ export class SpriteManager {
     if (this.sprites.has(filename)) return;
 
     // Fix path separators and normalization
-    const normalizedFilename = filename.replace(/\\/g, '/').split('/').pop() || filename;
+    const normalizedFilename = filename.replace(/\\/g, '/').toLowerCase().split('/').pop() || filename;
     const url = filename.startsWith('http') ? filename : `${this.agentRoot}/images/${normalizedFilename}`;
     const response = await fetch(url);
     if (!response.ok) {

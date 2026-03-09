@@ -9,7 +9,8 @@
     ".": {
       "import": "./dist/ms-agent-js.es.js",
       "require": "./dist/ms-agent-js.umd.js"
-    }
+    },
+    "./dist/*": "./dist/*"
   },
   "scripts": {
     "dev": "vite",
@@ -18,11 +19,13 @@
     "test": "vitest run"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@types/node": "^25.3.5",
     "@types/uuid": "^11.0.0",
     "@vitest/ui": "^4.0.18",
     "typescript": "~5.9.3",
     "vite": "^7.3.1",
+    "vite-plugin-static-copy": "^3.2.0",
     "vitest": "^4.0.18"
   },
   "dependencies": {
