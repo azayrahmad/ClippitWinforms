@@ -19,9 +19,13 @@
   },
   "devDependencies": {
     "@types/node": "^25.3.5",
+    "@types/uuid": "^11.0.0",
     "@vitest/ui": "^4.0.18",
     "typescript": "~5.9.3",
     "vite": "^7.3.1",
     "vitest": "^4.0.18"
+  },
+  "dependencies": {
+    "uuid": "^13.0.0"
   }
 }

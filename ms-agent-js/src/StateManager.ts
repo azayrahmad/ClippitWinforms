@@ -125,27 +125,31 @@ export class StateManager {
     }
   }
 
-  public async playAnimation(animationName: string, stateName: string = ''): Promise<boolean> {
+  public async playAnimation(
+    animationName: string,
+    stateName: string = '',
+    useExitBranch: boolean = false
+  ): Promise<boolean> {
     if (stateName) {
       this.currentState = stateName;
     }
 
     if (this.currentState !== 'Playing' && !this.isIdleState(this.currentState)) {
-        this.resetIdleProgression();
+      this.resetIdleProgression();
     }
 
     await this.animationManager.preloadAnimation(animationName);
-    const result = await this.animationManager.interruptAndPlayAnimation(animationName);
+    const result = await this.animationManager.interruptAndPlayAnimation(animationName, useExitBranch);
 
     if (this.currentState === 'Playing' || !this.animationManager.isAnimating) {
-        await this.handleAnimationCompleted();
+      await this.handleAnimationCompleted();
     }
 
     return result;
   }
 
   public async playRandomAnimation(): Promise<void> {
-    const allAnimations = Object.keys(this.animationManager['animations' as keyof AnimationManager]); // accessing private animations for demo
+    const allAnimations = Object.keys((this.animationManager as any).animations); // accessing private animations for demo
     const selectableAnimations = allAnimations.filter(name => !this.isIdleState(name));
 
     if (selectableAnimations.length > 0) {
@@ -181,12 +185,32 @@ export class StateManager {
   }
 
   public async handleVisibilityChange(showing: boolean): Promise<void> {
+    const visibilityState = showing ? 'Showing' : 'Hiding';
+
+    if (this.states[visibilityState]) {
+      const state = this.states[visibilityState];
+      if (state.animations.length > 0) {
+        // Use the first animation for visibility transitions
+        const animName = state.animations[0];
+
+        // Ensure we are not paused while playing the visibility transition
+        this.isPaused = false;
+
+        // Use the common playAnimation wrapper with useExitBranch=true
+        // to ensure it plays through to the end of the sequence once.
+        await this.playAnimation(animName, visibilityState, true);
+      }
+    }
+
     this.isPaused = !showing;
+
     if (showing) {
       this.resetIdleProgression();
       await this.setIdleState(1);
     } else {
-        this.animationManager.isExitingFlag = true;
+      // Ensure the animation is cleared when hidden
+      this.animationManager.setAnimation('', false);
+      this.currentState = 'Hidden';
     }
   }
 }
