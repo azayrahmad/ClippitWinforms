@@ -164,7 +164,7 @@ async function initDemo() {
   });
 
   playBtn.addEventListener('click', () => {
-    currentAgent?.play(animationSelect.value);
+    currentAgent?.play(animationSelect.value, 5000);
   });
 
   randomBtn.addEventListener('click', () => {

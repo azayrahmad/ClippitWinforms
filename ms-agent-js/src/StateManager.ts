@@ -128,7 +128,8 @@ export class StateManager {
   public async playAnimation(
     animationName: string,
     stateName: string = '',
-    useExitBranch: boolean = false
+    useExitBranch: boolean = false,
+    timeoutMs?: number
   ): Promise<boolean> {
     if (stateName) {
       this.currentState = stateName;
@@ -139,22 +140,34 @@ export class StateManager {
     }
 
     await this.animationManager.preloadAnimation(animationName);
-    const result = await this.animationManager.interruptAndPlayAnimation(animationName, useExitBranch);
 
-    if (this.currentState === 'Playing' || !this.animationManager.isAnimating) {
-      await this.handleAnimationCompleted();
+    let timeoutId: any;
+    if (timeoutMs) {
+      timeoutId = setTimeout(() => {
+        this.animationManager.isExitingFlag = true;
+      }, timeoutMs);
     }
 
-    return result;
+    try {
+      const result = await this.animationManager.interruptAndPlayAnimation(animationName, useExitBranch);
+      return result;
+    } finally {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      if (this.currentState === 'Playing' || !this.animationManager.isAnimating) {
+        await this.handleAnimationCompleted();
+      }
+    }
   }
 
-  public async playRandomAnimation(): Promise<void> {
+  public async playRandomAnimation(timeoutMs: number = 5000): Promise<void> {
     const allAnimations = Object.keys((this.animationManager as any).animations); // accessing private animations for demo
     const selectableAnimations = allAnimations.filter(name => !this.isIdleState(name));
 
     if (selectableAnimations.length > 0) {
       const randomAnimation = selectableAnimations[Math.floor(Math.random() * selectableAnimations.length)];
-      this.playAnimation(randomAnimation, 'Playing');
+      await this.playAnimation(randomAnimation, 'Playing', false, timeoutMs);
     }
   }
 

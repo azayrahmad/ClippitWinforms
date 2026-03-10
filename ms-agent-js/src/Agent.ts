@@ -59,7 +59,7 @@ export class Agent {
     const style = document.createElement('style');
     style.textContent = `
       :host {
-        display: none;
+        display: block;
         position: ${options.fixed ? 'fixed' : 'absolute'};
         left: ${options.x}px;
         top: ${options.y}px;
@@ -213,9 +213,9 @@ export class Agent {
   /**
    * Plays a specific animation.
    */
-  public async play(animationName: string): Promise<void> {
+  public async play(animationName: string, timeoutMs?: number): Promise<void> {
     this.emit('animationStart', animationName);
-    await this.stateManager.playAnimation(animationName, 'Playing');
+    await this.stateManager.playAnimation(animationName, 'Playing', false, timeoutMs);
     this.emit('animationEnd', animationName);
   }
 
