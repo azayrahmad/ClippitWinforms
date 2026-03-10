@@ -166,31 +166,45 @@ async function optimizeAgent(agentDir: string, audioFormat: 'webm' | 'mp3' = 'we
     const processedImages = [];
     const spritesheetMap: Record<string, SpritesheetMapEntry> = {};
 
-    // For simplicity, we'll pack them in a vertical strip first
-    // In a real packer we'd do something smarter, but this is a good start.
-    let currentY = 0;
-    let maxWidth = 0;
-
     for (const imgFile of imageFiles) {
         const { data, width, height } = await processBmp(path.join(imageDir, imgFile), transparencyColor);
         processedImages.push({ data, width, height, name: imgFile });
+    }
 
-        spritesheetMap[imgFile] = {
-            x: 0,
-            y: currentY,
-            w: width,
-            h: height
+    // Pack them in a grid to avoid exceeding WebP size limits (16383x16383)
+    // We'll aim for a roughly square spritesheet
+    const numImages = processedImages.length;
+    if (numImages === 0) throw new Error("No images found to pack.");
+
+    const cellWidth = definition.character.width;
+    const cellHeight = definition.character.height;
+    const columns = Math.ceil(Math.sqrt(numImages));
+
+    const spritesheetWidth = columns * cellWidth;
+    const spritesheetHeight = Math.ceil(numImages / columns) * cellHeight;
+
+    if (spritesheetWidth > 16383 || spritesheetHeight > 16383) {
+        throw new Error(`Spritesheet size ${spritesheetWidth}x${spritesheetHeight} exceeds WebP limits.`);
+    }
+
+    for (let i = 0; i < processedImages.length; i++) {
+        const img = processedImages[i];
+        const col = i % columns;
+        const row = Math.floor(i / columns);
+
+        spritesheetMap[img.name] = {
+            x: col * cellWidth,
+            y: row * cellHeight,
+            w: img.width,
+            h: img.height
         };
-
-        currentY += height;
-        maxWidth = Math.max(maxWidth, width);
     }
 
     // Create spritesheet
     const spritesheetBuffer = await sharp({
         create: {
-            width: maxWidth,
-            height: currentY,
+            width: spritesheetWidth,
+            height: spritesheetHeight,
             channels: 4,
             background: { r: 0, g: 0, b: 0, alpha: 0 }
         }
