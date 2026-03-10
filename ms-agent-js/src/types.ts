@@ -69,6 +69,8 @@ export interface AtlasEntry {
   y: number;
   w: number;
   h: number;
+  trimX?: number;
+  trimY?: number;
 }
 
 export interface AudioAtlasEntry {

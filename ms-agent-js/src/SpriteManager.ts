@@ -31,15 +31,24 @@ export class SpriteManager {
   }
 
   private async loadSpriteSheet(): Promise<void> {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => {
+    const extensions = ['webp', 'png'];
+    for (const ext of extensions) {
+      try {
+        await new Promise<void>((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => {
             this.spriteSheet = img;
             resolve();
-        };
-        img.onerror = () => reject(new Error('Failed to load sprite sheet'));
-        img.src = `${this.agentRoot}/agent.png`;
-    });
+          };
+          img.onerror = () => reject();
+          img.src = `${this.agentRoot}/agent.${ext}`;
+        });
+        return;
+      } catch (e) {
+        // Try next extension
+      }
+    }
+    throw new Error('Failed to load sprite sheet (tried webp, png)');
   }
 
   private async loadTransparencyColor(): Promise<void> {
@@ -276,14 +285,16 @@ export class SpriteManager {
       if (this.spriteSheet && this.definition.atlas) {
         const atlasEntry = this.definition.atlas[imgDef.filename];
         if (atlasEntry) {
+          const trimX = atlasEntry.trimX || 0;
+          const trimY = atlasEntry.trimY || 0;
           ctx.drawImage(
             this.spriteSheet,
             atlasEntry.x,
             atlasEntry.y,
             atlasEntry.w,
             atlasEntry.h,
-            x + imgDef.offsetX * scale,
-            y + imgDef.offsetY * scale,
+            x + (imgDef.offsetX + trimX) * scale,
+            y + (imgDef.offsetY + trimY) * scale,
             atlasEntry.w * scale,
             atlasEntry.h * scale
           );
