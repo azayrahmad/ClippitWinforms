@@ -157,7 +157,12 @@ export class Agent {
     };
 
     const agent = new Agent(definition, fullOptions);
-    await agent.init();
+    try {
+      await agent.init();
+    } catch (err) {
+      agent.destroy();
+      throw err;
+    }
     return agent;
   }
 

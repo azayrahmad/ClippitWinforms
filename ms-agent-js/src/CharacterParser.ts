@@ -88,7 +88,7 @@ export class CharacterParser {
         continue;
       }
 
-      if (line === 'EndCharacter') {
+      if (line.startsWith('EndCharacter')) {
         break;
       }
     }
