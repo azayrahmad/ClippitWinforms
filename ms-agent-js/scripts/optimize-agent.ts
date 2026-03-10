@@ -3,6 +3,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import sharp from 'sharp';
 import ffmpeg from 'fluent-ffmpeg';
+import ffmpegPath from '@ffmpeg-installer/ffmpeg';
+import ffprobePath from '@ffprobe-installer/ffprobe';
 import { CharacterParser } from '../src/CharacterParser.js';
 import { AgentCharacterDefinition } from '../src/types.js';
 
@@ -138,6 +140,9 @@ async function processBmp(bmpPath: string, transparencyColor: { r: number, g: nu
 }
 
 async function optimizeAgent(agentDir: string, audioFormat: 'webm' | 'mp3' = 'webm') {
+    ffmpeg.setFfmpegPath(ffmpegPath.path);
+    ffmpeg.setFfprobePath(ffprobePath.path);
+
     const agentName = path.basename(agentDir);
     const optimizedDir = path.join(agentDir, 'optimized');
 

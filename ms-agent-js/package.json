@@ -23,6 +23,8 @@
     "optimize": "tsx scripts/optimize-agent.ts"
   },
   "devDependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
+    "@ffprobe-installer/ffprobe": "^2.1.2",
     "@playwright/test": "^1.58.2",
     "@types/fluent-ffmpeg": "^2.1.28",
     "@types/node": "^25.3.5",
