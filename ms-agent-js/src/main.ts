@@ -77,6 +77,10 @@ async function initDemo() {
           <div class="field-row">
             <input type="text" id="speak-text" value="Hello! My name is Clippy." style="width: 100%;" />
           </div>
+          <div class="field-row">
+            <input type="checkbox" id="skip-typing-check" />
+            <label for="skip-typing-check">Skip typing</label>
+          </div>
           <div class="field-row" style="justify-content: flex-end; gap: 4px; margin-top: 4px;">
             <button id="speak-btn" disabled>Speak</button>
             <button id="ask-btn" disabled>Ask</button>
@@ -99,6 +103,7 @@ async function initDemo() {
   const speakBtn = document.getElementById('speak-btn') as HTMLButtonElement;
   const askBtn = document.getElementById('ask-btn') as HTMLButtonElement;
   const speakTextInput = document.getElementById('speak-text') as HTMLInputElement;
+  const skipTypingCheck = document.getElementById('skip-typing-check') as HTMLInputElement;
 
   const dashState = document.getElementById('dash-state')!;
   const dashAnim = document.getElementById('dash-anim')!;
@@ -211,7 +216,9 @@ async function initDemo() {
   });
 
   speakBtn.addEventListener('click', () => {
-    currentAgent?.speak(speakTextInput.value);
+    currentAgent?.speak(speakTextInput.value, {
+        skipTyping: skipTypingCheck.checked
+    });
   });
 
   askBtn.addEventListener('click', async () => {
@@ -221,9 +228,13 @@ async function initDemo() {
         placeholder: "Type your answer here..."
     });
     if (answer !== null) {
-        currentAgent.speak(`You said: ${answer}`);
+        currentAgent.speak(`You said: ${answer}`, {
+            skipTyping: skipTypingCheck.checked
+        });
     } else {
-        currentAgent.speak("Cancelled.");
+        currentAgent.speak("Cancelled.", {
+            skipTyping: skipTypingCheck.checked
+        });
     }
   });
 

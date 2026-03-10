@@ -338,9 +338,10 @@ export class Agent {
   /**
    * Speaks the given text.
    */
-  public speak(text: string, hold: boolean = false, useTTS: boolean = true): Promise<void> {
+  public speak(text: string, options: { hold?: boolean; useTTS?: boolean; skipTyping?: boolean } = {}): Promise<void> {
+    const { hold = false, useTTS = true, skipTyping = false } = options;
     return new Promise((resolve) => {
-      this.balloon.speak(resolve, text, hold, useTTS);
+      this.balloon.speak(resolve, text, hold, useTTS, skipTyping);
     });
   }
 
@@ -388,26 +389,23 @@ export class Agent {
       const askButton = balloonEl.querySelector('.ask-button') as HTMLButtonElement;
       const cancelButton = balloonEl.querySelector('.cancel-button') as HTMLButtonElement;
 
-      if (input) {
-        input.focus();
-        input.addEventListener('keypress', (e) => {
-          resetBalloonTimeout();
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            handleAsk();
-          }
-        });
-      }
+      const handleKeypress = (e: KeyboardEvent) => {
+        resetBalloonTimeout();
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          handleAsk();
+        }
+      };
 
       const handleAsk = () => {
-        clearBalloonTimeout();
+        cleanup();
         const value = input.value;
         this.balloon.close();
         resolve(value);
       };
 
       const handleCancel = () => {
-        clearBalloonTimeout();
+        cleanup();
         this.balloon.close();
         resolve(null);
       };
@@ -425,6 +423,18 @@ export class Agent {
           inputBalloonTimeout = null;
         }
       };
+
+      const cleanup = () => {
+        clearBalloonTimeout();
+        input?.removeEventListener('keypress', handleKeypress);
+        askButton.removeEventListener('click', handleAsk);
+        cancelButton.removeEventListener('click', handleCancel);
+      };
+
+      if (input) {
+        input.focus();
+        input.addEventListener('keypress', handleKeypress);
+      }
 
       askButton.addEventListener('click', handleAsk);
       cancelButton.addEventListener('click', handleCancel);

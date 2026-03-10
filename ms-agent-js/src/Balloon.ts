@@ -112,7 +112,8 @@ export class Balloon {
     return false;
   }
 
-  public speak(complete: () => void, text: string, hold: boolean, useTTS: boolean) {
+  public speak(complete: () => void, text: string, hold: boolean, useTTS: boolean, skipTyping: boolean = false) {
+    this.stop(); // Clear previous activity
     this._hidden = false;
     this.show();
 
@@ -125,15 +126,40 @@ export class Balloon {
 
     this._contentEl.style.height = `${height}px`;
     this._contentEl.style.width = `${width}px`;
-    this._contentEl.textContent = '';
 
-    this.reposition();
     this._completeCallback = complete;
+    this._hold = hold;
+
+    if (skipTyping) {
+      this.reposition();
+      this._active = false;
+
+      const onDone = () => {
+        complete();
+        if (!this._hold) {
+          this.hide();
+        }
+      };
+
+      if (useTTS && this._ttsEnabled && this._ttsUserEnabled) {
+        this._speakTTS(text, null, onDone);
+      } else {
+        if (!this._hold) {
+          this._hidingTimeout = window.setTimeout(onDone, this.CLOSE_BALLOON_DELAY);
+        } else {
+          onDone();
+        }
+      }
+      return;
+    }
+
+    this._contentEl.textContent = '';
+    this.reposition();
 
     if (useTTS && this._ttsEnabled && this._ttsUserEnabled) {
       const voices = window.speechSynthesis.getVoices();
       if (voices.length === 0) {
-        setTimeout(() => {
+        this._loopTimeout = window.setTimeout(() => {
           const innerVoices = window.speechSynthesis.getVoices();
           if (innerVoices.length === 0) {
             this._sayWords(text, hold, complete);
@@ -150,6 +176,7 @@ export class Balloon {
   }
 
   public showHtml(html: string, hold: boolean) {
+    this.stop();
     this._hidden = false;
     this._balloonEl.style.visibility = 'hidden';
     this._balloonEl.style.display = 'block';
@@ -162,7 +189,7 @@ export class Balloon {
       requestAnimationFrame(() => {
         this.reposition();
         this._balloonEl.style.visibility = 'visible';
-        this._active = true;
+        this._active = false; // It's static content
         this._hold = hold;
       });
     });
@@ -174,6 +201,7 @@ export class Balloon {
   }
 
   public hide(fast: boolean = false) {
+    this.stop();
     if (fast) {
       this._balloonEl.style.display = 'none';
       this._hidden = true;
@@ -201,8 +229,8 @@ export class Balloon {
       if (idx > words.length) {
         this._addWord = null;
         this._active = false;
+        complete();
         if (!this._hold) {
-          complete();
           this.hide();
         }
       } else {
@@ -220,18 +248,22 @@ export class Balloon {
     const words = text.split(/[^\S-]/);
     let idx = 1;
 
+    const onTTSComplete = () => {
+      this._active = false;
+      this._contentEl.textContent = text;
+      complete();
+      if (!this._hold) {
+        this.hide();
+      }
+    };
+
     if (this._isMobile) {
       const onEnd = () => {
         if (this._mobileTTSTimer) {
           clearTimeout(this._mobileTTSTimer);
           this._mobileTTSTimer = null;
         }
-        this._contentEl.textContent = text;
-        this._active = false;
-        if (!this._hold) {
-          complete();
-          this.hide();
-        }
+        onTTSComplete();
       };
       this._speakTTS(text, null, onEnd);
 
@@ -245,11 +277,6 @@ export class Balloon {
       };
       addWord();
       return;
-    }
-
-    if (this._ttsFallbackTimer) {
-      clearTimeout(this._ttsFallbackTimer);
-      this._ttsFallbackTimer = null;
     }
 
     const startFallbackTimer = () => {
@@ -285,12 +312,7 @@ export class Balloon {
         clearTimeout(this._ttsFallbackTimer);
         this._ttsFallbackTimer = null;
       }
-      this._contentEl.textContent = text;
-      this._active = false;
-      if (!this._hold) {
-        complete();
-        this.hide();
-      }
+      onTTSComplete();
     });
 
     startFallbackTimer();
@@ -342,18 +364,39 @@ export class Balloon {
   }
 
   public close() {
-    if (this._active) {
-      this._hold = false;
-    } else if (this._hold) {
-      this._completeCallback?.();
-      this.hide(true);
+    this.stop();
+    this.hide(true);
+    this._completeCallback?.();
+    this._completeCallback = null;
+  }
+
+  public stop() {
+    this._active = false;
+    this._addWord = null;
+    if (this._loopTimeout) {
+        clearTimeout(this._loopTimeout);
+        this._loopTimeout = null;
     }
+    if (this._hidingTimeout) {
+        clearTimeout(this._hidingTimeout);
+        this._hidingTimeout = null;
+    }
+    if (this._ttsFallbackTimer) {
+        clearTimeout(this._ttsFallbackTimer);
+        this._ttsFallbackTimer = null;
+    }
+    if (this._mobileTTSTimer) {
+        clearTimeout(this._mobileTTSTimer);
+        this._mobileTTSTimer = null;
+    }
+    this.stopTTS();
   }
 
   public pause() {
     if (this._loopTimeout) clearTimeout(this._loopTimeout);
     if (this._hidingTimeout) clearTimeout(this._hidingTimeout);
     if (this._ttsFallbackTimer) clearTimeout(this._ttsFallbackTimer);
+    if (this._mobileTTSTimer) clearTimeout(this._mobileTTSTimer);
   }
 
   public resume() {
