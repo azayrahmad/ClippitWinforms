@@ -29,6 +29,11 @@ async function initDemo() {
         <fieldset>
           <legend>Actions</legend>
           <div class="field-row">
+            <label for="scale-range">Scale:</label>
+            <input id="scale-range" type="range" min="1" max="5" step="0.1" value="2">
+            <span id="scale-value">2.0x</span>
+          </div>
+          <div class="field-row">
             <label for="animation-select">Animation:</label>
             <select id="animation-select"></select>
           </div>
@@ -80,6 +85,8 @@ async function initDemo() {
   `;
 
   const agentSelect = document.getElementById('agent-select') as HTMLSelectElement;
+  const scaleRange = document.getElementById('scale-range') as HTMLInputElement;
+  const scaleValue = document.getElementById('scale-value') as HTMLSpanElement;
   const animationSelect = document.getElementById('animation-select') as HTMLSelectElement;
   const stateSelect = document.getElementById('state-select') as HTMLSelectElement;
   const playBtn = document.getElementById('play-btn') as HTMLButtonElement;
@@ -115,9 +122,10 @@ async function initDemo() {
     dashNextTick.textContent = '-';
 
     try {
+      const scale = parseFloat(scaleRange.value);
       currentAgent = await Agent.load(name, {
         baseUrl: `/agents/${name}`,
-        scale: 2,
+        scale: scale,
         useAudio: true
       });
 
@@ -161,6 +169,12 @@ async function initDemo() {
 
   agentSelect.addEventListener('change', () => {
     loadAgent(agentSelect.value);
+  });
+
+  scaleRange.addEventListener('input', () => {
+    const scale = parseFloat(scaleRange.value);
+    scaleValue.textContent = `${scale.toFixed(1)}x`;
+    currentAgent?.setScale(scale);
   });
 
   playBtn.addEventListener('click', () => {
