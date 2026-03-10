@@ -1,6 +1,7 @@
 import {
   type FrameDefinition,
   type AgentCharacterDefinition,
+  type OptimizedAgent,
 } from './types';
 
 /**
@@ -8,21 +9,47 @@ import {
  * Ported from C# SpriteManager.cs.
  */
 export class SpriteManager {
-  private sprites: Map<string, HTMLCanvasElement> = new Map();
+  private sprites: Map<string, HTMLCanvasElement | HTMLImageElement> = new Map();
   private transparencyColor: { r: number; g: number; b: number } | null = null;
   private agentRoot: string;
   private definition: AgentCharacterDefinition;
+  private optimizedData: OptimizedAgent | null = null;
+  private spritesheetImage: HTMLImageElement | null = null;
 
-  constructor(agentRoot: string, definition: AgentCharacterDefinition) {
+  constructor(agentRoot: string, definition: AgentCharacterDefinition, optimizedData: OptimizedAgent | null = null) {
     this.agentRoot = agentRoot;
     this.definition = definition;
+    this.optimizedData = optimizedData;
   }
 
   /**
    * Initializes the SpriteManager by loading the transparency color.
    */
   public async init(): Promise<void> {
-    await this.loadTransparencyColor();
+    if (this.optimizedData) {
+      await this.loadSpritesheet();
+    } else {
+      await this.loadTransparencyColor();
+    }
+  }
+
+  private async loadSpritesheet(): Promise<void> {
+    if (!this.optimizedData) return;
+    const url = this.optimizedData.spritesheet.file.startsWith('http')
+      ? this.optimizedData.spritesheet.file
+      : `${this.agentRoot}/${this.optimizedData.spritesheet.file}`;
+
+    this.spritesheetImage = await this.loadImage(url);
+  }
+
+  private loadImage(url: string): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => resolve(img);
+      img.onerror = (e) => reject(new Error(`Failed to load image: ${url}`));
+      img.src = url;
+    });
   }
 
   private async loadTransparencyColor(): Promise<void> {
@@ -66,6 +93,10 @@ export class SpriteManager {
    * Loads a sprite BMP file and caches it.
    */
   public async loadSprite(filename: string): Promise<void> {
+    if (this.optimizedData) {
+      // In optimized mode, all sprites are in the spritesheet
+      return;
+    }
     if (this.sprites.has(filename)) return;
 
     // Fix path separators and normalization
@@ -195,15 +226,34 @@ export class SpriteManager {
     // Draw images in reverse order as per the original implementation
     for (let i = frame.images.length - 1; i >= 0; i--) {
       const imgDef = frame.images[i];
-      const sprite = this.sprites.get(imgDef.filename);
-      if (sprite) {
-        ctx.drawImage(
-          sprite,
-          x + imgDef.offsetX * scale,
-          y + imgDef.offsetY * scale,
-          sprite.width * scale,
-          sprite.height * scale
-        );
+
+      if (this.optimizedData && this.spritesheetImage) {
+        const filename = imgDef.filename.replace(/\\/g, '/').split('/').pop() || imgDef.filename;
+        const mapEntry = this.optimizedData.spritesheet.map[filename];
+        if (mapEntry) {
+          ctx.drawImage(
+            this.spritesheetImage,
+            mapEntry.x,
+            mapEntry.y,
+            mapEntry.w,
+            mapEntry.h,
+            x + imgDef.offsetX * scale,
+            y + imgDef.offsetY * scale,
+            mapEntry.w * scale,
+            mapEntry.h * scale
+          );
+        }
+      } else {
+        const sprite = this.sprites.get(imgDef.filename) as HTMLCanvasElement;
+        if (sprite) {
+          ctx.drawImage(
+            sprite,
+            x + imgDef.offsetX * scale,
+            y + imgDef.offsetY * scale,
+            sprite.width * scale,
+            sprite.height * scale
+          );
+        }
       }
     }
   }

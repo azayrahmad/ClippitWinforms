@@ -70,3 +70,27 @@ export interface AgentCharacterDefinition {
   animations: Record<string, Animation>;
   states: Record<string, State>;
 }
+
+export interface SpritesheetMapEntry {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+export interface AudioSpriteMapEntry {
+  start: number;
+  duration: number;
+}
+
+export interface OptimizedAgent {
+  definition: AgentCharacterDefinition;
+  spritesheet: {
+    file: string;
+    map: Record<string, SpritesheetMapEntry>;
+  };
+  audio: {
+    file: string;
+    map: Record<string, AudioSpriteMapEntry>;
+  };
+}

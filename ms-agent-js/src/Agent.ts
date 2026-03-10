@@ -3,7 +3,7 @@ import { SpriteManager } from './SpriteManager';
 import { AnimationManager } from './AnimationManager';
 import { AudioManager } from './AudioManager';
 import { StateManager } from './StateManager';
-import type { AgentCharacterDefinition } from './types';
+import type { AgentCharacterDefinition, OptimizedAgent } from './types';
 
 export interface AgentOptions {
   container?: HTMLElement;
@@ -15,6 +15,7 @@ export interface AgentOptions {
   fixed?: boolean;
   x?: number;
   y?: number;
+  optimized?: boolean;
 }
 
 type AgentEvent = 'click' | 'animationStart' | 'animationEnd' | 'stateChange' | 'show' | 'hide';
@@ -42,7 +43,7 @@ export class Agent {
 
   private listeners: Map<AgentEvent, Set<AgentEventListener>> = new Map();
 
-  private constructor(definition: AgentCharacterDefinition, options: Required<AgentOptions>) {
+  private constructor(definition: AgentCharacterDefinition, options: Required<AgentOptions>, optimizedData: OptimizedAgent | null = null) {
     this.definition = definition;
     this.options = options;
 
@@ -81,8 +82,8 @@ export class Agent {
     this.ctx = this.canvas.getContext('2d')!;
 
     // Managers
-    this.spriteManager = new SpriteManager(options.baseUrl, definition);
-    this.audioManager = new AudioManager(options.baseUrl);
+    this.spriteManager = new SpriteManager(options.baseUrl, definition, optimizedData);
+    this.audioManager = new AudioManager(options.baseUrl, optimizedData);
     this.audioManager.setEnabled(options.useAudio);
     this.animationManager = new AnimationManager(this.spriteManager, this.audioManager, definition.animations);
     this.stateManager = new StateManager(definition.states, this.animationManager, {
@@ -110,19 +111,32 @@ export class Agent {
     const defaultBaseUrl = `https://unpkg.com/ms-agent-js@latest/dist/agents/${name}`;
     const baseUrl = (options.baseUrl || defaultBaseUrl).replace(/\/$/, '');
 
-    // Try to find the .acd file. We try the uppercase name first, but we are robust.
-    const acdPath = `${baseUrl}/${name.toUpperCase()}.acd`;
+    let definition: AgentCharacterDefinition;
+    let optimizedData: OptimizedAgent | null = null;
 
-    const definition = await CharacterParser.load(acdPath).catch(async (err) => {
+    if (options.optimized) {
+      const optimizedPath = `${baseUrl}/optimized/agent.json`;
+      const response = await fetch(optimizedPath);
+      if (!response.ok) {
+        throw new Error(`Failed to load optimized agent data: ${response.statusText}`);
+      }
+      optimizedData = await response.json() as OptimizedAgent;
+      definition = optimizedData.definition;
+    } else {
+      // Try to find the .acd file. We try the uppercase name first, but we are robust.
+      const acdPath = `${baseUrl}/${name.toUpperCase()}.acd`;
+
+      definition = await CharacterParser.load(acdPath).catch(async (err) => {
         // Fallback to lowercase if uppercase fails
         try {
-            return await CharacterParser.load(`${baseUrl}/${name.toLowerCase()}.acd`);
+          return await CharacterParser.load(`${baseUrl}/${name.toLowerCase()}.acd`);
         } catch (innerErr) {
-            console.error(`MSAgentJS: Failed to load agent assets for '${name}' at ${baseUrl}. ` +
-                          `Please ensure the 'agents/' directory is correctly served and 'baseUrl' is correct.`);
-            throw err;
+          console.error(`MSAgentJS: Failed to load agent assets for '${name}' at ${baseUrl}. ` +
+            `Please ensure the 'agents/' directory is correctly served and 'baseUrl' is correct.`);
+          throw err;
         }
-    });
+      });
+    }
 
     // Normalize paths in definition to be relative to baseUrl
     if (definition.character.colorTable && !definition.character.colorTable.startsWith('http')) {
@@ -152,9 +166,10 @@ export class Agent {
       fixed: options.fixed ?? true,
       x: options.x ?? (window.innerWidth - definition.character.width * (options.scale ?? 1) - 50),
       y: options.y ?? (window.innerHeight - definition.character.height * (options.scale ?? 1) - 50),
+      optimized: options.optimized ?? false,
     };
 
-    const agent = new Agent(definition, fullOptions);
+    const agent = new Agent(definition, fullOptions, optimizedData);
     await agent.init();
     return agent;
   }
