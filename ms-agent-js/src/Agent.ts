@@ -122,6 +122,8 @@ export class Agent {
         if (response.ok) {
           optimizedData = await response.json() as OptimizedAgent;
           definition = optimizedData.definition;
+          // Update baseUrl to the optimized directory so managers find the spritesheet/audio
+          baseUrl = `${baseUrl}/optimized`;
         }
       } catch (e) {
         // Fallback to legacy
