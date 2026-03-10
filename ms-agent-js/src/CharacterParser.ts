@@ -88,9 +88,7 @@ export class CharacterParser {
         continue;
       }
 
-      if (line.startsWith('EndCharacter')) {
-        break;
-      }
+      // Sibling sections (DefineAnimation, DefineState) can follow EndCharacter
     }
 
     return this.currentAgent as AgentCharacterDefinition;
@@ -113,13 +111,6 @@ export class CharacterParser {
       const line = lines[i].trim();
       if (line.startsWith('DefineInfo')) {
         i = this.parseCharacterInfo(lines, i);
-      }
-
-      if (line === 'EndInfo') {
-        if (this.currentLanguageInfo) {
-          this.currentCharacter.infos.push(this.currentLanguageInfo);
-          this.currentLanguageInfo = null;
-        }
       }
 
       // Parse key-value pairs

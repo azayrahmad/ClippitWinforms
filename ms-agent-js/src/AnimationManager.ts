@@ -59,28 +59,30 @@ export class AnimationManager {
   }
 
   /**
+   * Finishes the current animation, resolving any pending promises.
+   */
+  public finishCurrentAnimation(): void {
+    if (this.currentAnimation) {
+      this.completeAnimation();
+      this.currentAnimation = null;
+    }
+  }
+
+  /**
    * Sets the current animation without waiting for it to complete.
    */
   public setAnimation(animationName: string, useExitBranch: boolean = false): void {
     const animation = this.animations[animationName];
     if (animation) {
-      // If we are setting a new animation, the previous one's promise must be resolved.
-      // We check if it's the SAME animation because if it's the same, we're just restarting it
-      // but we should still resolve the previous promise to avoid a hang.
-      if (this.animationPromise) {
-        this.completeAnimation();
-      }
+      // Finish previous animation if any
+      this.finishCurrentAnimation();
 
-      const previousAnimation = this.currentAnimation?.name || '';
       this.isExiting = useExitBranch;
       this.currentAnimation = animation;
       this.currentFrameIndex = 0;
       this.lastFrameTime = performance.now();
 
       this.onFrameChanged?.();
-      if (previousAnimation && previousAnimation !== animationName) {
-        this.onAnimationCompleted?.(previousAnimation);
-      }
 
       // Load first frame's sound if any
       this.checkAndPlaySound(this.currentFrame);
@@ -91,6 +93,9 @@ export class AnimationManager {
    * Plays an animation and returns a promise that resolves when it's done.
    */
   public async playAnimation(animationName: string, useExitBranch: boolean = false): Promise<boolean> {
+    // If we're already playing an animation, finish it first to ensure its promise resolves
+    this.finishCurrentAnimation();
+
     return new Promise((resolve, reject) => {
       this.animationPromise = { resolve, reject };
       this.setAnimation(animationName, useExitBranch);
@@ -160,6 +165,17 @@ export class AnimationManager {
     useExitBranch: boolean = false
   ): Promise<boolean> {
     if (!this.isAnimating) {
+      return this.playAnimation(newAnimationName, useExitBranch);
+    }
+
+    // Optimization: If the current animation is an "Idle" animation,
+    // we snap directly to the new one instead of waiting for the exit branch.
+    // This matches the responsiveness of the original C# implementation.
+    const currentName = this.currentAnimation?.name.toLowerCase() || '';
+    if (currentName.startsWith('idle')) {
+      // Resolve the current promise and start the new animation immediately.
+      // We manually finish the current animation to avoid recursion in playAnimation.
+      this.finishCurrentAnimation();
       return this.playAnimation(newAnimationName, useExitBranch);
     }
 
