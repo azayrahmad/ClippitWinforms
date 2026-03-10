@@ -1,4 +1,5 @@
 import { MSADPCMDecoder } from './MSADPCMDecoder';
+import { type OptimizedAgent } from './types';
 
 /**
  * AudioManager class for loading and playing agent sound effects.
@@ -10,9 +11,15 @@ export class AudioManager {
     private loadingPromises: Map<string, Promise<void>> = new Map();
     private audioPath: string;
     private enabled: boolean = true;
+    private optimizedData: OptimizedAgent | null = null;
+    private audioSpriteBuffer: AudioBuffer | null = null;
 
-    constructor(audioPath: string) {
+    constructor(audioPath: string, optimizedData: OptimizedAgent | null = null) {
         this.audioPath = audioPath.endsWith('/') ? `${audioPath}Audio` : `${audioPath}/Audio`;
+        this.optimizedData = optimizedData;
+        if (this.optimizedData) {
+            this.audioPath = audioPath;
+        }
     }
 
     public setEnabled(value: boolean): void {
@@ -27,6 +34,10 @@ export class AudioManager {
     }
 
     public async loadSounds(filenames: string[]): Promise<void> {
+        if (this.optimizedData && !this.audioSpriteBuffer) {
+            await this.loadAudioSprite();
+            return;
+        }
         const promises = filenames.map(async (filename) => {
             // Normalize filename to just the name, removing potential "Audio\" prefix from ACD
             const soundName = filename.split(/[\\/]/).pop() || filename;
@@ -47,6 +58,27 @@ export class AudioManager {
             }
         });
         await Promise.all(promises);
+    }
+
+    private async loadAudioSprite(): Promise<void> {
+        if (!this.optimizedData || !this.optimizedData.audio.file) return;
+
+        const ctx = this.getContext();
+        const url = this.optimizedData.audio.file.startsWith('http')
+            ? this.optimizedData.audio.file
+            : `${this.audioPath}/${this.optimizedData.audio.file}`;
+
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                console.warn(`Failed to load audio sprite: ${response.statusText}`);
+                return;
+            }
+            const arrayBuffer = await response.arrayBuffer();
+            this.audioSpriteBuffer = await ctx.decodeAudioData(arrayBuffer);
+        } catch (error) {
+            console.error('Error loading audio sprite:', error);
+        }
     }
 
     private async loadInternal(soundName: string): Promise<void> {
@@ -113,14 +145,29 @@ export class AudioManager {
         if (!this.enabled) return;
 
         const soundName = soundPath.split(/[\\/]/).pop() || "";
+        const ctx = this.getContext();
+        if (ctx.state === 'suspended') {
+            ctx.resume();
+        }
+
+        if (this.optimizedData && this.audioSpriteBuffer) {
+            // Check both original name and .wav version in map
+            const mapEntry = this.optimizedData.audio.map[soundName] ||
+                             this.optimizedData.audio.map[`${soundName}.wav`] ||
+                             this.optimizedData.audio.map[`${soundName}.WAV`];
+
+            if (mapEntry) {
+                const source = ctx.createBufferSource();
+                source.buffer = this.audioSpriteBuffer;
+                source.connect(ctx.destination);
+                source.start(0, mapEntry.start, mapEntry.duration);
+            }
+            return;
+        }
+
         const buffer = this.soundBuffers.get(soundName) || this.soundBuffers.get(`${soundName}.wav`);
 
         if (buffer) {
-            const ctx = this.getContext();
-            if (ctx.state === 'suspended') {
-                ctx.resume();
-            }
-
             const source = ctx.createBufferSource();
             source.buffer = buffer;
             source.connect(ctx.destination);
