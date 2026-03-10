@@ -114,19 +114,28 @@ export class Agent {
     let definition: AgentCharacterDefinition | null = null;
     let optimizedData: OptimizedAgent | null = null;
 
+    let currentBaseUrl = baseUrl;
+
     // Try optimized loading first unless explicitly disabled
     if (options.optimized !== false) {
-      try {
-        const optimizedPath = `${baseUrl}/optimized/agent.json`;
-        const response = await fetch(optimizedPath);
-        if (response.ok) {
-          optimizedData = await response.json() as OptimizedAgent;
-          definition = optimizedData.definition;
-          // Update baseUrl to the optimized directory so managers find the spritesheet/audio
-          baseUrl = `${baseUrl}/optimized`;
+      const optimizedPaths = [
+        `${baseUrl}/agent.json`,
+        `${baseUrl}/optimized/agent.json`,
+      ];
+
+      for (const path of optimizedPaths) {
+        try {
+          const response = await fetch(path);
+          if (response.ok) {
+            optimizedData = (await response.json()) as OptimizedAgent;
+            definition = optimizedData.definition;
+            // Update currentBaseUrl to where agent.json was found
+            currentBaseUrl = path.substring(0, path.lastIndexOf('/'));
+            break;
+          }
+        } catch (e) {
+          // Continue to next path
         }
-      } catch (e) {
-        // Fallback to legacy
       }
     }
 
@@ -166,7 +175,7 @@ export class Agent {
     // Default options
     const fullOptions: Required<AgentOptions> = {
       container: options.container || null as any,
-      baseUrl: baseUrl,
+      baseUrl: currentBaseUrl,
       scale: options.scale ?? 1,
       speed: options.speed ?? 1,
       idleIntervalMs: options.idleIntervalMs ?? 5000,

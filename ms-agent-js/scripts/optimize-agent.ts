@@ -165,7 +165,18 @@ async function optimizeAgent(agentDir: string, audioFormat: 'webm' | 'mp3' = 'we
     const imageDir = path.join(agentDir, 'images');
     const imageFiles = fs.readdirSync(imageDir).filter(f => f.toLowerCase().endsWith('.bmp'));
 
-    const colorTablePath = path.join(agentDir, definition.character.colorTable.replace(/\\/g, '/'));
+    let colorTableRelativePath = definition.character.colorTable.replace(/\\/g, '/');
+    // Normalize path to lowercase for filesystem compatibility
+    let colorTablePath = path.join(agentDir, colorTableRelativePath);
+    if (!fs.existsSync(colorTablePath)) {
+        colorTablePath = path.join(agentDir, colorTableRelativePath.toLowerCase());
+    }
+    if (!fs.existsSync(colorTablePath)) {
+        // Try looking in images/ if the ACD pointed elsewhere but we normalized to images/
+        const fileName = path.basename(colorTableRelativePath);
+        colorTablePath = path.join(imageDir, fileName.toLowerCase());
+    }
+
     const transparencyColor = await getBmpTransparencyColor(colorTablePath, definition.character.transparency);
 
     const processedImages = [];
