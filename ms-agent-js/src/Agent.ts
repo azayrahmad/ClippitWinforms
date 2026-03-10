@@ -323,6 +323,43 @@ export class Agent {
   }
 
   /**
+   * Gestures at a specific position.
+   * Calculates the 4-way direction and sets the agent's state to the corresponding "Gesturing" state.
+   */
+  public async gestureAt(x: number, y: number): Promise<void> {
+    const direction = this.getDirection(x, y, 4);
+    const stateName = `Gesturing${direction}`;
+    if (this.definition.states[stateName]) {
+      await this.setState(stateName);
+    } else {
+      // Fallback to animation if state is missing
+      const animName = `Gesture${direction}`;
+      if (this.definition.animations[animName]) {
+        await this.stateManager.playAnimation(animName, 'Gesturing');
+      }
+    }
+  }
+
+  /**
+   * Looks at a specific position.
+   * Calculates the 8-way direction and plays the corresponding "Look" animation.
+   */
+  public async lookAt(x: number, y: number): Promise<void> {
+    const direction = this.getDirection(x, y, 8);
+    const animName = `Look${direction}`;
+
+    if (this.animationManager.currentAnimationName === animName && this.animationManager.isAnimating) {
+      return;
+    }
+
+    if (this.definition.animations[animName]) {
+      this.emit('animationStart', animName);
+      await this.stateManager.playAnimation(animName, 'Looking');
+      this.emit('animationEnd', animName);
+    }
+  }
+
+  /**
    * Sets the agent's state.
    */
   public async setState(stateName: string): Promise<void> {
@@ -376,6 +413,38 @@ export class Agent {
 
   private emit(event: AgentEvent, ...args: any[]) {
     this.listeners.get(event)?.forEach(listener => listener(...args));
+  }
+
+  private getDirection(targetX: number, targetY: number, numDirections: 4 | 8): string {
+    const centerX = this.options.x + (this.definition.character.width * this.options.scale) / 2;
+    const centerY = this.options.y + (this.definition.character.height * this.options.scale) / 2;
+
+    const dx = targetX - centerX;
+    const dy = targetY - centerY;
+
+    // Angle in radians
+    const angle = Math.atan2(dy, dx);
+    // Convert to degrees [0, 360)
+    let degrees = angle * (180 / Math.PI);
+    if (degrees < 0) degrees += 360;
+
+    if (numDirections === 4) {
+      // 4 directions: Right (315-45), Down (45-135), Left (135-225), Up (225-315)
+      if (degrees >= 315 || degrees < 45) return 'Right';
+      if (degrees >= 45 && degrees < 135) return 'Down';
+      if (degrees >= 135 && degrees < 225) return 'Left';
+      return 'Up';
+    } else {
+      // 8 directions
+      if (degrees >= 337.5 || degrees < 22.5) return 'Right';
+      if (degrees >= 22.5 && degrees < 67.5) return 'DownRight';
+      if (degrees >= 67.5 && degrees < 112.5) return 'Down';
+      if (degrees >= 112.5 && degrees < 157.5) return 'DownLeft';
+      if (degrees >= 157.5 && degrees < 202.5) return 'Left';
+      if (degrees >= 202.5 && degrees < 247.5) return 'UpLeft';
+      if (degrees >= 247.5 && degrees < 292.5) return 'Up';
+      return 'UpRight';
+    }
   }
 
   /**

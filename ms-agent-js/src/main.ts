@@ -49,6 +49,22 @@ async function initDemo() {
           <div class="field-row" style="justify-content: flex-end; gap: 4px; margin-top: 4px;">
             <button id="visibility-btn" disabled>Hide</button>
           </div>
+          <hr />
+          <div class="field-row" style="flex-direction: column; align-items: stretch; gap: 4px;">
+            <label>Gestures:</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+              <button id="gesture-left-btn" disabled>Left</button>
+              <button id="gesture-right-btn" disabled>Right</button>
+              <button id="gesture-up-btn" disabled>Up</button>
+              <button id="gesture-down-btn" disabled>Down</button>
+            </div>
+            <button id="gesture-mouse-btn" disabled>Gesture at Mouse (Click)</button>
+          </div>
+          <hr />
+          <div class="field-row">
+            <input type="checkbox" id="look-mouse-check" disabled>
+            <label for="look-mouse-check">Look at Mouse (Follow)</label>
+          </div>
         </fieldset>
 
         <fieldset>
@@ -92,6 +108,12 @@ async function initDemo() {
   const playBtn = document.getElementById('play-btn') as HTMLButtonElement;
   const randomBtn = document.getElementById('random-btn') as HTMLButtonElement;
   const visibilityBtn = document.getElementById('visibility-btn') as HTMLButtonElement;
+  const gestureLeftBtn = document.getElementById('gesture-left-btn') as HTMLButtonElement;
+  const gestureRightBtn = document.getElementById('gesture-right-btn') as HTMLButtonElement;
+  const gestureUpBtn = document.getElementById('gesture-up-btn') as HTMLButtonElement;
+  const gestureDownBtn = document.getElementById('gesture-down-btn') as HTMLButtonElement;
+  const gestureMouseBtn = document.getElementById('gesture-mouse-btn') as HTMLButtonElement;
+  const lookMouseCheck = document.getElementById('look-mouse-check') as HTMLInputElement;
 
   const dashState = document.getElementById('dash-state')!;
   const dashAnim = document.getElementById('dash-anim')!;
@@ -114,6 +136,12 @@ async function initDemo() {
     playBtn.disabled = true;
     randomBtn.disabled = true;
     visibilityBtn.disabled = true;
+    gestureLeftBtn.disabled = true;
+    gestureRightBtn.disabled = true;
+    gestureUpBtn.disabled = true;
+    gestureDownBtn.disabled = true;
+    gestureMouseBtn.disabled = true;
+    lookMouseCheck.disabled = true;
 
     dashState.textContent = 'Loading...';
     dashAnim.textContent = '-';
@@ -154,6 +182,12 @@ async function initDemo() {
       playBtn.disabled = false;
       randomBtn.disabled = false;
       visibilityBtn.disabled = false;
+      gestureLeftBtn.disabled = false;
+      gestureRightBtn.disabled = false;
+      gestureUpBtn.disabled = false;
+      gestureDownBtn.disabled = false;
+      gestureMouseBtn.disabled = false;
+      lookMouseCheck.disabled = false;
 
       // Click to play random animation
       currentAgent.on('click', () => {
@@ -204,6 +238,26 @@ async function initDemo() {
     }
 
     visibilityBtn.disabled = false;
+  });
+
+  gestureLeftBtn.addEventListener('click', () => currentAgent?.setState('GesturingLeft'));
+  gestureRightBtn.addEventListener('click', () => currentAgent?.setState('GesturingRight'));
+  gestureUpBtn.addEventListener('click', () => currentAgent?.setState('GesturingUp'));
+  gestureDownBtn.addEventListener('click', () => currentAgent?.setState('GesturingDown'));
+
+  gestureMouseBtn.addEventListener('click', () => {
+    const onMouseDown = (e: MouseEvent) => {
+        currentAgent?.gestureAt(e.clientX, e.clientY);
+        window.removeEventListener('mousedown', onMouseDown);
+        gestureMouseBtn.classList.remove('active'); // hypothetical CSS or just visual cue
+    };
+    window.addEventListener('mousedown', onMouseDown);
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (lookMouseCheck.checked && currentAgent) {
+        currentAgent.lookAt(e.clientX, e.clientY);
+    }
   });
 
   // Update Loop for Debug Info

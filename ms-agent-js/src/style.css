@@ -28,6 +28,10 @@ fieldset label {
   display: inline-block;
 }
 
+fieldset .field-row input[type="checkbox"] + label {
+    width: auto;
+}
+
 fieldset span {
   font-family: monospace;
 }
