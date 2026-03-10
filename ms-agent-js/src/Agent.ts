@@ -25,10 +25,10 @@ type AgentEventListener = (...args: any[]) => void;
  */
 export class Agent {
   public readonly definition: AgentCharacterDefinition;
-  private spriteManager: SpriteManager;
-  private audioManager: AudioManager;
-  private animationManager: AnimationManager;
-  private stateManager: StateManager;
+  public readonly spriteManager: SpriteManager;
+  public readonly audioManager: AudioManager;
+  public readonly animationManager: AnimationManager;
+  public readonly stateManager: StateManager;
 
   private container: HTMLElement;
   private shadowRoot: ShadowRoot;
@@ -126,7 +126,9 @@ export class Agent {
 
     // Normalize paths in definition to be relative to baseUrl
     if (definition.character.colorTable && !definition.character.colorTable.startsWith('http')) {
-      definition.character.colorTable = definition.character.colorTable.replace(/\\/g, '/').toLowerCase();
+      // Some .acd files have ColorTable.bmp in the Images subfolder
+      definition.character.colorTable = definition.character.colorTable.replace(/\\/g, '/');
+      // We don't lowercase it here yet, SpriteManager handles it with fallback
     }
 
     // Lowercase all image filenames in animations for robustness
