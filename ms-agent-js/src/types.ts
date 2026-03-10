@@ -64,9 +64,17 @@ export interface Info {
   reminders: string[];
 }
 
+export interface AtlasEntry {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
 export interface AgentCharacterDefinition {
   character: Character;
   balloon: Balloon;
   animations: Record<string, Animation>;
   states: Record<string, State>;
+  atlas?: Record<string, AtlasEntry>;
 }

@@ -8,10 +8,11 @@ import {
  * Ported from C# SpriteManager.cs.
  */
 export class SpriteManager {
-  private sprites: Map<string, HTMLCanvasElement> = new Map();
+  private sprites: Map<string, HTMLCanvasElement | HTMLImageElement> = new Map();
   private transparencyColor: { r: number; g: number; b: number } | null = null;
   private agentRoot: string;
   private definition: AgentCharacterDefinition;
+  private spriteSheet: HTMLImageElement | null = null;
 
   constructor(agentRoot: string, definition: AgentCharacterDefinition) {
     this.agentRoot = agentRoot;
@@ -22,7 +23,23 @@ export class SpriteManager {
    * Initializes the SpriteManager by loading the transparency color.
    */
   public async init(): Promise<void> {
-    await this.loadTransparencyColor();
+    if (this.definition.atlas) {
+        await this.loadSpriteSheet();
+    } else {
+        await this.loadTransparencyColor();
+    }
+  }
+
+  private async loadSpriteSheet(): Promise<void> {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+            this.spriteSheet = img;
+            resolve();
+        };
+        img.onerror = () => reject(new Error('Failed to load sprite sheet'));
+        img.src = `${this.agentRoot}/agent.png`;
+    });
   }
 
   private async loadTransparencyColor(): Promise<void> {
@@ -98,7 +115,7 @@ export class SpriteManager {
    * Loads a sprite BMP file and caches it.
    */
   public async loadSprite(filename: string): Promise<void> {
-    if (this.sprites.has(filename)) return;
+    if (this.sprites.has(filename) || this.spriteSheet) return;
 
     const pathsToTry: string[] = [];
     if (filename.startsWith('http')) {
@@ -255,6 +272,25 @@ export class SpriteManager {
     // Draw images in reverse order as per the original implementation
     for (let i = frame.images.length - 1; i >= 0; i--) {
       const imgDef = frame.images[i];
+
+      if (this.spriteSheet && this.definition.atlas) {
+        const atlasEntry = this.definition.atlas[imgDef.filename];
+        if (atlasEntry) {
+          ctx.drawImage(
+            this.spriteSheet,
+            atlasEntry.x,
+            atlasEntry.y,
+            atlasEntry.w,
+            atlasEntry.h,
+            x + imgDef.offsetX * scale,
+            y + imgDef.offsetY * scale,
+            atlasEntry.w * scale,
+            atlasEntry.h * scale
+          );
+          continue;
+        }
+      }
+
       const sprite = this.sprites.get(imgDef.filename);
       if (sprite) {
         ctx.drawImage(

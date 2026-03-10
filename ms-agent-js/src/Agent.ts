@@ -111,18 +111,28 @@ export class Agent {
     const baseUrl = (options.baseUrl || defaultBaseUrl).replace(/\/$/, '');
 
     // Try to find the .acd file. We try the uppercase name first, but we are robust.
-    const acdPath = `${baseUrl}/${name.toUpperCase()}.acd`;
+    const jsonPath = `${baseUrl}/agent.json`;
+    let definition: AgentCharacterDefinition;
 
-    const definition = await CharacterParser.load(acdPath).catch(async (err) => {
-        // Fallback to lowercase if uppercase fails
-        try {
-            return await CharacterParser.load(`${baseUrl}/${name.toLowerCase()}.acd`);
-        } catch (innerErr) {
-            console.error(`MSAgentJS: Failed to load agent assets for '${name}' at ${baseUrl}. ` +
-                          `Please ensure the 'agents/' directory is correctly served and 'baseUrl' is correct.`);
-            throw err;
-        }
-    });
+    try {
+        const response = await fetch(jsonPath);
+        if (!response.ok) throw new Error('No agent.json');
+        definition = await response.json();
+    } catch (e) {
+        // Fallback to .acd
+        const acdPath = `${baseUrl}/${name.toUpperCase()}.acd`;
+
+        definition = await CharacterParser.load(acdPath).catch(async (err) => {
+            // Fallback to lowercase if uppercase fails
+            try {
+                return await CharacterParser.load(`${baseUrl}/${name.toLowerCase()}.acd`);
+            } catch (innerErr) {
+                console.error(`MSAgentJS: Failed to load agent assets for '${name}' at ${baseUrl}. ` +
+                              `Please ensure the 'agents/' directory is correctly served and 'baseUrl' is correct.`);
+                throw err;
+            }
+        });
+    }
 
     // Normalize paths in definition to be relative to baseUrl
     if (definition.character.colorTable && !definition.character.colorTable.startsWith('http')) {
