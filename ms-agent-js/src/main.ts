@@ -29,6 +29,11 @@ async function initDemo() {
         <fieldset>
           <legend>Actions</legend>
           <div class="field-row">
+            <label for="scale-range">Scale:</label>
+            <input id="scale-range" type="range" min="1" max="5" step="0.1" value="2">
+            <span id="scale-value">2.0x</span>
+          </div>
+          <div class="field-row">
             <label for="animation-select">Animation:</label>
             <select id="animation-select"></select>
           </div>
@@ -43,6 +48,22 @@ async function initDemo() {
           </div>
           <div class="field-row" style="justify-content: flex-end; gap: 4px; margin-top: 4px;">
             <button id="visibility-btn" disabled>Hide</button>
+          </div>
+          <hr />
+          <div class="field-row" style="flex-direction: column; align-items: stretch; gap: 4px;">
+            <label>Gestures:</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+              <button id="gesture-left-btn" disabled>Left</button>
+              <button id="gesture-right-btn" disabled>Right</button>
+              <button id="gesture-up-btn" disabled>Up</button>
+              <button id="gesture-down-btn" disabled>Down</button>
+            </div>
+            <button id="gesture-mouse-btn" disabled>Gesture at Mouse (Click)</button>
+          </div>
+          <hr />
+          <div class="field-row">
+            <input type="checkbox" id="look-mouse-check" disabled>
+            <label for="look-mouse-check">Look at Mouse (Follow)</label>
           </div>
         </fieldset>
 
@@ -95,6 +116,8 @@ async function initDemo() {
   `;
 
   const agentSelect = document.getElementById('agent-select') as HTMLSelectElement;
+  const scaleRange = document.getElementById('scale-range') as HTMLInputElement;
+  const scaleValue = document.getElementById('scale-value') as HTMLSpanElement;
   const animationSelect = document.getElementById('animation-select') as HTMLSelectElement;
   const stateSelect = document.getElementById('state-select') as HTMLSelectElement;
   const playBtn = document.getElementById('play-btn') as HTMLButtonElement;
@@ -104,6 +127,12 @@ async function initDemo() {
   const askBtn = document.getElementById('ask-btn') as HTMLButtonElement;
   const speakTextInput = document.getElementById('speak-text') as HTMLInputElement;
   const skipTypingCheck = document.getElementById('skip-typing-check') as HTMLInputElement;
+  const gestureLeftBtn = document.getElementById('gesture-left-btn') as HTMLButtonElement;
+  const gestureRightBtn = document.getElementById('gesture-right-btn') as HTMLButtonElement;
+  const gestureUpBtn = document.getElementById('gesture-up-btn') as HTMLButtonElement;
+  const gestureDownBtn = document.getElementById('gesture-down-btn') as HTMLButtonElement;
+  const gestureMouseBtn = document.getElementById('gesture-mouse-btn') as HTMLButtonElement;
+  const lookMouseCheck = document.getElementById('look-mouse-check') as HTMLInputElement;
 
   const dashState = document.getElementById('dash-state')!;
   const dashAnim = document.getElementById('dash-anim')!;
@@ -128,6 +157,12 @@ async function initDemo() {
     visibilityBtn.disabled = true;
     speakBtn.disabled = true;
     askBtn.disabled = true;
+    gestureLeftBtn.disabled = true;
+    gestureRightBtn.disabled = true;
+    gestureUpBtn.disabled = true;
+    gestureDownBtn.disabled = true;
+    gestureMouseBtn.disabled = true;
+    lookMouseCheck.disabled = true;
 
     dashState.textContent = 'Loading...';
     dashAnim.textContent = '-';
@@ -136,9 +171,10 @@ async function initDemo() {
     dashNextTick.textContent = '-';
 
     try {
+      const scale = parseFloat(scaleRange.value);
       currentAgent = await Agent.load(name, {
         baseUrl: `/agents/${name}`,
-        scale: 2,
+        scale: scale,
         useAudio: true
       });
 
@@ -169,6 +205,12 @@ async function initDemo() {
       visibilityBtn.disabled = false;
       speakBtn.disabled = false;
       askBtn.disabled = false;
+      gestureLeftBtn.disabled = false;
+      gestureRightBtn.disabled = false;
+      gestureUpBtn.disabled = false;
+      gestureDownBtn.disabled = false;
+      gestureMouseBtn.disabled = false;
+      lookMouseCheck.disabled = false;
 
       // Click to play random animation
       currentAgent.on('click', () => {
@@ -184,6 +226,12 @@ async function initDemo() {
 
   agentSelect.addEventListener('change', () => {
     loadAgent(agentSelect.value);
+  });
+
+  scaleRange.addEventListener('input', () => {
+    const scale = parseFloat(scaleRange.value);
+    scaleValue.textContent = `${scale.toFixed(1)}x`;
+    currentAgent?.setScale(scale);
   });
 
   playBtn.addEventListener('click', () => {
@@ -235,6 +283,26 @@ async function initDemo() {
         currentAgent.speak("Cancelled.", {
             skipTyping: skipTypingCheck.checked
         });
+    }
+  });
+  
+  gestureLeftBtn.addEventListener('click', () => currentAgent?.setState('GesturingLeft'));
+  gestureRightBtn.addEventListener('click', () => currentAgent?.setState('GesturingRight'));
+  gestureUpBtn.addEventListener('click', () => currentAgent?.setState('GesturingUp'));
+  gestureDownBtn.addEventListener('click', () => currentAgent?.setState('GesturingDown'));
+
+  gestureMouseBtn.addEventListener('click', () => {
+    const onMouseDown = (e: MouseEvent) => {
+        currentAgent?.gestureAt(e.clientX, e.clientY);
+        window.removeEventListener('mousedown', onMouseDown);
+        gestureMouseBtn.classList.remove('active'); // hypothetical CSS or just visual cue
+    };
+    window.addEventListener('mousedown', onMouseDown);
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (lookMouseCheck.checked && currentAgent) {
+        currentAgent.lookAt(e.clientX, e.clientY);
     }
   });
 

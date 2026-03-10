@@ -19,7 +19,7 @@ export interface AgentOptions {
   y?: number;
 }
 
-type AgentEvent = 'click' | 'animationStart' | 'animationEnd' | 'stateChange' | 'show' | 'hide';
+type AgentEvent = 'click' | 'animationStart' | 'animationEnd' | 'stateChange' | 'show' | 'hide' | 'dragstart' | 'drag' | 'dragend';
 type AgentEventListener = (...args: any[]) => void;
 
 /**
@@ -42,6 +42,12 @@ export class Agent {
   private isDestroyed: boolean = false;
   private lastTime: number = 0;
   private rafId: number = 0;
+
+  private isDragging: boolean = false;
+  private dragStartX: number = 0;
+  private dragStartY: number = 0;
+  private initialAgentX: number = 0;
+  private initialAgentY: number = 0;
 
   private listeners: Map<AgentEvent, Set<AgentEventListener>> = new Map();
 
@@ -189,9 +195,72 @@ export class Agent {
     this.balloon = new Balloon(this.canvas, this.shadowRoot);
 
     // Event forwarding
-    this.canvas.addEventListener('click', () => this.emit('click'));
+    this.canvas.addEventListener('click', (e) => {
+        // Only emit click if we didn't just finish a drag
+        if (!this.wasDragging) {
+            this.emit('click');
+        }
+    });
 
+    this.setupDragging();
     this.setupCanvas();
+  }
+
+  private wasDragging = false;
+
+  private setupDragging() {
+    const onPointerDown = (e: PointerEvent) => {
+      if (e.button !== 0) return; // Only left click
+      this.isDragging = true;
+      this.wasDragging = false;
+      this.dragStartX = e.clientX;
+      this.dragStartY = e.clientY;
+      this.initialAgentX = this.options.x;
+      this.initialAgentY = this.options.y;
+
+      window.addEventListener('pointermove', onPointerMove);
+      window.addEventListener('pointerup', onPointerUp);
+      window.addEventListener('pointercancel', onPointerUp);
+
+      this.emit('dragstart');
+    };
+
+    const onPointerMove = (e: PointerEvent) => {
+      if (!this.isDragging) return;
+
+      const dx = e.clientX - this.dragStartX;
+      const dy = e.clientY - this.dragStartY;
+
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+          this.wasDragging = true;
+      }
+
+      let nx = this.initialAgentX + dx;
+      let ny = this.initialAgentY + dy;
+
+      // Constrain to viewport
+      const minX = 0;
+      const minY = 0;
+      const maxX = window.innerWidth - this.canvas.width;
+      const maxY = window.innerHeight - this.canvas.height;
+
+      nx = Math.max(minX, Math.min(nx, maxX));
+      ny = Math.max(minY, Math.min(ny, maxY));
+
+      this.moveTo(nx, ny);
+      this.emit('drag', { x: nx, y: ny });
+    };
+
+    const onPointerUp = () => {
+      if (!this.isDragging) return;
+      this.isDragging = false;
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('pointercancel', onPointerUp);
+      this.emit('dragend');
+    };
+
+    this.canvas.addEventListener('pointerdown', onPointerDown);
   }
 
   private setupCanvas() {
@@ -199,6 +268,40 @@ export class Agent {
     const height = this.spriteManager.getSpriteHeight();
     this.canvas.width = width * this.options.scale;
     this.canvas.height = height * this.options.scale;
+  }
+
+  /**
+   * Sets the scale of the agent, keeping it centered.
+   */
+  public setScale(scale: number) {
+    const oldScale = this.options.scale;
+    if (oldScale === scale) return;
+
+    const width = this.spriteManager.getSpriteWidth();
+    const height = this.spriteManager.getSpriteHeight();
+
+    const oldWidth = width * oldScale;
+    const oldHeight = height * oldScale;
+
+    const newWidth = width * scale;
+    const newHeight = height * scale;
+
+    // Calculate center
+    const cx = this.options.x + oldWidth / 2;
+    const cy = this.options.y + oldHeight / 2;
+
+    // New top-left to keep center
+    let nx = cx - newWidth / 2;
+    let ny = cy - newHeight / 2;
+
+    // Constrain to viewport
+    nx = Math.max(0, Math.min(nx, window.innerWidth - newWidth));
+    ny = Math.max(0, Math.min(ny, window.innerHeight - newHeight));
+
+    this.options.scale = scale;
+    this.canvas.width = newWidth;
+    this.canvas.height = newHeight;
+    this.moveTo(nx, ny);
   }
 
   /**
@@ -312,6 +415,43 @@ export class Agent {
     this.emit('animationStart', animationName);
     await this.stateManager.playAnimation(animationName, 'Playing', false, timeoutMs);
     this.emit('animationEnd', animationName);
+  }
+
+  /**
+   * Gestures at a specific position.
+   * Calculates the 4-way direction and sets the agent's state to the corresponding "Gesturing" state.
+   */
+  public async gestureAt(x: number, y: number): Promise<void> {
+    const direction = this.getDirection(x, y, 4);
+    const stateName = `Gesturing${direction}`;
+    if (this.definition.states[stateName]) {
+      await this.setState(stateName);
+    } else {
+      // Fallback to animation if state is missing
+      const animName = `Gesture${direction}`;
+      if (this.definition.animations[animName]) {
+        await this.stateManager.playAnimation(animName, 'Gesturing');
+      }
+    }
+  }
+
+  /**
+   * Looks at a specific position.
+   * Calculates the 8-way direction and plays the corresponding "Look" animation.
+   */
+  public async lookAt(x: number, y: number): Promise<void> {
+    const direction = this.getDirection(x, y, 8);
+    const animName = `Look${direction}`;
+
+    if (this.animationManager.currentAnimationName === animName && this.animationManager.isAnimating) {
+      return;
+    }
+
+    if (this.definition.animations[animName]) {
+      this.emit('animationStart', animName);
+      await this.stateManager.playAnimation(animName, 'Looking');
+      this.emit('animationEnd', animName);
+    }
   }
 
   /**
@@ -501,6 +641,38 @@ export class Agent {
 
   private emit(event: AgentEvent, ...args: any[]) {
     this.listeners.get(event)?.forEach(listener => listener(...args));
+  }
+
+  private getDirection(targetX: number, targetY: number, numDirections: 4 | 8): string {
+    const centerX = this.options.x + (this.definition.character.width * this.options.scale) / 2;
+    const centerY = this.options.y + (this.definition.character.height * this.options.scale) / 2;
+
+    const dx = targetX - centerX;
+    const dy = targetY - centerY;
+
+    // Angle in radians
+    const angle = Math.atan2(dy, dx);
+    // Convert to degrees [0, 360)
+    let degrees = angle * (180 / Math.PI);
+    if (degrees < 0) degrees += 360;
+
+    if (numDirections === 4) {
+      // 4 directions: Right (315-45), Down (45-135), Left (135-225), Up (225-315)
+      if (degrees >= 315 || degrees < 45) return 'Right';
+      if (degrees >= 45 && degrees < 135) return 'Down';
+      if (degrees >= 135 && degrees < 225) return 'Left';
+      return 'Up';
+    } else {
+      // 8 directions
+      if (degrees >= 337.5 || degrees < 22.5) return 'Right';
+      if (degrees >= 22.5 && degrees < 67.5) return 'DownRight';
+      if (degrees >= 67.5 && degrees < 112.5) return 'Down';
+      if (degrees >= 112.5 && degrees < 157.5) return 'DownLeft';
+      if (degrees >= 157.5 && degrees < 202.5) return 'Left';
+      if (degrees >= 202.5 && degrees < 247.5) return 'UpLeft';
+      if (degrees >= 247.5 && degrees < 292.5) return 'Up';
+      return 'UpRight';
+    }
   }
 
   /**
