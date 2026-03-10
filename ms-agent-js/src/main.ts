@@ -97,6 +97,7 @@ async function initDemo() {
 
   async function loadAgent(name: string) {
     if (currentAgent) {
+      await currentAgent.hide();
       currentAgent.destroy();
     }
 
@@ -163,7 +164,7 @@ async function initDemo() {
   });
 
   playBtn.addEventListener('click', () => {
-    currentAgent?.play(animationSelect.value);
+    currentAgent?.play(animationSelect.value, 5000);
   });
 
   randomBtn.addEventListener('click', () => {

@@ -184,7 +184,7 @@ export class Agent {
 
     await Promise.all(initPromises);
     this.startLoop();
-    await this.stateManager.setState('IdlingLevel1');
+    await this.show();
   }
 
   private startLoop() {
@@ -213,9 +213,9 @@ export class Agent {
   /**
    * Plays a specific animation.
    */
-  public async play(animationName: string): Promise<void> {
+  public async play(animationName: string, timeoutMs?: number): Promise<void> {
     this.emit('animationStart', animationName);
-    await this.stateManager.playAnimation(animationName, 'Playing');
+    await this.stateManager.playAnimation(animationName, 'Playing', false, timeoutMs);
     this.emit('animationEnd', animationName);
   }
 
@@ -243,6 +243,7 @@ export class Agent {
    * Shows the agent with the "Showing" animation.
    */
   public async show(): Promise<void> {
+    this.container.style.display = 'block';
     await this.stateManager.handleVisibilityChange(true);
     this.emit('show');
   }
@@ -252,6 +253,7 @@ export class Agent {
    */
   public async hide(): Promise<void> {
     await this.stateManager.handleVisibilityChange(false);
+    this.container.style.display = 'none';
     this.emit('hide');
   }
 
