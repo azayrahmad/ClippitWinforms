@@ -97,6 +97,7 @@ async function initDemo() {
 
   async function loadAgent(name: string) {
     if (currentAgent) {
+      await currentAgent.hide();
       currentAgent.destroy();
     }
 

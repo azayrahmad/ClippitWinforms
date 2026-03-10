@@ -18,6 +18,7 @@ export class AnimationManager {
   private lastFrameTime: number = 0;
   private isExiting: boolean = false;
   private animationPromise: { resolve: (val: boolean) => void; reject: (err: any) => void } | null = null;
+  private activePromise: Promise<boolean> | null = null;
   private scale: number = 2;
 
   public get currentAnimationName(): string {
@@ -84,10 +85,11 @@ export class AnimationManager {
    * Plays an animation and returns a promise that resolves when it's done.
    */
   public async playAnimation(animationName: string, useExitBranch: boolean = false): Promise<boolean> {
-    return new Promise((resolve, reject) => {
+    this.activePromise = new Promise((resolve, reject) => {
       this.animationPromise = { resolve, reject };
       this.setAnimation(animationName, useExitBranch);
     });
+    return this.activePromise;
   }
 
   /**
@@ -160,17 +162,8 @@ export class AnimationManager {
     this.isExiting = true;
 
     // Wait for current animation to complete its exit branch
-    if (this.animationPromise) {
-      await new Promise((resolve) => {
-        const checkCompletion = () => {
-          if (!this.isAnimating || !this.isExiting) {
-            resolve(true);
-          } else {
-            setTimeout(checkCompletion, 16);
-          }
-        };
-        checkCompletion();
-      });
+    if (this.activePromise) {
+      await this.activePromise;
     }
 
     // Play the new animation
@@ -181,6 +174,7 @@ export class AnimationManager {
     if (this.animationPromise) {
       this.animationPromise.resolve(true);
       this.animationPromise = null;
+      this.activePromise = null;
     }
     const completedAnimation = this.currentAnimation?.name || '';
     this.onAnimationCompleted?.(completedAnimation);

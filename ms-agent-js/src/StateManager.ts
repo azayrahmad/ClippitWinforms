@@ -15,7 +15,7 @@ export class StateManager {
   private states: Record<string, State>;
   private animationManager: AnimationManager;
 
-  private currentState: string = 'IdlingLevel1';
+  private currentState: string = 'Hidden';
   private currentIdleLevel: number = 1;
   private idleTickCount: number = 0;
   private elapsedSinceLastTick: number = 0;
@@ -25,7 +25,7 @@ export class StateManager {
   private maxIdleLevel: number = 3;
   private idlePrefix: string = 'IdlingLevel';
 
-  private isPaused: boolean = false;
+  private isPaused: boolean = true;
 
   constructor(
     states: Record<string, State>,
@@ -179,8 +179,9 @@ export class StateManager {
     const state = this.states[this.currentState];
     if (state && state.animations.length > 0) {
       const randomAnimation = state.animations[Math.floor(Math.random() * state.animations.length)];
-      await this.animationManager.preloadAnimation(randomAnimation);
-      await this.animationManager.playAnimation(randomAnimation);
+      // Use the common playAnimation wrapper to ensure it respects exit branches
+      // when a state animation is updated or replaced.
+      await this.playAnimation(randomAnimation);
     }
   }
 
@@ -202,12 +203,12 @@ export class StateManager {
       }
     }
 
-    this.isPaused = !showing;
-
     if (showing) {
+      this.isPaused = false;
       this.resetIdleProgression();
       await this.setIdleState(1);
     } else {
+      this.isPaused = true;
       // Ensure the animation is cleared when hidden
       this.animationManager.setAnimation('', false);
       this.currentState = 'Hidden';
