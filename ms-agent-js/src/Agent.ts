@@ -17,7 +17,7 @@ export interface AgentOptions {
   y?: number;
 }
 
-type AgentEvent = 'click' | 'animationStart' | 'animationEnd' | 'stateChange' | 'show' | 'hide';
+type AgentEvent = 'click' | 'animationStart' | 'animationEnd' | 'stateChange' | 'show' | 'hide' | 'dragstart' | 'drag' | 'dragend';
 type AgentEventListener = (...args: any[]) => void;
 
 /**
@@ -39,6 +39,12 @@ export class Agent {
   private isDestroyed: boolean = false;
   private lastTime: number = 0;
   private rafId: number = 0;
+
+  private isDragging: boolean = false;
+  private dragStartX: number = 0;
+  private dragStartY: number = 0;
+  private initialAgentX: number = 0;
+  private initialAgentY: number = 0;
 
   private listeners: Map<AgentEvent, Set<AgentEventListener>> = new Map();
 
@@ -94,9 +100,72 @@ export class Agent {
     });
 
     // Event forwarding
-    this.canvas.addEventListener('click', () => this.emit('click'));
+    this.canvas.addEventListener('click', (e) => {
+        // Only emit click if we didn't just finish a drag
+        if (!this.wasDragging) {
+            this.emit('click');
+        }
+    });
 
+    this.setupDragging();
     this.setupCanvas();
+  }
+
+  private wasDragging = false;
+
+  private setupDragging() {
+    const onPointerDown = (e: PointerEvent) => {
+      if (e.button !== 0) return; // Only left click
+      this.isDragging = true;
+      this.wasDragging = false;
+      this.dragStartX = e.clientX;
+      this.dragStartY = e.clientY;
+      this.initialAgentX = this.options.x;
+      this.initialAgentY = this.options.y;
+
+      window.addEventListener('pointermove', onPointerMove);
+      window.addEventListener('pointerup', onPointerUp);
+      window.addEventListener('pointercancel', onPointerUp);
+
+      this.emit('dragstart');
+    };
+
+    const onPointerMove = (e: PointerEvent) => {
+      if (!this.isDragging) return;
+
+      const dx = e.clientX - this.dragStartX;
+      const dy = e.clientY - this.dragStartY;
+
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+          this.wasDragging = true;
+      }
+
+      let nx = this.initialAgentX + dx;
+      let ny = this.initialAgentY + dy;
+
+      // Constrain to viewport
+      const minX = 0;
+      const minY = 0;
+      const maxX = window.innerWidth - this.canvas.width;
+      const maxY = window.innerHeight - this.canvas.height;
+
+      nx = Math.max(minX, Math.min(nx, maxX));
+      ny = Math.max(minY, Math.min(ny, maxY));
+
+      this.moveTo(nx, ny);
+      this.emit('drag', { x: nx, y: ny });
+    };
+
+    const onPointerUp = () => {
+      if (!this.isDragging) return;
+      this.isDragging = false;
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('pointercancel', onPointerUp);
+      this.emit('dragend');
+    };
+
+    this.canvas.addEventListener('pointerdown', onPointerDown);
   }
 
   private setupCanvas() {
@@ -104,6 +173,40 @@ export class Agent {
     const height = this.spriteManager.getSpriteHeight();
     this.canvas.width = width * this.options.scale;
     this.canvas.height = height * this.options.scale;
+  }
+
+  /**
+   * Sets the scale of the agent, keeping it centered.
+   */
+  public setScale(scale: number) {
+    const oldScale = this.options.scale;
+    if (oldScale === scale) return;
+
+    const width = this.spriteManager.getSpriteWidth();
+    const height = this.spriteManager.getSpriteHeight();
+
+    const oldWidth = width * oldScale;
+    const oldHeight = height * oldScale;
+
+    const newWidth = width * scale;
+    const newHeight = height * scale;
+
+    // Calculate center
+    const cx = this.options.x + oldWidth / 2;
+    const cy = this.options.y + oldHeight / 2;
+
+    // New top-left to keep center
+    let nx = cx - newWidth / 2;
+    let ny = cy - newHeight / 2;
+
+    // Constrain to viewport
+    nx = Math.max(0, Math.min(nx, window.innerWidth - newWidth));
+    ny = Math.max(0, Math.min(ny, window.innerHeight - newHeight));
+
+    this.options.scale = scale;
+    this.canvas.width = newWidth;
+    this.canvas.height = newHeight;
+    this.moveTo(nx, ny);
   }
 
   /**
