@@ -135,7 +135,7 @@ export class AnimationManager {
       return currentFrame.exitBranch - 1;
     }
 
-    if (currentFrame.branching && currentFrame.branching.length > 0) {
+    if (!this.isExiting && currentFrame.branching && currentFrame.branching.length > 0) {
       const randomValue = Math.floor(Math.random() * 100);
       let cumulative = 0;
 
