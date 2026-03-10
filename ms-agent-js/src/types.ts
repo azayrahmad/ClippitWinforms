@@ -71,10 +71,16 @@ export interface AtlasEntry {
   h: number;
 }
 
+export interface AudioAtlasEntry {
+  start: number;
+  end: number;
+}
+
 export interface AgentCharacterDefinition {
   character: Character;
   balloon: Balloon;
   animations: Record<string, Animation>;
   states: Record<string, State>;
   atlas?: Record<string, AtlasEntry>;
+  audioAtlas?: Record<string, AudioAtlasEntry>;
 }

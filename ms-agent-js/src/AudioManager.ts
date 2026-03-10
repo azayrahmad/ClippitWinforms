@@ -1,22 +1,33 @@
 import { MSADPCMDecoder } from './MSADPCMDecoder';
+import type { AudioAtlasEntry } from './types';
 
 /**
  * AudioManager class for loading and playing agent sound effects.
  * Support legacy MS ADPCM and standard PCM via Web Audio API.
+ * Now also supports audio spritesheets for optimized agents.
  */
 export class AudioManager {
     private audioContext: AudioContext | null = null;
     private soundBuffers: Map<string, AudioBuffer> = new Map();
     private loadingPromises: Map<string, Promise<void>> = new Map();
     private audioPath: string;
+    private baseUrl: string;
     private enabled: boolean = true;
+    private audioAtlas: Record<string, AudioAtlasEntry> | null = null;
+    private spritesheetBuffer: AudioBuffer | null = null;
+    private spritesheetLoadingPromise: Promise<void> | null = null;
 
-    constructor(audioPath: string) {
-        this.audioPath = audioPath.endsWith('/') ? `${audioPath}Audio` : `${audioPath}/Audio`;
+    constructor(baseUrl: string) {
+        this.baseUrl = baseUrl.replace(/\/$/, '');
+        this.audioPath = `${this.baseUrl}/Audio`;
     }
 
     public setEnabled(value: boolean): void {
         this.enabled = value;
+    }
+
+    public setAudioAtlas(atlas: Record<string, AudioAtlasEntry>): void {
+        this.audioAtlas = atlas;
     }
 
     private getContext(): AudioContext {
@@ -27,6 +38,11 @@ export class AudioManager {
     }
 
     public async loadSounds(filenames: string[]): Promise<void> {
+        if (this.audioAtlas) {
+            await this.loadSpritesheet();
+            return;
+        }
+
         const promises = filenames.map(async (filename) => {
             // Normalize filename to just the name, removing potential "Audio\" prefix from ACD
             const soundName = filename.split(/[\\/]/).pop() || filename;
@@ -86,6 +102,31 @@ export class AudioManager {
         }
     }
 
+    private async loadSpritesheet(): Promise<void> {
+        if (this.spritesheetBuffer) return;
+        if (this.spritesheetLoadingPromise) return this.spritesheetLoadingPromise;
+
+        this.spritesheetLoadingPromise = (async () => {
+            const ctx = this.getContext();
+            const url = `${this.baseUrl}/agent.webm`;
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    console.warn(`Failed to load audio spritesheet: ${response.statusText}`);
+                    return;
+                }
+                const arrayBuffer = await response.arrayBuffer();
+                this.spritesheetBuffer = await ctx.decodeAudioData(arrayBuffer);
+                console.log('Audio spritesheet loaded successfully');
+            } catch (error) {
+                console.error('Error loading audio spritesheet:', error);
+            }
+        })();
+
+        return this.spritesheetLoadingPromise;
+    }
+
     private isMSADPCM(buffer: ArrayBuffer): boolean {
         const view = new DataView(buffer);
         if (buffer.byteLength < 20) return false;
@@ -112,8 +153,20 @@ export class AudioManager {
     public playFrameSound(soundPath: string): void {
         if (!this.enabled) return;
 
-        const soundName = soundPath.split(/[\\/]/).pop() || "";
-        const buffer = this.soundBuffers.get(soundName) || this.soundBuffers.get(`${soundName}.wav`);
+        const soundNameRaw = soundPath.split(/[\\/]/).pop() || "";
+        const soundName = soundNameRaw.toLowerCase().endsWith('.wav') ? soundNameRaw.toLowerCase() : `${soundNameRaw.toLowerCase()}.wav`;
+
+        if (this.audioAtlas && this.spritesheetBuffer) {
+            const entry = this.audioAtlas[soundName];
+            if (entry) {
+                this.playFromSpritesheet(entry.start, entry.end);
+            } else {
+                console.warn(`Sound ${soundName} not found in audio atlas`);
+            }
+            return;
+        }
+
+        const buffer = this.soundBuffers.get(soundNameRaw) || this.soundBuffers.get(`${soundNameRaw}.wav`);
 
         if (buffer) {
             const ctx = this.getContext();
@@ -127,12 +180,31 @@ export class AudioManager {
             source.start(0);
         } else {
             // Load on demand if not cached
-            this.loadSounds([soundName]).then(() => {
-                const reloadedBuffer = this.soundBuffers.get(soundName) || this.soundBuffers.get(`${soundName}.wav`);
-                if (reloadedBuffer) {
-                    this.playFrameSound(soundName);
+            this.loadSounds([soundNameRaw]).then(() => {
+                if (this.audioAtlas && this.spritesheetBuffer) {
+                    this.playFrameSound(soundNameRaw);
+                } else {
+                    const reloadedBuffer = this.soundBuffers.get(soundNameRaw) || this.soundBuffers.get(`${soundNameRaw}.wav`);
+                    if (reloadedBuffer) {
+                        this.playFrameSound(soundNameRaw);
+                    }
                 }
             });
         }
+    }
+
+    private playFromSpritesheet(start: number, end: number): void {
+        if (!this.spritesheetBuffer) return;
+
+        const ctx = this.getContext();
+        if (ctx.state === 'suspended') {
+            ctx.resume();
+        }
+
+        const source = ctx.createBufferSource();
+        source.buffer = this.spritesheetBuffer;
+        source.connect(ctx.destination);
+        // source.start(when, offset, duration)
+        source.start(0, start, end - start);
     }
 }
