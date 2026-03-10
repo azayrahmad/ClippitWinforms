@@ -219,7 +219,9 @@ export class StateManager {
     if (showing) {
       this.isPaused = false;
       this.resetIdleProgression();
-      await this.setIdleState(1);
+      // We don't await the initial idle state because it might be a long-running loop.
+      // The "Showing" process is considered complete once the intro animation is done.
+      void this.setIdleState(1);
     } else {
       this.isPaused = true;
       // Ensure the animation is cleared when hidden
