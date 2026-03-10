@@ -72,6 +72,17 @@ async function initDemo() {
           </div>
         </fieldset>
 
+        <fieldset>
+          <legend>Speech</legend>
+          <div class="field-row">
+            <input type="text" id="speak-text" value="Hello! My name is Clippy." style="width: 100%;" />
+          </div>
+          <div class="field-row" style="justify-content: flex-end; gap: 4px; margin-top: 4px;">
+            <button id="speak-btn" disabled>Speak</button>
+            <button id="ask-btn" disabled>Ask</button>
+          </div>
+        </fieldset>
+
         <p style="font-size: 10px; color: #666; margin-top: 10px;">
             Tip: Click the agent for a surprise!
         </p>
@@ -85,6 +96,9 @@ async function initDemo() {
   const playBtn = document.getElementById('play-btn') as HTMLButtonElement;
   const randomBtn = document.getElementById('random-btn') as HTMLButtonElement;
   const visibilityBtn = document.getElementById('visibility-btn') as HTMLButtonElement;
+  const speakBtn = document.getElementById('speak-btn') as HTMLButtonElement;
+  const askBtn = document.getElementById('ask-btn') as HTMLButtonElement;
+  const speakTextInput = document.getElementById('speak-text') as HTMLInputElement;
 
   const dashState = document.getElementById('dash-state')!;
   const dashAnim = document.getElementById('dash-anim')!;
@@ -107,6 +121,8 @@ async function initDemo() {
     playBtn.disabled = true;
     randomBtn.disabled = true;
     visibilityBtn.disabled = true;
+    speakBtn.disabled = true;
+    askBtn.disabled = true;
 
     dashState.textContent = 'Loading...';
     dashAnim.textContent = '-';
@@ -146,6 +162,8 @@ async function initDemo() {
       playBtn.disabled = false;
       randomBtn.disabled = false;
       visibilityBtn.disabled = false;
+      speakBtn.disabled = false;
+      askBtn.disabled = false;
 
       // Click to play random animation
       currentAgent.on('click', () => {
@@ -190,6 +208,23 @@ async function initDemo() {
     }
 
     visibilityBtn.disabled = false;
+  });
+
+  speakBtn.addEventListener('click', () => {
+    currentAgent?.speak(speakTextInput.value);
+  });
+
+  askBtn.addEventListener('click', async () => {
+    if (!currentAgent) return;
+    const answer = await currentAgent.ask({
+        title: "Question",
+        placeholder: "Type your answer here..."
+    });
+    if (answer !== null) {
+        currentAgent.speak(`You said: ${answer}`);
+    } else {
+        currentAgent.speak("Cancelled.");
+    }
   });
 
   // Update Loop for Debug Info
