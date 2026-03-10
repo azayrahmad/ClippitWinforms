@@ -93,6 +93,21 @@ async function initDemo() {
           </div>
         </fieldset>
 
+        <fieldset>
+          <legend>Speech</legend>
+          <div class="field-row">
+            <input type="text" id="speak-text" value="Hello! My name is Clippy." style="width: 100%;" />
+          </div>
+          <div class="field-row">
+            <input type="checkbox" id="skip-typing-check" />
+            <label for="skip-typing-check">Skip typing</label>
+          </div>
+          <div class="field-row" style="justify-content: flex-end; gap: 4px; margin-top: 4px;">
+            <button id="speak-btn" disabled>Speak</button>
+            <button id="ask-btn" disabled>Ask</button>
+          </div>
+        </fieldset>
+
         <p style="font-size: 10px; color: #666; margin-top: 10px;">
             Tip: Click the agent for a surprise!
         </p>
@@ -108,6 +123,10 @@ async function initDemo() {
   const playBtn = document.getElementById('play-btn') as HTMLButtonElement;
   const randomBtn = document.getElementById('random-btn') as HTMLButtonElement;
   const visibilityBtn = document.getElementById('visibility-btn') as HTMLButtonElement;
+  const speakBtn = document.getElementById('speak-btn') as HTMLButtonElement;
+  const askBtn = document.getElementById('ask-btn') as HTMLButtonElement;
+  const speakTextInput = document.getElementById('speak-text') as HTMLInputElement;
+  const skipTypingCheck = document.getElementById('skip-typing-check') as HTMLInputElement;
   const gestureLeftBtn = document.getElementById('gesture-left-btn') as HTMLButtonElement;
   const gestureRightBtn = document.getElementById('gesture-right-btn') as HTMLButtonElement;
   const gestureUpBtn = document.getElementById('gesture-up-btn') as HTMLButtonElement;
@@ -136,6 +155,8 @@ async function initDemo() {
     playBtn.disabled = true;
     randomBtn.disabled = true;
     visibilityBtn.disabled = true;
+    speakBtn.disabled = true;
+    askBtn.disabled = true;
     gestureLeftBtn.disabled = true;
     gestureRightBtn.disabled = true;
     gestureUpBtn.disabled = true;
@@ -182,6 +203,8 @@ async function initDemo() {
       playBtn.disabled = false;
       randomBtn.disabled = false;
       visibilityBtn.disabled = false;
+      speakBtn.disabled = false;
+      askBtn.disabled = false;
       gestureLeftBtn.disabled = false;
       gestureRightBtn.disabled = false;
       gestureUpBtn.disabled = false;
@@ -240,6 +263,29 @@ async function initDemo() {
     visibilityBtn.disabled = false;
   });
 
+  speakBtn.addEventListener('click', () => {
+    currentAgent?.speak(speakTextInput.value, {
+        skipTyping: skipTypingCheck.checked
+    });
+  });
+
+  askBtn.addEventListener('click', async () => {
+    if (!currentAgent) return;
+    const answer = await currentAgent.ask({
+        title: "Question",
+        placeholder: "Type your answer here..."
+    });
+    if (answer !== null) {
+        currentAgent.speak(`You said: ${answer}`, {
+            skipTyping: skipTypingCheck.checked
+        });
+    } else {
+        currentAgent.speak("Cancelled.", {
+            skipTyping: skipTypingCheck.checked
+        });
+    }
+  });
+  
   gestureLeftBtn.addEventListener('click', () => currentAgent?.setState('GesturingLeft'));
   gestureRightBtn.addEventListener('click', () => currentAgent?.setState('GesturingRight'));
   gestureUpBtn.addEventListener('click', () => currentAgent?.setState('GesturingUp'));

@@ -3,6 +3,8 @@ import { SpriteManager } from './SpriteManager';
 import { AnimationManager } from './AnimationManager';
 import { AudioManager } from './AudioManager';
 import { StateManager } from './StateManager';
+import { Balloon } from './Balloon';
+import type { TTSOptions } from './Balloon';
 import type { AgentCharacterDefinition } from './types';
 
 export interface AgentOptions {
@@ -29,6 +31,7 @@ export class Agent {
   public readonly audioManager: AudioManager;
   public readonly animationManager: AnimationManager;
   public readonly stateManager: StateManager;
+  public readonly balloon: Balloon;
 
   private container: HTMLElement;
   private shadowRoot: ShadowRoot;
@@ -78,6 +81,95 @@ export class Agent {
         pointer-events: auto;
         cursor: pointer;
       }
+      .clippy-balloon {
+        position: absolute;
+        z-index: 1000;
+        background: #ffc;
+        color: black;
+        padding: 8px;
+        border: 1px solid black;
+        border-radius: 5px;
+        pointer-events: auto;
+      }
+      .clippy-content {
+        max-width: 200px;
+        min-width: 120px;
+        font-family: "Microsoft Sans", sans-serif;
+        font-size: 10pt;
+      }
+      .clippy-tip {
+        width: 10px;
+        height: 16px;
+        background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAgCAMAAAAlvKiEAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAAlQTFRF///MAAAA////52QwgAAAAAN0Uk5T//8A18oNQQAAAGxJREFUeNqs0kEOwCAIRFHn3//QTUU6xMyyxii+jQosrTPkyPEM6IN3FtzIRk1U4dFeKWQiH6pRRowMVKEmvronEynkwj0uZJgR22+YLopPSo9P34wJSamLSU7lSIWLJU7NkNomNlhqxUeAAQC+TQLZyEuJBwAAAABJRU5ErkJggg==) no-repeat;
+        position: absolute;
+      }
+      .clippy-top-left .clippy-tip {
+        top: 100%;
+        margin-top: 0px;
+        left: 100%;
+        margin-left: -50px;
+      }
+      .clippy-top-right .clippy-tip {
+        top: 100%;
+        margin-top: 0px;
+        left: 0;
+        margin-left: 50px;
+        background-position: -10px 0;
+      }
+      .clippy-bottom-right .clippy-tip {
+        top: 0;
+        margin-top: -16px;
+        left: 0;
+        margin-left: 50px;
+        background-position: -10px -16px;
+      }
+      .clippy-bottom-left .clippy-tip {
+        top: 0;
+        margin-top: -16px;
+        left: 100%;
+        margin-left: -50px;
+        background-position: 0px -16px;
+      }
+      .clippy-input {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 5px;
+      }
+      .clippy-input b {
+        align-self: flex-start;
+        margin-bottom: 5px;
+      }
+      .clippy-input textarea {
+        width: 100%;
+        margin-bottom: 10px;
+        background-color: white;
+        border: 1px solid grey;
+        box-shadow: none;
+        resize: none;
+        font-family: inherit;
+        font-size: inherit;
+        box-sizing: border-box;
+      }
+      .clippy-input-buttons {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+      }
+      .clippy-input-buttons button {
+        background-color: transparent;
+        border: 1px solid grey;
+        border-radius: 4px;
+        width: 70px;
+        padding: 2px;
+        cursor: pointer;
+      }
+      .clippy-input-buttons button:hover {
+        background-color: #eee;
+      }
+      .clippy-input-buttons .ask-button {
+        margin-right: 5px;
+      }
     `;
     this.shadowRoot.appendChild(style);
 
@@ -98,6 +190,9 @@ export class Agent {
       idleIntervalMs: options.idleIntervalMs,
       ticksPerLevel: 3,
     });
+
+    // Balloon
+    this.balloon = new Balloon(this.canvas, this.shadowRoot);
 
     // Event forwarding
     this.canvas.addEventListener('click', (e) => {
@@ -377,6 +472,139 @@ export class Agent {
     // this.container is the host of the shadow root.
     this.container.style.left = `${x}px`;
     this.container.style.top = `${y}px`;
+    this.balloon.reposition();
+  }
+
+  /**
+   * Speaks the given text.
+   */
+  public speak(text: string, options: { hold?: boolean; useTTS?: boolean; skipTyping?: boolean } = {}): Promise<void> {
+    const { hold = false, useTTS = true, skipTyping = false } = options;
+    return new Promise((resolve) => {
+      this.balloon.speak(resolve, text, hold, useTTS, skipTyping);
+    });
+  }
+
+  /**
+   * Shows HTML in the balloon.
+   */
+  public showHtml(html: string, hold: boolean = false) {
+    this.balloon.showHtml(html, hold);
+  }
+
+  /**
+   * Asks a question with an input field.
+   */
+  public ask(options: {
+    title?: string;
+    placeholder?: string;
+    askButtonText?: string;
+    cancelButtonText?: string;
+    timeout?: number;
+  } = {}): Promise<string | null> {
+    const title = options.title || "What would you like to do?";
+    const placeholder = options.placeholder || "Ask me anything...";
+    const askButtonText = options.askButtonText || "Ask";
+    const cancelButtonText = options.cancelButtonText || "Cancel";
+    const timeout = options.timeout || 60000;
+
+    return new Promise((resolve) => {
+      let inputBalloonTimeout: number | null = null;
+
+      const balloonContent = `
+        <div class="clippy-input">
+          <b>${title}</b>
+          <textarea rows="2" placeholder="${placeholder}"></textarea>
+          <div class="clippy-input-buttons">
+            <button class="ask-button default">${askButtonText}</button>
+            <button class="cancel-button">${cancelButtonText}</button>
+          </div>
+        </div>
+      `;
+
+      this.showHtml(balloonContent, true);
+
+      const balloonEl = this.balloon.balloonEl;
+      const input = balloonEl.querySelector('textarea') as HTMLTextAreaElement;
+      const askButton = balloonEl.querySelector('.ask-button') as HTMLButtonElement;
+      const cancelButton = balloonEl.querySelector('.cancel-button') as HTMLButtonElement;
+
+      const handleKeypress = (e: KeyboardEvent) => {
+        resetBalloonTimeout();
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          handleAsk();
+        }
+      };
+
+      const handleAsk = () => {
+        cleanup();
+        const value = input.value;
+        this.balloon.close();
+        resolve(value);
+      };
+
+      const handleCancel = () => {
+        cleanup();
+        this.balloon.close();
+        resolve(null);
+      };
+
+      const resetBalloonTimeout = () => {
+        clearBalloonTimeout();
+        inputBalloonTimeout = window.setTimeout(() => {
+          handleCancel();
+        }, timeout);
+      };
+
+      const clearBalloonTimeout = () => {
+        if (inputBalloonTimeout) {
+          clearTimeout(inputBalloonTimeout);
+          inputBalloonTimeout = null;
+        }
+      };
+
+      const cleanup = () => {
+        clearBalloonTimeout();
+        input?.removeEventListener('keypress', handleKeypress);
+        askButton.removeEventListener('click', handleAsk);
+        cancelButton.removeEventListener('click', handleCancel);
+      };
+
+      if (input) {
+        input.focus();
+        input.addEventListener('keypress', handleKeypress);
+      }
+
+      askButton.addEventListener('click', handleAsk);
+      cancelButton.addEventListener('click', handleCancel);
+
+      resetBalloonTimeout();
+
+      // Force reposition after a short delay for rendering
+      setTimeout(() => this.balloon.reposition(), 0);
+    });
+  }
+
+  /**
+   * Sets TTS options.
+   */
+  public setTTSOptions(options: TTSOptions) {
+    this.balloon.setTTSOptions(options);
+  }
+
+  /**
+   * Gets available TTS voices.
+   */
+  public getTTSVoices(): SpeechSynthesisVoice[] {
+    return this.balloon.getTTSVoices();
+  }
+
+  /**
+   * Stops any ongoing TTS speech.
+   */
+  public stopTTS() {
+    this.balloon.stopTTS();
   }
 
   /**

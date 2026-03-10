@@ -35,6 +35,13 @@ describe('Agent.load', () => {
             })),
             requestAnimationFrame: vi.fn().mockReturnValue(1),
             cancelAnimationFrame: vi.fn(),
+            navigator: { userAgent: 'test' },
+            speechSynthesis: {
+                getVoices: vi.fn().mockReturnValue([]),
+                speak: vi.fn(),
+                cancel: vi.fn(),
+                speaking: false
+            }
         });
         vi.stubGlobal('requestAnimationFrame', vi.fn().mockReturnValue(1));
         vi.stubGlobal('cancelAnimationFrame', vi.fn());
@@ -42,27 +49,35 @@ describe('Agent.load', () => {
         // Mock document.createElement for canvas and style
         vi.stubGlobal('document', {
             createElement: vi.fn().mockImplementation((tag) => {
+                const el: any = {
+                    style: {},
+                    appendChild: vi.fn(),
+                    className: '',
+                    classList: {
+                        add: vi.fn(),
+                        remove: vi.fn()
+                    },
+                    addEventListener: vi.fn(),
+                    querySelector: vi.fn(),
+                    getBoundingClientRect: vi.fn().mockReturnValue({ width: 0, height: 0, top: 0, left: 0, bottom: 0, right: 0 }),
+                    offsetWidth: 0,
+                    offsetHeight: 0
+                };
+
                 if (tag === 'canvas') {
-                    return {
-                        getContext: vi.fn().mockReturnValue({}),
-                        addEventListener: vi.fn(),
-                        width: 0,
-                        height: 0,
-                        style: {}
-                    };
+                    el.getContext = vi.fn().mockReturnValue({});
+                    el.width = 0;
+                    el.height = 0;
+                    el.getBoundingClientRect = vi.fn().mockReturnValue({ width: 100, height: 100, top: 0, left: 0, bottom: 100, right: 100 });
+                } else if (tag === 'style') {
+                    el.textContent = '';
+                } else if (tag === 'div') {
+                    el.attachShadow = vi.fn().mockReturnValue({
+                        appendChild: vi.fn(),
+                        host: el
+                    });
                 }
-                if (tag === 'style') {
-                    return { textContent: '' };
-                }
-                if (tag === 'div') {
-                    return {
-                        attachShadow: vi.fn().mockReturnValue({
-                            appendChild: vi.fn()
-                        }),
-                        style: {}
-                    };
-                }
-                return {};
+                return el;
             }),
             body: {
                 appendChild: vi.fn()

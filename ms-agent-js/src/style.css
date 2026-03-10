@@ -1,7 +1,7 @@
 body {
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  overflow-y: auto;
   background-color: #008080; /* Classic Windows 98 Teal */
   height: 100vh;
   width: 100vw;
