@@ -64,6 +64,13 @@ export class AnimationManager {
   public setAnimation(animationName: string, useExitBranch: boolean = false): void {
     const animation = this.animations[animationName];
     if (animation) {
+      // If we are setting a new animation, the previous one's promise must be resolved.
+      // We check if it's the SAME animation because if it's the same, we're just restarting it
+      // but we should still resolve the previous promise to avoid a hang.
+      if (this.animationPromise) {
+        this.completeAnimation();
+      }
+
       const previousAnimation = this.currentAnimation?.name || '';
       this.isExiting = useExitBranch;
       this.currentAnimation = animation;
@@ -71,7 +78,7 @@ export class AnimationManager {
       this.lastFrameTime = performance.now();
 
       this.onFrameChanged?.();
-      if (previousAnimation) {
+      if (previousAnimation && previousAnimation !== animationName) {
         this.onAnimationCompleted?.(previousAnimation);
       }
 

@@ -138,7 +138,7 @@ export class Agent {
           image.filename = image.filename.replace(/\\/g, '/').toLowerCase();
         });
         if (frame.soundEffect) {
-          frame.soundEffect = frame.soundEffect.toLowerCase();
+          frame.soundEffect = frame.soundEffect.replace(/\\/g, '/').toLowerCase();
         }
       });
     });
@@ -169,7 +169,8 @@ export class Agent {
   private async init() {
     await this.spriteManager.init();
     this.startLoop();
-    await this.stateManager.setState('IdlingLevel1');
+    // Start by showing the agent
+    await this.stateManager.handleVisibilityChange(true);
   }
 
   private startLoop() {

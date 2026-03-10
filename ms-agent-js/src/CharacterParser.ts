@@ -109,7 +109,7 @@ export class CharacterParser {
     };
     i++;
 
-    while (i < lines.length && lines[i].trim() !== 'EndCharacter') {
+    while (i < lines.length && !lines[i].trim().startsWith('EndCharacter')) {
       const line = lines[i].trim();
       if (line.startsWith('DefineInfo')) {
         i = this.parseCharacterInfo(lines, i);
@@ -181,7 +181,7 @@ export class CharacterParser {
     };
 
     i++;
-    while (i < lines.length && lines[i].trim() !== 'EndInfo') {
+    while (i < lines.length && !lines[i].trim().startsWith('EndInfo')) {
       const currentLine = lines[i].trim();
       const parts = currentLine.split('=');
       if (parts.length >= 2) {
@@ -255,7 +255,7 @@ export class CharacterParser {
     };
     i++;
 
-    while (i < lines.length && lines[i].trim() !== 'EndBalloon') {
+    while (i < lines.length && !lines[i].trim().startsWith('EndBalloon')) {
       const line = lines[i].trim();
       const parts = line.split('=');
       if (parts.length >= 2) {
@@ -305,7 +305,7 @@ export class CharacterParser {
     };
 
     i++;
-    while (i < lines.length && lines[i].trim() !== 'EndAnimation') {
+    while (i < lines.length && !lines[i].trim().startsWith('EndAnimation')) {
       const currentLine = lines[i].trim();
 
       if (currentLine.startsWith('TransitionType')) {
@@ -332,7 +332,7 @@ export class CharacterParser {
     };
     i++;
 
-    while (i < lines.length && lines[i].trim() !== 'EndFrame') {
+    while (i < lines.length && !lines[i].trim().startsWith('EndFrame')) {
       const line = lines[i].trim();
 
       if (line.startsWith('Duration')) {
@@ -346,6 +346,8 @@ export class CharacterParser {
         this.currentFrame.soundEffect = value;
       } else if (line.startsWith('DefineImage')) {
         i = this.parseImageSection(lines, i);
+        // If image section didn't consume EndImage properly (though it should),
+        // we might need to skip here, but let's trust parseImageSection for now.
       } else if (line.startsWith('DefineBranching')) {
         i = this.parseBranchingSection(lines, i);
       }
@@ -367,7 +369,7 @@ export class CharacterParser {
     };
     i++;
 
-    while (i < lines.length && lines[i].trim() !== 'EndImage') {
+    while (i < lines.length && !lines[i].trim().startsWith('EndImage')) {
       const line = lines[i].trim();
       const parts = line.split('=');
       if (parts.length >= 2) {
@@ -400,7 +402,7 @@ export class CharacterParser {
     let branching: Partial<BranchingDefinition> = {};
     i++;
 
-    while (i < lines.length && lines[i].trim() !== 'EndBranching') {
+    while (i < lines.length && !lines[i].trim().startsWith('EndBranching')) {
       const line = lines[i].trim();
       const parts = line.split('=');
       if (parts.length >= 2) {
@@ -440,7 +442,7 @@ export class CharacterParser {
     };
 
     i++;
-    while (i < lines.length && lines[i].trim() !== 'EndState') {
+    while (i < lines.length && !lines[i].trim().startsWith('EndState')) {
       const currentLine = lines[i].trim();
       const parts = currentLine.split('=');
       if (parts.length >= 2 && parts[0].trim() === 'Animation') {
