@@ -27,11 +27,43 @@ export class SpriteManager {
 
   private async loadTransparencyColor(): Promise<void> {
     const colorTablePath = this.definition.character.colorTable;
-    // The color table is usually in the agent root
-    const colorTableUrl = colorTablePath.startsWith('http') ? colorTablePath : `${this.agentRoot}/${colorTablePath}`;
-    const response = await fetch(colorTableUrl);
-    if (!response.ok) {
-      throw new Error(`Failed to load color table: ${response.statusText}`);
+    const pathsToTry: string[] = [];
+
+    if (colorTablePath.startsWith('http')) {
+      pathsToTry.push(colorTablePath);
+    } else {
+      const normalizedPath = colorTablePath.replace(/\\/g, '/');
+      pathsToTry.push(`${this.agentRoot}/${normalizedPath}`);
+      pathsToTry.push(`${this.agentRoot}/${normalizedPath.toLowerCase()}`);
+
+      const fileName = normalizedPath.split('/').pop() || 'ColorTable.bmp';
+      pathsToTry.push(`${this.agentRoot}/${fileName}`);
+      pathsToTry.push(`${this.agentRoot}/${fileName.toLowerCase()}`);
+      pathsToTry.push(`${this.agentRoot}/Images/${fileName}`);
+      pathsToTry.push(`${this.agentRoot}/images/${fileName.toLowerCase()}`);
+    }
+
+    let response: Response | null = null;
+
+    for (const url of pathsToTry) {
+        try {
+            const res = await fetch(url);
+            if (res.ok) {
+                const contentType = res.headers.get('content-type');
+                if (contentType && contentType.includes('text/html')) {
+                    // Likely a 404 redirected to index.html
+                    continue;
+                }
+                response = res;
+                break;
+            }
+        } catch (e) {
+            // Continue
+        }
+    }
+
+    if (!response || !response.ok) {
+      throw new Error(`Failed to load color table. Tried: ${pathsToTry.join(', ')}`);
     }
     const buffer = await response.arrayBuffer();
     this.transparencyColor = this.getPaletteColor(buffer, this.definition.character.transparency);
@@ -68,12 +100,40 @@ export class SpriteManager {
   public async loadSprite(filename: string): Promise<void> {
     if (this.sprites.has(filename)) return;
 
-    // Fix path separators and normalization
-    const normalizedFilename = filename.replace(/\\/g, '/').toLowerCase().split('/').pop() || filename;
-    const url = filename.startsWith('http') ? filename : `${this.agentRoot}/images/${normalizedFilename}`;
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Failed to load sprite ${filename}: ${response.statusText}`);
+    const pathsToTry: string[] = [];
+    if (filename.startsWith('http')) {
+        pathsToTry.push(filename);
+    } else {
+        const normalizedPath = filename.replace(/\\/g, '/');
+        const baseName = normalizedPath.split('/').pop() || '';
+
+        pathsToTry.push(`${this.agentRoot}/${normalizedPath}`);
+        pathsToTry.push(`${this.agentRoot}/${normalizedPath.toLowerCase()}`);
+        pathsToTry.push(`${this.agentRoot}/Images/${baseName}`);
+        pathsToTry.push(`${this.agentRoot}/images/${baseName.toLowerCase()}`);
+        pathsToTry.push(`${this.agentRoot}/${baseName}`);
+        pathsToTry.push(`${this.agentRoot}/${baseName.toLowerCase()}`);
+    }
+
+    let response: Response | null = null;
+    for (const url of pathsToTry) {
+        try {
+            const res = await fetch(url);
+            if (res.ok) {
+                const contentType = res.headers.get('content-type');
+                if (contentType && contentType.includes('text/html')) {
+                    continue;
+                }
+                response = res;
+                break;
+            }
+        } catch (e) {
+            // Continue
+        }
+    }
+
+    if (!response || !response.ok) {
+      throw new Error(`Failed to load sprite ${filename}. Tried: ${pathsToTry.join(', ')}`);
     }
     const buffer = await response.arrayBuffer();
     const canvas = this.bmpToCanvas(buffer);

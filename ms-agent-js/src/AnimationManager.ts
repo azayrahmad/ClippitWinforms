@@ -32,6 +32,10 @@ export class AnimationManager {
     this.isExiting = value;
   }
 
+  public get currentFrameIndexValue(): number {
+    return this.currentFrameIndex;
+  }
+
   public onFrameChanged: (() => void) | null = null;
   public onAnimationCompleted: ((animationName: string) => void) | null = null;
 

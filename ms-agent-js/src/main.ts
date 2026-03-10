@@ -1,185 +1,211 @@
 import './style.css';
-import { CharacterParser } from './CharacterParser';
-import { SpriteManager } from './SpriteManager';
-import { AnimationManager } from './AnimationManager';
-import { AudioManager } from './AudioManager';
-import { StateManager } from './StateManager';
+import { Agent } from './Agent';
 
 async function initDemo() {
   const app = document.querySelector<HTMLDivElement>('#app')!;
   app.innerHTML = `
-    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px;">
-      <h1>MSAgentJS - Phase 5: State & Branching</h1>
-
-      <div id="dashboard" style="background: #f0f0f0; border: 1px solid #ccc; padding: 10px; margin-bottom: 20px; font-family: monospace;">
-        <strong>Agent Dashboard</strong><br/>
-        State: <span id="dash-state">Loading...</span><br/>
-        Animation: <span id="dash-anim">-</span><br/>
-        Idle Level: <span id="dash-level">-</span><br/>
-        Ticks to Next Level: <span id="dash-ticks">-</span><br/>
-        Next Tick In: <span id="dash-next-tick">-</span>s
-      </div>
-
-      <div id="controls" style="margin-bottom: 10px; display: none;">
-        <div style="margin-bottom: 8px;">
-          <label for="animation-select">Manual Animation: </label>
-          <select id="animation-select"></select>
-          <button id="play-btn">Play</button>
-          <button id="random-btn">Play Random (Set "Playing" State)</button>
-        </div>
-        <div style="margin-bottom: 8px;">
-          <label for="state-select">Change State: </label>
-          <select id="state-select"></select>
-          <button id="visibility-btn">Hide</button>
+    <div class="window" style="width: 400px; margin: 20px auto;">
+      <div class="title-bar">
+        <div class="title-bar-text">MSAgentJS Control Panel</div>
+        <div class="title-bar-controls">
+          <button aria-label="Minimize"></button>
+          <button aria-label="Maximize"></button>
+          <button aria-label="Close"></button>
         </div>
       </div>
+      <div class="window-body">
+        <div class="field-row">
+          <label for="agent-select">Agent:</label>
+          <select id="agent-select">
+            <option value="Clippit">Clippit</option>
+            <option value="DOT">Dot</option>
+            <option value="GENIUS">Genius</option>
+            <option value="LOGO">Logo</option>
+            <option value="MNATURE">Mother Nature</option>
+            <option value="OFFCAT">Office Cat</option>
+          </select>
+        </div>
 
-      <div id="canvas-container" style="position: relative;"></div>
+        <fieldset>
+          <legend>Actions</legend>
+          <div class="field-row">
+            <label for="animation-select">Animation:</label>
+            <select id="animation-select"></select>
+          </div>
+          <div class="field-row" style="justify-content: flex-end; gap: 4px; margin-top: 4px;">
+            <button id="play-btn" disabled>Play</button>
+            <button id="random-btn" disabled>Random</button>
+          </div>
+          <hr />
+          <div class="field-row">
+            <label for="state-select">State:</label>
+            <select id="state-select"></select>
+          </div>
+          <div class="field-row" style="justify-content: flex-end; gap: 4px; margin-top: 4px;">
+            <button id="visibility-btn" disabled>Hide</button>
+          </div>
+        </fieldset>
 
-      <p style="font-size: 0.8em; color: #666; margin-top: 20px;">
-        Note: The agent is currently in automatic mode. It will play idle animations every 10 seconds.
-        Manual animations use the "Exit Branch" for smooth transitions.
-      </p>
+        <fieldset>
+          <legend>Debug Info</legend>
+          <div id="debug-info">
+            <div class="field-row">
+              <label>State:</label>
+              <span id="dash-state">-</span>
+            </div>
+            <div class="field-row">
+              <label>Animation:</label>
+              <span id="dash-anim">-</span>
+            </div>
+            <div class="field-row">
+              <label>Frame:</label>
+              <span id="dash-frame">-</span>
+            </div>
+            <div class="field-row">
+              <label>Idle Level:</label>
+              <span id="dash-level">-</span>
+            </div>
+            <div class="field-row">
+              <label>Next Tick:</label>
+              <span id="dash-next-tick">-</span>s
+            </div>
+          </div>
+        </fieldset>
+
+        <p style="font-size: 10px; color: #666; margin-top: 10px;">
+            Tip: Click the agent for a surprise!
+        </p>
+      </div>
     </div>
   `;
 
-  try {
-    const agentRoot = '/agents/Clippit';
-    const definition = await CharacterParser.load(`${agentRoot}/CLIPPIT.acd`);
+  const agentSelect = document.getElementById('agent-select') as HTMLSelectElement;
+  const animationSelect = document.getElementById('animation-select') as HTMLSelectElement;
+  const stateSelect = document.getElementById('state-select') as HTMLSelectElement;
+  const playBtn = document.getElementById('play-btn') as HTMLButtonElement;
+  const randomBtn = document.getElementById('random-btn') as HTMLButtonElement;
+  const visibilityBtn = document.getElementById('visibility-btn') as HTMLButtonElement;
 
-    // Normalized path for web environment
-    if (!definition.character.colorTable.startsWith('images/')) {
-        definition.character.colorTable = 'images/ColorTable.bmp';
+  const dashState = document.getElementById('dash-state')!;
+  const dashAnim = document.getElementById('dash-anim')!;
+  const dashFrame = document.getElementById('dash-frame')!;
+  const dashLevel = document.getElementById('dash-level')!;
+  const dashNextTick = document.getElementById('dash-next-tick')!;
+
+  let currentAgent: Agent | null = null;
+  let isVisible = true;
+
+  async function loadAgent(name: string) {
+    if (currentAgent) {
+      currentAgent.destroy();
     }
 
-    const spriteManager = new SpriteManager(agentRoot, definition);
-    await spriteManager.init();
+    // Reset UI
+    animationSelect.innerHTML = '';
+    stateSelect.innerHTML = '';
+    playBtn.disabled = true;
+    randomBtn.disabled = true;
+    visibilityBtn.disabled = true;
 
-    const audioManager = new AudioManager(agentRoot);
-    const animationManager = new AnimationManager(spriteManager, audioManager, definition.animations);
-    const stateManager = new StateManager(definition.states, animationManager, {
-        idleIntervalMs: 5000, // Faster for demo purposes
-        ticksPerLevel: 3
-    });
+    dashState.textContent = 'Loading...';
+    dashAnim.textContent = '-';
+    dashFrame.textContent = '-';
+    dashLevel.textContent = '-';
+    dashNextTick.textContent = '-';
 
-    const controlsEl = document.getElementById('controls')!;
-    const animationSelect = document.getElementById('animation-select') as HTMLSelectElement;
-    const playBtn = document.getElementById('play-btn')!;
-    const randomBtn = document.getElementById('random-btn')!;
-    const visibilityBtn = document.getElementById('visibility-btn')!;
+    try {
+      currentAgent = await Agent.load(name, {
+        baseUrl: `/agents/${name}`,
+        scale: 2,
+        useAudio: true
+      });
 
-    const dashState = document.getElementById('dash-state')!;
-    const dashAnim = document.getElementById('dash-anim')!;
-    const dashLevel = document.getElementById('dash-level')!;
-    const dashTicks = document.getElementById('dash-ticks')!;
-    const dashNextTick = document.getElementById('dash-next-tick')!;
+      // Populate animations
+      const animNames = Object.keys(currentAgent.definition.animations).sort();
+      animNames.forEach(animName => {
+        const option = document.createElement('option');
+        option.value = animName;
+        option.textContent = animName;
+        animationSelect.appendChild(option);
+      });
 
-    const stateSelect = document.getElementById('state-select') as HTMLSelectElement;
+      // Populate states
+      const stateNames = Object.keys(currentAgent.definition.states).sort();
+      stateNames.forEach(stateName => {
+        const option = document.createElement('option');
+        option.value = stateName;
+        option.textContent = stateName;
+        if (stateName === 'IdlingLevel1') option.selected = true;
+        stateSelect.appendChild(option);
+      });
 
-    // Populate animation dropdown
-    const animNames = Object.keys(definition.animations).sort();
-    animNames.forEach(name => {
-      const option = document.createElement('option');
-      option.value = name;
-      option.textContent = name;
-      if (name === 'Greeting') option.selected = true;
-      animationSelect.appendChild(option);
-    });
+      isVisible = true;
+      visibilityBtn.textContent = 'Hide';
 
-    // Populate state dropdown
-    const stateNames = Object.keys(definition.states).sort();
-    stateNames.forEach(name => {
-      const option = document.createElement('option');
-      option.value = name;
-      option.textContent = name;
-      if (name === 'IdlingLevel1') option.selected = true;
-      stateSelect.appendChild(option);
-    });
+      playBtn.disabled = false;
+      randomBtn.disabled = false;
+      visibilityBtn.disabled = false;
 
-    controlsEl.style.display = 'block';
+      // Click to play random animation
+      currentAgent.on('click', () => {
+          currentAgent?.stateManager.playRandomAnimation();
+      });
 
-    const container = document.getElementById('canvas-container')!;
-    const scale = 2;
-    const canvas = document.createElement('canvas');
-    canvas.width = spriteManager.getSpriteWidth() * scale;
-    canvas.height = spriteManager.getSpriteHeight() * scale;
-    canvas.style.imageRendering = 'pixelated';
-    canvas.style.display = 'block';
-    canvas.style.margin = '0 auto';
-    // Transparent checkered background
-    canvas.style.background = 'url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAAXNSR0IArs4c6QAAACBJREFUGFdjZEADJghG4CH8/z8DE6Y8mI6BBZghGEIHAMYICAn3m09WAAAAAElFTkSuQmCC") repeat';
-    container.appendChild(canvas);
-
-    const ctx = canvas.getContext('2d')!;
-
-    playBtn.addEventListener('click', async () => {
-      const selectedAnim = animationSelect.value;
-      stateManager.playAnimation(selectedAnim, 'Playing');
-    });
-
-    randomBtn.addEventListener('click', () => {
-        stateManager.playRandomAnimation();
-    });
-
-    stateSelect.addEventListener('change', () => {
-        stateManager.setState(stateSelect.value);
-    });
-
-    let isVisible = true;
-    visibilityBtn.addEventListener('click', async () => {
-        isVisible = !isVisible;
-        visibilityBtn.textContent = isVisible ? 'Hide' : 'Show';
-        visibilityBtn.setAttribute('disabled', 'true');
-
-        if (isVisible) {
-            canvas.style.display = 'block';
-        }
-
-        await stateManager.handleVisibilityChange(isVisible);
-
-        if (!isVisible) {
-            canvas.style.display = 'none';
-        }
-
-        visibilityBtn.removeAttribute('disabled');
-    });
-
-    // Animation Loop
-    let lastTime = performance.now();
-    function loop(currentTime: number) {
-      const deltaTime = currentTime - lastTime;
-      lastTime = currentTime;
-
-      animationManager.update(currentTime);
-      stateManager.update(deltaTime);
-
-      // Update Dashboard
-      dashState.textContent = stateManager.currentStateName;
-      dashAnim.textContent = animationManager.currentAnimationName || '-';
-      dashLevel.textContent = stateManager.idleLevel.toString();
-      dashTicks.textContent = stateManager.ticksToNextLevel.toString();
-      dashNextTick.textContent = (stateManager.timeUntilNextTick / 1000).toFixed(1);
-
-      // Clear and draw
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      animationManager.draw(ctx, 0, 0);
-
-      requestAnimationFrame(loop);
-    }
-
-    // Start
-    stateManager.setState('IdlingLevel1').then(() => {
-        console.log('State set to IdlingLevel1');
-    });
-    requestAnimationFrame(loop);
-
-  } catch (error) {
-    console.error(error);
-    const dashboard = document.getElementById('dashboard');
-    if (dashboard) {
-      dashboard.textContent = `Error: ${error instanceof Error ? error.message : String(error)}`;
+    } catch (error) {
+      console.error('Failed to load agent:', error);
+      dashState.textContent = 'Error';
+      alert('Failed to load agent. See console for details.');
     }
   }
+
+  agentSelect.addEventListener('change', () => {
+    loadAgent(agentSelect.value);
+  });
+
+  playBtn.addEventListener('click', () => {
+    currentAgent?.play(animationSelect.value);
+  });
+
+  randomBtn.addEventListener('click', () => {
+    currentAgent?.stateManager.playRandomAnimation();
+  });
+
+  stateSelect.addEventListener('change', () => {
+    currentAgent?.setState(stateSelect.value);
+  });
+
+  visibilityBtn.addEventListener('click', async () => {
+    if (!currentAgent) return;
+
+    visibilityBtn.disabled = true;
+    isVisible = !isVisible;
+
+    if (isVisible) {
+        await currentAgent.show();
+        visibilityBtn.textContent = 'Hide';
+    } else {
+        await currentAgent.hide();
+        visibilityBtn.textContent = 'Show';
+    }
+
+    visibilityBtn.disabled = false;
+  });
+
+  // Update Loop for Debug Info
+  function updateDebug() {
+    if (currentAgent && currentAgent.stateManager && currentAgent.animationManager) {
+      dashState.textContent = currentAgent.stateManager.currentStateName;
+      dashAnim.textContent = currentAgent.animationManager.currentAnimationName || '-';
+      dashFrame.textContent = currentAgent.animationManager.currentFrameIndexValue.toString();
+      dashLevel.textContent = currentAgent.stateManager.idleLevel.toString();
+      dashNextTick.textContent = (currentAgent.stateManager.timeUntilNextTick / 1000).toFixed(1);
+    }
+    requestAnimationFrame(updateDebug);
+  }
+
+  // Start
+  updateDebug();
+  await loadAgent('Clippit');
 }
 
 initDemo();
