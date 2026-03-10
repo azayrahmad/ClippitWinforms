@@ -4,10 +4,80 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ms-agent-js</title>
+    <title>MSAgentJS Demo</title>
+    <link rel="stylesheet" href="https://unpkg.com/98.css">
+    <link rel="stylesheet" href="/src/style.css">
   </head>
-  <body>
-    <div id="app"></div>
+  <body class="desktop">
+    <div id="app">
+      <div class="window" style="width: 400px; margin: 20px;">
+        <div class="title-bar">
+          <div class="title-bar-text">MSAgentJS Controller</div>
+          <div class="title-bar-controls">
+            <button aria-label="Minimize"></button>
+            <button aria-label="Maximize"></button>
+            <button aria-label="Close"></button>
+          </div>
+        </div>
+        <div class="window-body">
+          <div class="field-row">
+            <label for="agent-select">Agent:</label>
+            <select id="agent-select">
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+
+          <hr />
+
+          <div class="field-row-stacked">
+            <label for="animation-select">Animations:</label>
+            <select id="animation-select" size="5" style="width: 100%"></select>
+          </div>
+
+          <div class="field-row" style="justify-content: flex-end;">
+            <button id="play-btn">Play</button>
+            <button id="random-btn">Play Random</button>
+          </div>
+
+          <hr />
+
+          <div class="field-row">
+            <label for="state-select">State:</label>
+            <select id="state-select"></select>
+            <button id="set-state-btn">Set</button>
+          </div>
+
+          <div class="field-row" style="justify-content: space-between; margin-top: 10px;">
+            <div>
+              <button id="show-btn">Show</button>
+              <button id="hide-btn">Hide</button>
+            </div>
+            <button id="move-btn">Move to Center</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="window" style="width: 300px; margin: 20px; position: absolute; right: 0; top: 0;">
+        <div class="title-bar">
+          <div class="title-bar-text">Debug Information</div>
+        </div>
+        <div class="window-body">
+          <ul id="debug-list" style="list-style-type: none; padding: 0; margin: 0;">
+            <li><strong>State:</strong> <span id="debug-state">-</span></li>
+            <li><strong>Idle Level:</strong> <span id="debug-idle-level">-</span></li>
+            <li><strong>Ticks to Next:</strong> <span id="debug-ticks">-</span></li>
+            <li><strong>Next Tick In:</strong> <span id="debug-next-tick">-</span>s</li>
+            <li><strong>Animation:</strong> <span id="debug-anim">-</span></li>
+            <li><strong>Frame Index:</strong> <span id="debug-frame">-</span></li>
+            <li><strong>Animating:</strong> <span id="debug-is-animating">-</span></li>
+            <li><strong>Exiting:</strong> <span id="debug-is-exiting">-</span></li>
+          </ul>
+        </div>
+        <div class="status-bar">
+          <p class="status-bar-field" id="status-text">Ready</p>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
