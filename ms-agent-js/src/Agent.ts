@@ -111,18 +111,24 @@ export class Agent {
     const defaultBaseUrl = `https://unpkg.com/ms-agent-js@latest/dist/agents/${name}`;
     const baseUrl = (options.baseUrl || defaultBaseUrl).replace(/\/$/, '');
 
-    let definition: AgentCharacterDefinition;
+    let definition: AgentCharacterDefinition | null = null;
     let optimizedData: OptimizedAgent | null = null;
 
-    if (options.optimized) {
-      const optimizedPath = `${baseUrl}/optimized/agent.json`;
-      const response = await fetch(optimizedPath);
-      if (!response.ok) {
-        throw new Error(`Failed to load optimized agent data: ${response.statusText}`);
+    // Try optimized loading first unless explicitly disabled
+    if (options.optimized !== false) {
+      try {
+        const optimizedPath = `${baseUrl}/optimized/agent.json`;
+        const response = await fetch(optimizedPath);
+        if (response.ok) {
+          optimizedData = await response.json() as OptimizedAgent;
+          definition = optimizedData.definition;
+        }
+      } catch (e) {
+        // Fallback to legacy
       }
-      optimizedData = await response.json() as OptimizedAgent;
-      definition = optimizedData.definition;
-    } else {
+    }
+
+    if (!definition) {
       // Try to find the .acd file. We try the uppercase name first, but we are robust.
       const acdPath = `${baseUrl}/${name.toUpperCase()}.acd`;
 
@@ -166,7 +172,7 @@ export class Agent {
       fixed: options.fixed ?? true,
       x: options.x ?? (window.innerWidth - definition.character.width * (options.scale ?? 1) - 50),
       y: options.y ?? (window.innerHeight - definition.character.height * (options.scale ?? 1) - 50),
-      optimized: options.optimized ?? false,
+      optimized: options.optimized ?? (optimizedData !== null),
     };
 
     const agent = new Agent(definition, fullOptions, optimizedData);

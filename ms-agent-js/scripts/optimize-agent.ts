@@ -56,24 +56,84 @@ async function getBmpTransparencyColor(bmpPath: string, transparencyIndex: numbe
 }
 
 async function processBmp(bmpPath: string, transparencyColor: { r: number, g: number, b: number }) {
-    const { data, info } = await sharp(bmpPath)
-        .ensureAlpha()
-        .raw()
-        .toBuffer({ resolveWithObject: true });
+    const buffer = fs.readFileSync(bmpPath);
+    const view = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+    const magic = view.getUint16(0, true);
+    if (magic !== 0x4d42) {
+        throw new Error(`Not a BMP file: ${bmpPath}`);
+    }
 
+    const width = view.getInt32(18, true);
+    const height = Math.abs(view.getInt32(22, true));
+    const isBottomUp = view.getInt32(22, true) > 0;
+    const bitCount = view.getUint16(28, true);
+
+    const offsetToPixels = view.getUint32(10, true);
+    const infoHeaderSize = view.getUint32(14, true);
+
+    const pixels = new Uint8ClampedArray(width * height * 4);
     const { r: tr, g: tg, b: tb } = transparencyColor;
-    const pixels = new Uint8ClampedArray(data);
 
-    for (let i = 0; i < pixels.length; i += 4) {
-        if (pixels[i] === tr && pixels[i + 1] === tg && pixels[i + 2] === tb) {
-            pixels[i + 3] = 0;
+    if (bitCount === 8) {
+        const offsetToPalette = 14 + infoHeaderSize;
+        const palette: { r: number; g: number; b: number }[] = [];
+        for (let i = 0; i < 256; i++) {
+            const pIdx = offsetToPalette + i * 4;
+            palette.push({
+                b: view.getUint8(pIdx),
+                g: view.getUint8(pIdx + 1),
+                r: view.getUint8(pIdx + 2),
+            });
         }
+
+        const rowSize = Math.floor((8 * width + 31) / 32) * 4;
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                const bmpY = isBottomUp ? height - 1 - y : y;
+                const pixelOffset = offsetToPixels + bmpY * rowSize + x;
+                const paletteIndex = view.getUint8(pixelOffset);
+                const color = palette[paletteIndex];
+                const targetIndex = (y * width + x) * 4;
+
+                pixels[targetIndex] = color.r;
+                pixels[targetIndex + 1] = color.g;
+                pixels[targetIndex + 2] = color.b;
+                if (color.r === tr && color.g === tg && color.b === tb) {
+                    pixels[targetIndex + 3] = 0;
+                } else {
+                    pixels[targetIndex + 3] = 255;
+                }
+            }
+        }
+    } else if (bitCount === 24) {
+        const rowSize = Math.floor((24 * width + 31) / 32) * 4;
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                const bmpY = isBottomUp ? height - 1 - y : y;
+                const pixelOffset = offsetToPixels + bmpY * rowSize + x * 3;
+                const b = view.getUint8(pixelOffset);
+                const g = view.getUint8(pixelOffset + 1);
+                const r = view.getUint8(pixelOffset + 2);
+                const targetIndex = (y * width + x) * 4;
+
+                pixels[targetIndex] = r;
+                pixels[targetIndex + 1] = g;
+                pixels[targetIndex + 2] = b;
+                if (r === tr && g === tg && b === tb) {
+                    pixels[targetIndex + 3] = 0;
+                } else {
+                    pixels[targetIndex + 3] = 255;
+                }
+            }
+        }
+    } else {
+        throw new Error(`Unsupported BMP bit count: ${bitCount}-bit in ${bmpPath}`);
     }
 
     return {
         data: Buffer.from(pixels),
-        width: info.width,
-        height: info.height
+        width,
+        height
     };
 }
 
