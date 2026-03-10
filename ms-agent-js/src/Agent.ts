@@ -84,6 +84,9 @@ export class Agent {
     this.spriteManager = new SpriteManager(options.baseUrl, definition);
     this.audioManager = new AudioManager(options.baseUrl);
     this.audioManager.setEnabled(options.useAudio);
+    if (definition.audioAtlas) {
+      this.audioManager.setAudioAtlas(definition.audioAtlas);
+    }
     this.animationManager = new AnimationManager(this.spriteManager, this.audioManager, definition.animations);
     this.stateManager = new StateManager(definition.states, this.animationManager, {
       idleIntervalMs: options.idleIntervalMs,
@@ -172,7 +175,14 @@ export class Agent {
   }
 
   private async init() {
-    await this.spriteManager.init();
+    const initPromises: Promise<any>[] = [this.spriteManager.init()];
+
+    if (this.options.useAudio && this.definition.audioAtlas) {
+      // Eager load audio spritesheet if available
+      initPromises.push(this.audioManager.loadSounds([]));
+    }
+
+    await Promise.all(initPromises);
     this.startLoop();
     await this.stateManager.setState('IdlingLevel1');
   }

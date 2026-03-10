@@ -1,8 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { execSync } from 'child_process';
 import Jimp from 'jimp';
 import { CharacterParser } from '../src/CharacterParser';
-import type { AgentCharacterDefinition } from '../src/types';
+import type { AgentCharacterDefinition, AudioAtlasEntry } from '../src/types';
 
 // Mock some browser globals for CharacterParser
 (global as any).fetch = async (url: string) => {
@@ -109,8 +110,78 @@ async function optimizeAgent(agentDir: string) {
     await sheet.writeAsync(sheetPath);
     console.log(`Saved sprite sheet to ${sheetPath}`);
 
-    // 6. Save agent.json
+    // 6. Audio Spritesheet
+    const audioToProcess = new Set<string>();
+    Object.values(definition.animations).forEach(anim => {
+        anim.frames.forEach(frame => {
+            if (frame.soundEffect) {
+                const soundName = frame.soundEffect.split(/[\\/]/).pop() || frame.soundEffect;
+                audioToProcess.add(soundName.toLowerCase().endsWith('.wav') ? soundName.toLowerCase() : `${soundName.toLowerCase()}.wav`);
+            }
+        });
+    });
+
+    const audioList = Array.from(audioToProcess).sort();
+    console.log(`Found ${audioList.length} unique audio files.`);
+
+    const audioAtlas: Record<string, AudioAtlasEntry> = {};
+    if (audioList.length > 0) {
+        const tempDir = path.join(agentDir, 'temp_audio');
+        if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir);
+
+        const audioPaths: string[] = [];
+        const silencePath = path.join(tempDir, 'silence.wav');
+        // Create 0.5s silence
+        execSync(`ffmpeg -y -f lavfi -i anullsrc=r=44100:cl=mono -t 0.5 ${silencePath}`, { stdio: 'ignore' });
+
+        let currentTime = 0;
+        const silenceDuration = 0.5;
+
+        for (const sound of audioList) {
+            let soundPath = path.join(agentDir, 'Audio', sound);
+            if (!fs.existsSync(soundPath)) {
+                soundPath = path.join(agentDir, 'audio', sound);
+            }
+            if (!fs.existsSync(soundPath)) {
+                // Try without extension if it was added
+                const base = sound.replace(/\.wav$/, '');
+                soundPath = path.join(agentDir, 'Audio', base);
+                if (!fs.existsSync(soundPath)) soundPath = path.join(agentDir, 'audio', base);
+            }
+
+            if (fs.existsSync(soundPath)) {
+                // Get duration using ffprobe
+                const durationStr = execSync(`ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 ${soundPath}`).toString().trim();
+                const duration = parseFloat(durationStr);
+
+                audioAtlas[sound] = {
+                    start: currentTime,
+                    end: currentTime + duration
+                };
+
+                audioPaths.push(soundPath);
+                audioPaths.push(silencePath);
+                currentTime += duration + silenceDuration;
+            } else {
+                console.warn(`Could not find audio file: ${sound}`);
+            }
+        }
+
+        if (audioPaths.length > 0) {
+            const filterComplex = audioPaths.map((_, i) => `[${i}:a]`).join('') + `concat=n=${audioPaths.length}:v=0:a=1[a]`;
+            const inputs = audioPaths.map(p => `-i "${p}"`).join(' ');
+            const outputWebm = path.join(agentDir, 'agent.webm');
+            execSync(`ffmpeg -y ${inputs} -filter_complex "${filterComplex}" -map "[a]" -c:a libvorbis ${outputWebm}`, { stdio: 'ignore' });
+            console.log(`Saved audio spritesheet to ${outputWebm}`);
+        }
+
+        // Cleanup temp audio
+        fs.rmSync(tempDir, { recursive: true, force: true });
+    }
+
+    // 7. Save agent.json
     (definition as any).atlas = atlas;
+    (definition as any).audioAtlas = audioAtlas;
     const jsonPath = path.join(agentDir, 'agent.json');
     fs.writeFileSync(jsonPath, JSON.stringify(definition, null, 2));
     console.log(`Saved agent definition to ${jsonPath}`);
