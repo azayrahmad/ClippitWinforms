@@ -229,7 +229,9 @@ export class SpriteManager {
 
       if (this.optimizedData && this.spritesheetImage) {
         const filename = imgDef.filename.replace(/\\/g, '/').split('/').pop() || imgDef.filename;
-        const mapEntry = this.optimizedData.spritesheet.map[filename];
+        const mapEntry = this.optimizedData.spritesheet.map[filename] ||
+                         this.optimizedData.spritesheet.map[filename.toLowerCase()] ||
+                         this.optimizedData.spritesheet.map[filename.toUpperCase()];
         if (mapEntry) {
           ctx.drawImage(
             this.spritesheetImage,

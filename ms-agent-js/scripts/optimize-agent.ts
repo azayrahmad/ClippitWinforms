@@ -184,7 +184,8 @@ async function optimizeAgent(agentDir: string, audioFormat: 'webm' | 'mp3' = 'we
 
     for (const imgFile of imageFiles) {
         const { data, width, height } = await processBmp(path.join(imageDir, imgFile), transparencyColor);
-        processedImages.push({ data, width, height, name: imgFile });
+        // Store name in lowercase to ensure consistency with ACD normalization in library
+        processedImages.push({ data, width, height, name: imgFile.toLowerCase() });
     }
 
     // Pack them in a grid to avoid exceeding WebP size limits (16383x16383)
