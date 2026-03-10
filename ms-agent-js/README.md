@@ -39,6 +39,44 @@ async function init() {
 init();
 ```
 
+### Optimized Loading
+
+For production, you can load highly optimized assets (single WebP spritesheet and Audio Sprite) to reduce HTTP requests and file size.
+
+```javascript
+const agent = await Agent.load('Clippit', {
+  optimized: true
+});
+```
+
+## Optimizing Assets
+
+If you have your own agents (BMP/WAV files) and want to convert them to the optimized format, you can use the built-in optimization tool.
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/)
+- [ffmpeg](https://ffmpeg.org/) installed and available in your system PATH.
+
+### Running the Optimizer
+
+1. Place your agent folder (containing the `.acd` file, `images/` directory, and `Audio/` directory) inside the project.
+2. Run the following command:
+
+```bash
+npm run optimize -- <path_to_agent_folder> [audio-format: webm|mp3]
+```
+
+Example:
+```bash
+npm run optimize -- ./public/agents/Clippit webm
+```
+
+This will create an `optimized/` directory inside your agent folder containing:
+- `agent.json`: Unified manifest with animation data and asset maps.
+- `spritesheet.webp`: All frames combined into one image with transparency.
+- `audio.webm`: All sound effects combined into one audio file.
+
 ## Including Agent Assets
 
 MSAgentJS includes agent assets (like Clippit) within the package. To use them, you must ensure these assets are served by your web server.
