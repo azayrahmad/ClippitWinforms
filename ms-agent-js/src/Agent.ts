@@ -114,9 +114,10 @@ export class Agent {
     const acdPath = `${baseUrl}/${name.toUpperCase()}.acd`;
 
     const definition = await CharacterParser.load(acdPath).catch(async (err) => {
-        // Fallback to lowercase if uppercase fails
         try {
-            return await CharacterParser.load(`${baseUrl}/${name.toLowerCase()}.acd`);
+            const fallbackPath = `${baseUrl}/${name.toLowerCase()}.acd`;
+            if (fallbackPath === acdPath) throw err;
+            return await CharacterParser.load(fallbackPath);
         } catch (innerErr) {
             console.error(`MSAgentJS: Failed to load agent assets for '${name}' at ${baseUrl}. ` +
                           `Please ensure the 'agents/' directory is correctly served and 'baseUrl' is correct.`);
@@ -126,17 +127,31 @@ export class Agent {
 
     // Normalize paths in definition to be relative to baseUrl
     if (definition.character.colorTable && !definition.character.colorTable.startsWith('http')) {
-      definition.character.colorTable = definition.character.colorTable.replace(/\\/g, '/').toLowerCase();
+      definition.character.colorTable = definition.character.colorTable.replace(/\\/g, '/');
+      // For Clippit, the files are in lowercase folder and filename,
+      // but ACD might say "Images\ColorTable.bmp"
+      if (name.toUpperCase() === 'CLIPPIT') {
+          definition.character.colorTable = definition.character.colorTable.toLowerCase();
+      }
     }
 
-    // Lowercase all image filenames in animations for robustness
+    // Normalize all image filenames in animations
     Object.values(definition.animations).forEach(animation => {
       animation.frames.forEach(frame => {
         frame.images.forEach(image => {
-          image.filename = image.filename.replace(/\\/g, '/').toLowerCase();
+          image.filename = image.filename.replace(/\\/g, '/');
+          if (name.toUpperCase() === 'CLIPPIT') {
+              image.filename = image.filename.toLowerCase();
+          } else if (image.filename.startsWith('images/')) {
+              // Standardize to capital "Images/" for other agents
+              image.filename = 'Images/' + image.filename.substring(7);
+          }
         });
         if (frame.soundEffect) {
-          frame.soundEffect = frame.soundEffect.toLowerCase();
+          frame.soundEffect = frame.soundEffect.replace(/\\/g, '/');
+          if (name.toUpperCase() === 'CLIPPIT') {
+              frame.soundEffect = frame.soundEffect.toLowerCase();
+          }
         }
       });
     });
@@ -249,6 +264,22 @@ export class Agent {
 
   private emit(event: AgentEvent, ...args: any[]) {
     this.listeners.get(event)?.forEach(listener => listener(...args));
+  }
+
+  /**
+   * Returns internal state for debugging.
+   */
+  public get debugInfo() {
+    return {
+      state: this.stateManager.currentStateName,
+      idleLevel: this.stateManager.idleLevel,
+      ticksToNextLevel: this.stateManager.ticksToNextLevel,
+      timeUntilNextTick: this.stateManager.timeUntilNextTick,
+      animation: this.animationManager.currentAnimationName,
+      frameIndex: this.animationManager.currentFrameIndexValue,
+      isAnimating: this.animationManager.isAnimating,
+      isExiting: this.animationManager.isExitingFlag,
+    };
   }
 
   /**

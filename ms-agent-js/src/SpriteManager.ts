@@ -27,11 +27,12 @@ export class SpriteManager {
 
   private async loadTransparencyColor(): Promise<void> {
     const colorTablePath = this.definition.character.colorTable;
-    // The color table is usually in the agent root
     const colorTableUrl = colorTablePath.startsWith('http') ? colorTablePath : `${this.agentRoot}/${colorTablePath}`;
-    const response = await fetch(colorTableUrl);
+
+    let response = await this.fetchWithRetry(colorTableUrl);
+
     if (!response.ok) {
-      throw new Error(`Failed to load color table: ${response.statusText}`);
+      throw new Error(`Failed to load color table: ${response.statusText} at ${colorTableUrl}`);
     }
     const buffer = await response.arrayBuffer();
     this.transparencyColor = this.getPaletteColor(buffer, this.definition.character.transparency);
@@ -68,16 +69,50 @@ export class SpriteManager {
   public async loadSprite(filename: string): Promise<void> {
     if (this.sprites.has(filename)) return;
 
-    // Fix path separators and normalization
-    const normalizedFilename = filename.replace(/\\/g, '/').toLowerCase().split('/').pop() || filename;
-    const url = filename.startsWith('http') ? filename : `${this.agentRoot}/images/${normalizedFilename}`;
-    const response = await fetch(url);
+    const url = filename.startsWith('http') ? filename : `${this.agentRoot}/${filename.replace(/\\/g, '/')}`;
+    const response = await this.fetchWithRetry(url);
+
     if (!response.ok) {
-      throw new Error(`Failed to load sprite ${filename}: ${response.statusText}`);
+      throw new Error(`Failed to load sprite ${filename}: ${response.statusText} at ${url}`);
     }
     const buffer = await response.arrayBuffer();
     const canvas = this.bmpToCanvas(buffer);
     this.sprites.set(filename, canvas);
+  }
+
+  /**
+   * Fetches a URL and tries common casing variations if it fails.
+   */
+  private async fetchWithRetry(url: string): Promise<Response> {
+    let response = await fetch(url);
+    if (response.ok || url.startsWith('http')) return response;
+
+    const lastSlash = url.lastIndexOf('/');
+    const dir = url.substring(0, lastSlash);
+    const file = url.substring(lastSlash + 1);
+
+    const variations = [
+        url.toLowerCase(),
+        // Try toggling "images" vs "Images" directory
+        url.includes('/images/') ? url.replace('/images/', '/Images/') : url.replace('/Images/', '/images/'),
+        // Try toggling filename case
+        dir + '/' + file.toLowerCase(),
+        dir + '/' + (file.charAt(0).toUpperCase() + file.slice(1).toLowerCase()),
+        // Combinations
+        (dir.includes('/images/') ? dir.replace('/images/', '/Images/') : dir.replace('/Images/', '/images/')) + '/' + file.toLowerCase()
+    ];
+
+    for (const variant of variations) {
+        if (variant === url) continue;
+        try {
+            response = await fetch(variant);
+            if (response.ok) return response;
+        } catch (e) {
+            // Ignore fetch errors during retry
+        }
+    }
+
+    return response;
   }
 
   private bmpToCanvas(buffer: ArrayBuffer): HTMLCanvasElement {

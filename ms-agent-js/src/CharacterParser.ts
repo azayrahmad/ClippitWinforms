@@ -54,6 +54,12 @@ export class CharacterParser {
       throw new Error(`Failed to load .acd file: ${response.statusText}`);
     }
     const content = await response.text();
+
+    // Safety: if the content looks like HTML, it's probably a 404 page served as 200
+    if (content.trim().toLowerCase().startsWith('<!doctype html')) {
+        throw new Error(`Failed to load .acd file: Received HTML instead of character definition at ${url}`);
+    }
+
     const parser = new CharacterParser();
     return parser.parse(content);
   }

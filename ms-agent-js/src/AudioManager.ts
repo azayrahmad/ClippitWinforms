@@ -49,15 +49,45 @@ export class AudioManager {
         await Promise.all(promises);
     }
 
+    /**
+     * Fetches a URL and tries common casing variations if it fails.
+     */
+    private async fetchWithRetry(url: string): Promise<Response> {
+        let response = await fetch(url);
+        if (response.ok || url.startsWith('http')) return response;
+
+        const lastSlash = url.lastIndexOf('/');
+        const dir = url.substring(0, lastSlash);
+        const file = url.substring(lastSlash + 1);
+
+        const variations = [
+            url.toLowerCase(),
+            dir + '/' + file.toLowerCase(),
+            dir + '/' + (file.charAt(0).toUpperCase() + file.slice(1).toLowerCase()),
+        ];
+
+        for (const variant of variations) {
+            if (variant === url) continue;
+            try {
+                response = await fetch(variant);
+                if (response.ok) return response;
+            } catch (e) {
+                // Ignore fetch errors during retry
+            }
+        }
+
+        return response;
+    }
+
     private async loadInternal(soundName: string): Promise<void> {
         const ctx = this.getContext();
         const normalizedFilename = soundName.toLowerCase().endsWith('.wav') ? soundName : `${soundName}.wav`;
         const url = `${this.audioPath}/${normalizedFilename}`;
 
         try {
-            const response = await fetch(url);
+            const response = await this.fetchWithRetry(url);
             if (!response.ok) {
-                console.warn(`Failed to load sound ${soundName}: ${response.statusText}`);
+                console.warn(`Failed to load sound ${soundName}: ${response.statusText} at ${url}`);
                 return;
             }
             const arrayBuffer = await response.arrayBuffer();

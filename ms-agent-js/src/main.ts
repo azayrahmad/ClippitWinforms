@@ -1,185 +1,147 @@
-import './style.css';
-import { CharacterParser } from './CharacterParser';
-import { SpriteManager } from './SpriteManager';
-import { AnimationManager } from './AnimationManager';
-import { AudioManager } from './AudioManager';
-import { StateManager } from './StateManager';
+import { Agent } from './Agent';
+
+let currentAgent: Agent | null = null;
+
+interface AgentInfo {
+  id: string;
+  name: string;
+}
 
 async function initDemo() {
-  const app = document.querySelector<HTMLDivElement>('#app')!;
-  app.innerHTML = `
-    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px;">
-      <h1>MSAgentJS - Phase 5: State & Branching</h1>
-
-      <div id="dashboard" style="background: #f0f0f0; border: 1px solid #ccc; padding: 10px; margin-bottom: 20px; font-family: monospace;">
-        <strong>Agent Dashboard</strong><br/>
-        State: <span id="dash-state">Loading...</span><br/>
-        Animation: <span id="dash-anim">-</span><br/>
-        Idle Level: <span id="dash-level">-</span><br/>
-        Ticks to Next Level: <span id="dash-ticks">-</span><br/>
-        Next Tick In: <span id="dash-next-tick">-</span>s
-      </div>
-
-      <div id="controls" style="margin-bottom: 10px; display: none;">
-        <div style="margin-bottom: 8px;">
-          <label for="animation-select">Manual Animation: </label>
-          <select id="animation-select"></select>
-          <button id="play-btn">Play</button>
-          <button id="random-btn">Play Random (Set "Playing" State)</button>
-        </div>
-        <div style="margin-bottom: 8px;">
-          <label for="state-select">Change State: </label>
-          <select id="state-select"></select>
-          <button id="visibility-btn">Hide</button>
-        </div>
-      </div>
-
-      <div id="canvas-container" style="position: relative;"></div>
-
-      <p style="font-size: 0.8em; color: #666; margin-top: 20px;">
-        Note: The agent is currently in automatic mode. It will play idle animations every 10 seconds.
-        Manual animations use the "Exit Branch" for smooth transitions.
-      </p>
-    </div>
-  `;
+  const agentSelect = document.getElementById('agent-select') as HTMLSelectElement;
+  const statusText = document.getElementById('status-text')!;
 
   try {
-    const agentRoot = '/agents/Clippit';
-    const definition = await CharacterParser.load(`${agentRoot}/CLIPPIT.acd`);
+    const response = await fetch('/agents/agents.json');
+    if (!response.ok) throw new Error('Failed to load agents.json');
+    const agents: AgentInfo[] = await response.json();
 
-    // Normalized path for web environment
-    if (!definition.character.colorTable.startsWith('images/')) {
-        definition.character.colorTable = 'images/ColorTable.bmp';
-    }
-
-    const spriteManager = new SpriteManager(agentRoot, definition);
-    await spriteManager.init();
-
-    const audioManager = new AudioManager(agentRoot);
-    const animationManager = new AnimationManager(spriteManager, audioManager, definition.animations);
-    const stateManager = new StateManager(definition.states, animationManager, {
-        idleIntervalMs: 5000, // Faster for demo purposes
-        ticksPerLevel: 3
-    });
-
-    const controlsEl = document.getElementById('controls')!;
-    const animationSelect = document.getElementById('animation-select') as HTMLSelectElement;
-    const playBtn = document.getElementById('play-btn')!;
-    const randomBtn = document.getElementById('random-btn')!;
-    const visibilityBtn = document.getElementById('visibility-btn')!;
-
-    const dashState = document.getElementById('dash-state')!;
-    const dashAnim = document.getElementById('dash-anim')!;
-    const dashLevel = document.getElementById('dash-level')!;
-    const dashTicks = document.getElementById('dash-ticks')!;
-    const dashNextTick = document.getElementById('dash-next-tick')!;
-
-    const stateSelect = document.getElementById('state-select') as HTMLSelectElement;
-
-    // Populate animation dropdown
-    const animNames = Object.keys(definition.animations).sort();
-    animNames.forEach(name => {
+    agentSelect.innerHTML = '';
+    agents.forEach(agent => {
       const option = document.createElement('option');
-      option.value = name;
-      option.textContent = name;
-      if (name === 'Greeting') option.selected = true;
-      animationSelect.appendChild(option);
+      option.value = agent.id;
+      option.textContent = agent.name;
+      agentSelect.appendChild(option);
     });
 
-    // Populate state dropdown
-    const stateNames = Object.keys(definition.states).sort();
-    stateNames.forEach(name => {
-      const option = document.createElement('option');
-      option.value = name;
-      option.textContent = name;
-      if (name === 'IdlingLevel1') option.selected = true;
-      stateSelect.appendChild(option);
-    });
-
-    controlsEl.style.display = 'block';
-
-    const container = document.getElementById('canvas-container')!;
-    const scale = 2;
-    const canvas = document.createElement('canvas');
-    canvas.width = spriteManager.getSpriteWidth() * scale;
-    canvas.height = spriteManager.getSpriteHeight() * scale;
-    canvas.style.imageRendering = 'pixelated';
-    canvas.style.display = 'block';
-    canvas.style.margin = '0 auto';
-    // Transparent checkered background
-    canvas.style.background = 'url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAAXNSR0IArs4c6QAAACBJREFUGFdjZEADJghG4CH8/z8DE6Y8mI6BBZghGEIHAMYICAn3m09WAAAAAElFTkSuQmCC") repeat';
-    container.appendChild(canvas);
-
-    const ctx = canvas.getContext('2d')!;
-
-    playBtn.addEventListener('click', async () => {
-      const selectedAnim = animationSelect.value;
-      stateManager.playAnimation(selectedAnim, 'Playing');
-    });
-
-    randomBtn.addEventListener('click', () => {
-        stateManager.playRandomAnimation();
-    });
-
-    stateSelect.addEventListener('change', () => {
-        stateManager.setState(stateSelect.value);
-    });
-
-    let isVisible = true;
-    visibilityBtn.addEventListener('click', async () => {
-        isVisible = !isVisible;
-        visibilityBtn.textContent = isVisible ? 'Hide' : 'Show';
-        visibilityBtn.setAttribute('disabled', 'true');
-
-        if (isVisible) {
-            canvas.style.display = 'block';
-        }
-
-        await stateManager.handleVisibilityChange(isVisible);
-
-        if (!isVisible) {
-            canvas.style.display = 'none';
-        }
-
-        visibilityBtn.removeAttribute('disabled');
-    });
-
-    // Animation Loop
-    let lastTime = performance.now();
-    function loop(currentTime: number) {
-      const deltaTime = currentTime - lastTime;
-      lastTime = currentTime;
-
-      animationManager.update(currentTime);
-      stateManager.update(deltaTime);
-
-      // Update Dashboard
-      dashState.textContent = stateManager.currentStateName;
-      dashAnim.textContent = animationManager.currentAnimationName || '-';
-      dashLevel.textContent = stateManager.idleLevel.toString();
-      dashTicks.textContent = stateManager.ticksToNextLevel.toString();
-      dashNextTick.textContent = (stateManager.timeUntilNextTick / 1000).toFixed(1);
-
-      // Clear and draw
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      animationManager.draw(ctx, 0, 0);
-
-      requestAnimationFrame(loop);
+    // Initial load
+    if (agents.length > 0) {
+      loadAgent(agents[0].id);
     }
-
-    // Start
-    stateManager.setState('IdlingLevel1').then(() => {
-        console.log('State set to IdlingLevel1');
-    });
-    requestAnimationFrame(loop);
 
   } catch (error) {
-    console.error(error);
-    const dashboard = document.getElementById('dashboard');
-    if (dashboard) {
-      dashboard.textContent = `Error: ${error instanceof Error ? error.message : String(error)}`;
-    }
+    console.error('Error initializing demo:', error);
+    statusText.textContent = 'Error loading agent list.';
   }
 }
 
+async function loadAgent(id: string) {
+  if (currentAgent) {
+    currentAgent.destroy();
+  }
+
+  const statusText = document.getElementById('status-text')!;
+  statusText.textContent = `Loading ${id}...`;
+
+  try {
+    currentAgent = await Agent.load(id, {
+      baseUrl: `/agents/${id}`,
+      scale: 2,
+    });
+
+    statusText.textContent = `Agent ${id} loaded.`;
+
+    populateDropdowns();
+  } catch (error) {
+    console.error(error);
+    statusText.textContent = `Error loading ${id}.`;
+  }
+}
+
+function populateDropdowns() {
+  if (!currentAgent) return;
+
+  const animationSelect = document.getElementById('animation-select') as HTMLSelectElement;
+  const stateSelect = document.getElementById('state-select') as HTMLSelectElement;
+
+  // Clear existing
+  animationSelect.innerHTML = '';
+  stateSelect.innerHTML = '';
+
+  const animations = Object.keys(currentAgent.definition.animations).sort();
+  animations.forEach(name => {
+    const option = document.createElement('option');
+    option.value = name;
+    option.textContent = name;
+    animationSelect.appendChild(option);
+  });
+
+  const states = Object.keys(currentAgent.definition.states).sort();
+  states.forEach(name => {
+    const option = document.createElement('option');
+    option.value = name;
+    option.textContent = name;
+    stateSelect.appendChild(option);
+  });
+}
+
+function updateDebug() {
+  if (!currentAgent) return;
+
+  const info = currentAgent.debugInfo;
+  document.getElementById('debug-state')!.textContent = info.state;
+  document.getElementById('debug-idle-level')!.textContent = info.idleLevel.toString();
+  document.getElementById('debug-ticks')!.textContent = info.ticksToNextLevel.toString();
+  document.getElementById('debug-next-tick')!.textContent = (info.timeUntilNextTick / 1000).toFixed(1);
+  document.getElementById('debug-anim')!.textContent = info.animation || '-';
+  document.getElementById('debug-frame')!.textContent = info.frameIndex.toString();
+  document.getElementById('debug-is-animating')!.textContent = info.isAnimating.toString();
+  document.getElementById('debug-is-exiting')!.textContent = info.isExiting.toString();
+
+  requestAnimationFrame(updateDebug);
+}
+
+const agentSelect = document.getElementById('agent-select') as HTMLSelectElement;
+agentSelect.addEventListener('change', () => {
+  loadAgent(agentSelect.value);
+});
+
+document.getElementById('play-btn')!.addEventListener('click', () => {
+  const animationSelect = document.getElementById('animation-select') as HTMLSelectElement;
+  if (currentAgent && animationSelect.value) {
+    currentAgent.play(animationSelect.value);
+  }
+});
+
+document.getElementById('random-btn')!.addEventListener('click', () => {
+  if (currentAgent) {
+    const animations = Object.keys(currentAgent.definition.animations);
+    const randomAnim = animations[Math.floor(Math.random() * animations.length)];
+    currentAgent.play(randomAnim);
+  }
+});
+
+document.getElementById('set-state-btn')!.addEventListener('click', () => {
+  const stateSelect = document.getElementById('state-select') as HTMLSelectElement;
+  if (currentAgent && stateSelect.value) {
+    currentAgent.setState(stateSelect.value);
+  }
+});
+
+document.getElementById('show-btn')!.addEventListener('click', () => {
+  currentAgent?.show();
+});
+
+document.getElementById('hide-btn')!.addEventListener('click', () => {
+  currentAgent?.hide();
+});
+
+document.getElementById('move-btn')!.addEventListener('click', () => {
+  if (currentAgent) {
+    currentAgent.moveTo(window.innerWidth / 2 - 64, window.innerHeight / 2 - 64);
+  }
+});
+
+// Start
 initDemo();
+requestAnimationFrame(updateDebug);
