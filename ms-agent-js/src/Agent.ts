@@ -107,7 +107,9 @@ export class Agent {
    * Static factory method to load an agent.
    */
   public static async load(name: string, options: AgentOptions = {}): Promise<Agent> {
-    const baseUrl = options.baseUrl || `/agents/${name}`;
+    const defaultBaseUrl = `https://unpkg.com/ms-agent-js@latest/dist/agents/${name}`;
+    const baseUrl = (options.baseUrl || defaultBaseUrl).replace(/\/$/, '');
+
     // Try to find the .acd file. We try the uppercase name first, but we are robust.
     const acdPath = `${baseUrl}/${name.toUpperCase()}.acd`;
 
