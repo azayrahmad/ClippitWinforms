@@ -84,6 +84,9 @@ export class Agent {
     this.spriteManager = new SpriteManager(options.baseUrl, definition);
     this.audioManager = new AudioManager(options.baseUrl);
     this.audioManager.setEnabled(options.useAudio);
+    if (definition.audioAtlas) {
+      this.audioManager.setAudioAtlas(definition.audioAtlas);
+    }
     this.animationManager = new AnimationManager(this.spriteManager, this.audioManager, definition.animations);
     this.stateManager = new StateManager(definition.states, this.animationManager, {
       idleIntervalMs: options.idleIntervalMs,
@@ -111,18 +114,28 @@ export class Agent {
     const baseUrl = (options.baseUrl || defaultBaseUrl).replace(/\/$/, '');
 
     // Try to find the .acd file. We try the uppercase name first, but we are robust.
-    const acdPath = `${baseUrl}/${name.toUpperCase()}.acd`;
+    const jsonPath = `${baseUrl}/agent.json`;
+    let definition: AgentCharacterDefinition;
 
-    const definition = await CharacterParser.load(acdPath).catch(async (err) => {
-        // Fallback to lowercase if uppercase fails
-        try {
-            return await CharacterParser.load(`${baseUrl}/${name.toLowerCase()}.acd`);
-        } catch (innerErr) {
-            console.error(`MSAgentJS: Failed to load agent assets for '${name}' at ${baseUrl}. ` +
-                          `Please ensure the 'agents/' directory is correctly served and 'baseUrl' is correct.`);
-            throw err;
-        }
-    });
+    try {
+        const response = await fetch(jsonPath);
+        if (!response.ok) throw new Error('No agent.json');
+        definition = await response.json();
+    } catch (e) {
+        // Fallback to .acd
+        const acdPath = `${baseUrl}/${name.toUpperCase()}.acd`;
+
+        definition = await CharacterParser.load(acdPath).catch(async (err) => {
+            // Fallback to lowercase if uppercase fails
+            try {
+                return await CharacterParser.load(`${baseUrl}/${name.toLowerCase()}.acd`);
+            } catch (innerErr) {
+                console.error(`MSAgentJS: Failed to load agent assets for '${name}' at ${baseUrl}. ` +
+                              `Please ensure the 'agents/' directory is correctly served and 'baseUrl' is correct.`);
+                throw err;
+            }
+        });
+    }
 
     // Normalize paths in definition to be relative to baseUrl
     if (definition.character.colorTable && !definition.character.colorTable.startsWith('http')) {
@@ -162,9 +175,16 @@ export class Agent {
   }
 
   private async init() {
-    await this.spriteManager.init();
+    const initPromises: Promise<any>[] = [this.spriteManager.init()];
+
+    if (this.options.useAudio && this.definition.audioAtlas) {
+      // Eager load audio spritesheet if available
+      initPromises.push(this.audioManager.loadSounds([]));
+    }
+
+    await Promise.all(initPromises);
     this.startLoop();
-    await this.stateManager.setState('IdlingLevel1');
+    await this.show();
   }
 
   private startLoop() {
@@ -193,9 +213,9 @@ export class Agent {
   /**
    * Plays a specific animation.
    */
-  public async play(animationName: string): Promise<void> {
+  public async play(animationName: string, timeoutMs?: number): Promise<void> {
     this.emit('animationStart', animationName);
-    await this.stateManager.playAnimation(animationName, 'Playing');
+    await this.stateManager.playAnimation(animationName, 'Playing', false, timeoutMs);
     this.emit('animationEnd', animationName);
   }
 
@@ -223,6 +243,7 @@ export class Agent {
    * Shows the agent with the "Showing" animation.
    */
   public async show(): Promise<void> {
+    this.container.style.display = 'block';
     await this.stateManager.handleVisibilityChange(true);
     this.emit('show');
   }
@@ -232,6 +253,7 @@ export class Agent {
    */
   public async hide(): Promise<void> {
     await this.stateManager.handleVisibilityChange(false);
+    this.container.style.display = 'none';
     this.emit('hide');
   }
 

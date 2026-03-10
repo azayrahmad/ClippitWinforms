@@ -15,7 +15,7 @@ export class StateManager {
   private states: Record<string, State>;
   private animationManager: AnimationManager;
 
-  private currentState: string = 'IdlingLevel1';
+  private currentState: string = 'Hidden';
   private currentIdleLevel: number = 1;
   private idleTickCount: number = 0;
   private elapsedSinceLastTick: number = 0;
@@ -25,7 +25,7 @@ export class StateManager {
   private maxIdleLevel: number = 3;
   private idlePrefix: string = 'IdlingLevel';
 
-  private isPaused: boolean = false;
+  private isPaused: boolean = true;
 
   constructor(
     states: Record<string, State>,
@@ -128,7 +128,8 @@ export class StateManager {
   public async playAnimation(
     animationName: string,
     stateName: string = '',
-    useExitBranch: boolean = false
+    useExitBranch: boolean = false,
+    timeoutMs?: number
   ): Promise<boolean> {
     if (stateName) {
       this.currentState = stateName;
@@ -139,22 +140,34 @@ export class StateManager {
     }
 
     await this.animationManager.preloadAnimation(animationName);
-    const result = await this.animationManager.interruptAndPlayAnimation(animationName, useExitBranch);
 
-    if (this.currentState === 'Playing' || !this.animationManager.isAnimating) {
-      await this.handleAnimationCompleted();
+    let timeoutId: any;
+    if (timeoutMs) {
+      timeoutId = setTimeout(() => {
+        this.animationManager.isExitingFlag = true;
+      }, timeoutMs);
     }
 
-    return result;
+    try {
+      const result = await this.animationManager.interruptAndPlayAnimation(animationName, useExitBranch);
+      return result;
+    } finally {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      if (this.currentState === 'Playing' || !this.animationManager.isAnimating) {
+        await this.handleAnimationCompleted();
+      }
+    }
   }
 
-  public async playRandomAnimation(): Promise<void> {
+  public async playRandomAnimation(timeoutMs: number = 5000): Promise<void> {
     const allAnimations = Object.keys((this.animationManager as any).animations); // accessing private animations for demo
     const selectableAnimations = allAnimations.filter(name => !this.isIdleState(name));
 
     if (selectableAnimations.length > 0) {
       const randomAnimation = selectableAnimations[Math.floor(Math.random() * selectableAnimations.length)];
-      this.playAnimation(randomAnimation, 'Playing');
+      await this.playAnimation(randomAnimation, 'Playing', false, timeoutMs);
     }
   }
 
@@ -179,8 +192,9 @@ export class StateManager {
     const state = this.states[this.currentState];
     if (state && state.animations.length > 0) {
       const randomAnimation = state.animations[Math.floor(Math.random() * state.animations.length)];
-      await this.animationManager.preloadAnimation(randomAnimation);
-      await this.animationManager.playAnimation(randomAnimation);
+      // Use the common playAnimation wrapper to ensure it respects exit branches
+      // when a state animation is updated or replaced.
+      await this.playAnimation(randomAnimation);
     }
   }
 
@@ -202,12 +216,14 @@ export class StateManager {
       }
     }
 
-    this.isPaused = !showing;
-
     if (showing) {
+      this.isPaused = false;
       this.resetIdleProgression();
-      await this.setIdleState(1);
+      // We don't await the initial idle state because it might be a long-running loop.
+      // The "Showing" process is considered complete once the intro animation is done.
+      void this.setIdleState(1);
     } else {
+      this.isPaused = true;
       // Ensure the animation is cleared when hidden
       this.animationManager.setAnimation('', false);
       this.currentState = 'Hidden';

@@ -8,10 +8,11 @@ import {
  * Ported from C# SpriteManager.cs.
  */
 export class SpriteManager {
-  private sprites: Map<string, HTMLCanvasElement> = new Map();
+  private sprites: Map<string, HTMLCanvasElement | HTMLImageElement> = new Map();
   private transparencyColor: { r: number; g: number; b: number } | null = null;
   private agentRoot: string;
   private definition: AgentCharacterDefinition;
+  private spriteSheet: HTMLImageElement | null = null;
 
   constructor(agentRoot: string, definition: AgentCharacterDefinition) {
     this.agentRoot = agentRoot;
@@ -22,7 +23,32 @@ export class SpriteManager {
    * Initializes the SpriteManager by loading the transparency color.
    */
   public async init(): Promise<void> {
-    await this.loadTransparencyColor();
+    if (this.definition.atlas) {
+        await this.loadSpriteSheet();
+    } else {
+        await this.loadTransparencyColor();
+    }
+  }
+
+  private async loadSpriteSheet(): Promise<void> {
+    const extensions = ['webp', 'png'];
+    for (const ext of extensions) {
+      try {
+        await new Promise<void>((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => {
+            this.spriteSheet = img;
+            resolve();
+          };
+          img.onerror = () => reject();
+          img.src = `${this.agentRoot}/agent.${ext}`;
+        });
+        return;
+      } catch (e) {
+        // Try next extension
+      }
+    }
+    throw new Error('Failed to load sprite sheet (tried webp, png)');
   }
 
   private async loadTransparencyColor(): Promise<void> {
@@ -98,7 +124,7 @@ export class SpriteManager {
    * Loads a sprite BMP file and caches it.
    */
   public async loadSprite(filename: string): Promise<void> {
-    if (this.sprites.has(filename)) return;
+    if (this.sprites.has(filename) || this.spriteSheet) return;
 
     const pathsToTry: string[] = [];
     if (filename.startsWith('http')) {
@@ -255,6 +281,27 @@ export class SpriteManager {
     // Draw images in reverse order as per the original implementation
     for (let i = frame.images.length - 1; i >= 0; i--) {
       const imgDef = frame.images[i];
+
+      if (this.spriteSheet && this.definition.atlas) {
+        const atlasEntry = this.definition.atlas[imgDef.filename];
+        if (atlasEntry) {
+          const trimX = atlasEntry.trimX || 0;
+          const trimY = atlasEntry.trimY || 0;
+          ctx.drawImage(
+            this.spriteSheet,
+            atlasEntry.x,
+            atlasEntry.y,
+            atlasEntry.w,
+            atlasEntry.h,
+            x + (imgDef.offsetX + trimX) * scale,
+            y + (imgDef.offsetY + trimY) * scale,
+            atlasEntry.w * scale,
+            atlasEntry.h * scale
+          );
+          continue;
+        }
+      }
+
       const sprite = this.sprites.get(imgDef.filename);
       if (sprite) {
         ctx.drawImage(
