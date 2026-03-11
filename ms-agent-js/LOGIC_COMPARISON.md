@@ -31,13 +31,17 @@ Original characters often used a specific frame loop for speaking.
 *   **TripleAgent Logic:** Follows the "speaking frame must be last" rule. It uses jumps to null frames to terminate the speaking sequence cleanly.
 *   **ms-agent-js Logic:** Does not strictly enforce the "speaking frame" marker from the `.acd`. Instead, it uses the `Balloon` manager to synchronize text typing with the browser's TTS (Text-to-Speech) API. If a "Speaking" state exists in the character definition, the `StateManager` can be told to play it.
 
+### Directions and Perspective
+*   **TripleAgent Logic:** Directions (Left, Right) are relative to the **Agent's own perspective**. `GesturingLeft` makes the character point to the screen's right.
+*   **ms-agent-js Logic:** Uses a `toAgentPerspective` transformer. Screen coordinates are mapped to the character's physical left/right, ensuring `gestureAt` matches the original specification's visual result.
+
 ---
 
-## 3. Exit Branches and Interruptions
+## 3. Exit Branches and Chaining
 
-One of the most complex parts of MS Agent is how an animation stops.
-*   **TripleAgent (Conditional Exit):** Uses the `ExitFrameIndex` as part of the `Return` logic. This allows a looping animation (like a character tapping its foot) to know exactly how to "loop out" to the neutral position when it's time to stop.
-*   **ms-agent-js (Interruption Logic):** Maps `ExitFrameIndex` to `exitBranch`. When a new animation is requested while one is playing, it sets an `isExiting` flag. The `AnimationManager` then looks for the `exitBranch` on the current frame to find the fastest path back to frame 0 (neutral). This allows for "smooth transitions" rather than hard-cutting between animations.
+One of the most complex parts of MS Agent is how an animation stops and transitions.
+*   **TripleAgent (Spec-Strict Chaining):** Explicitly handles the `ReturnAnimation` property. If `GestureLeft` finishes, the engine automatically enqueues `GestureLeftReturn` to bring the character back to neutral. It also tracks `lastValidFrame` to "freeze" the character in pose if a sequence ends on a duration-0 frame.
+*   **ms-agent-js (Sequential Chaining):** Now implements both `ReturnAnimation` chaining and `lastValidFrame` freezing. When an animation finishes, the Request Queue automatically enqueues the designated return sequence at low priority. The engine remains frozen on the last visible frame during any logic-only (Null) frames at the end of a sequence.
 
 ---
 

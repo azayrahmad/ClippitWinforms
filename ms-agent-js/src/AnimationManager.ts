@@ -15,6 +15,7 @@ export class AnimationManager {
   private animations: Record<string, Animation>;
   private currentAnimation: Animation | null = null;
   private currentFrameIndex: number = 0;
+  private lastValidFrameIndex: number = 0;
   private lastFrameTime: number = 0;
   private isExiting: boolean = false;
   private animationPromise: { resolve: (val: boolean) => void; reject: (err: any) => void } | null = null;
@@ -52,7 +53,14 @@ export class AnimationManager {
 
   public get currentFrame(): FrameDefinition | null {
     if (!this.currentAnimation || this.currentAnimation.frames.length === 0) return null;
-    return this.currentAnimation.frames[this.currentFrameIndex];
+    const frame = this.currentAnimation.frames[this.currentFrameIndex];
+
+    // If it's a null frame (duration 0), we should technically be displaying the last valid frame
+    if (frame.duration === 0) {
+        return this.currentAnimation.frames[this.lastValidFrameIndex];
+    }
+
+    return frame;
   }
 
   public get isAnimating(): boolean {
@@ -69,6 +77,7 @@ export class AnimationManager {
       this.isExiting = useExitBranch;
       this.currentAnimation = animation;
       this.currentFrameIndex = 0;
+      this.lastValidFrameIndex = 0;
       this.lastFrameTime = performance.now();
 
       this.onFrameChanged?.();
@@ -125,6 +134,10 @@ export class AnimationManager {
       this.lastFrameTime += currentFrame.duration * 10;
       this.currentFrameIndex = nextFrameIndex;
       currentFrame = this.currentAnimation.frames[this.currentFrameIndex];
+
+      if (currentFrame.duration > 0) {
+          this.lastValidFrameIndex = this.currentFrameIndex;
+      }
 
       this.onFrameChanged?.();
       this.checkAndPlaySound(currentFrame);

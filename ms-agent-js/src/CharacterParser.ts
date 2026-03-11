@@ -311,6 +311,9 @@ export class CharacterParser {
       if (currentLine.startsWith('TransitionType')) {
         const value = currentLine.split('=')[1].trim();
         this.currentAnimation.transitionType = parseInt(value, 10);
+      } else if (currentLine.startsWith('ReturnAnimation')) {
+        const value = currentLine.split('=')[1].trim().replace(/"/g, '');
+        this.currentAnimation.returnAnimation = value;
       } else if (currentLine.startsWith('DefineFrame')) {
         i = this.parseFrameSection(lines, i);
       }

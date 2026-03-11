@@ -453,6 +453,14 @@ export class Agent {
             req.params.timeout
           );
           this.emit('animationEnd', req.params.name);
+
+          // Handle Chaining (ReturnAnimation)
+          const anim = this.definition.animations[req.params.name];
+          if (anim && anim.returnAnimation && this.definition.animations[anim.returnAnimation]) {
+              // Enqueue the return animation with low priority so it doesn't block user requests
+              // but completes the sequence if the queue is otherwise empty.
+              this.enqueue('play', { name: anim.returnAnimation }, 0);
+          }
           break;
         case 'speak':
           this.emit('animationStart', 'Speaking');
@@ -775,6 +783,15 @@ export class Agent {
     this.listeners.get(event)?.forEach(listener => listener(...args));
   }
 
+  private toAgentPerspective(direction: string): string {
+    // In MS Agent, Left/Right refer to the Agent's POV.
+    // Our screen-based calculations need to be flipped.
+    return direction
+      .replace('Left', 'TMP_LEFT')
+      .replace('Right', 'Left')
+      .replace('TMP_LEFT', 'Right');
+  }
+
   private getDirection(targetX: number, targetY: number, numDirections: 4 | 8): string {
     const centerX = this.options.x + (this.definition.character.width * this.options.scale) / 2;
     const centerY = this.options.y + (this.definition.character.height * this.options.scale) / 2;
@@ -788,23 +805,26 @@ export class Agent {
     let degrees = angle * (180 / Math.PI);
     if (degrees < 0) degrees += 360;
 
+    let direction = '';
     if (numDirections === 4) {
       // 4 directions: Right (315-45), Down (45-135), Left (135-225), Up (225-315)
-      if (degrees >= 315 || degrees < 45) return 'Right';
-      if (degrees >= 45 && degrees < 135) return 'Down';
-      if (degrees >= 135 && degrees < 225) return 'Left';
-      return 'Up';
+      if (degrees >= 315 || degrees < 45) direction = 'Right';
+      else if (degrees >= 45 && degrees < 135) direction = 'Down';
+      else if (degrees >= 135 && degrees < 225) direction = 'Left';
+      else direction = 'Up';
     } else {
       // 8 directions
-      if (degrees >= 337.5 || degrees < 22.5) return 'Right';
-      if (degrees >= 22.5 && degrees < 67.5) return 'DownRight';
-      if (degrees >= 67.5 && degrees < 112.5) return 'Down';
-      if (degrees >= 112.5 && degrees < 157.5) return 'DownLeft';
-      if (degrees >= 157.5 && degrees < 202.5) return 'Left';
-      if (degrees >= 202.5 && degrees < 247.5) return 'UpLeft';
-      if (degrees >= 247.5 && degrees < 292.5) return 'Up';
-      return 'UpRight';
+      if (degrees >= 337.5 || degrees < 22.5) direction = 'Right';
+      else if (degrees >= 22.5 && degrees < 67.5) direction = 'DownRight';
+      else if (degrees >= 67.5 && degrees < 112.5) direction = 'Down';
+      else if (degrees >= 112.5 && degrees < 157.5) direction = 'DownLeft';
+      else if (degrees >= 157.5 && degrees < 202.5) direction = 'Left';
+      else if (degrees >= 202.5 && degrees < 247.5) direction = 'UpLeft';
+      else if (degrees >= 247.5 && degrees < 292.5) direction = 'Up';
+      else direction = 'UpRight';
     }
+
+    return this.toAgentPerspective(direction);
   }
 
   /**
