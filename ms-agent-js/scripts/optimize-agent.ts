@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
-import Jimp from 'jimp';
 import sharp from 'sharp';
 import { CharacterParser } from '../src/CharacterParser';
 import type { AgentCharacterDefinition, AudioAtlasEntry, AtlasEntry } from '../src/types';
@@ -22,6 +21,49 @@ interface ProcessedImage {
     height: number;
     trimX: number;
     trimY: number;
+}
+
+function decode8bppBmp(filePath: string) {
+    const buffer = fs.readFileSync(filePath);
+    const bitsOffset = buffer.readUInt32LE(10);
+    const dibHeaderSize = buffer.readUInt32LE(14);
+    const width = buffer.readInt32LE(18);
+    const height = buffer.readInt32LE(22);
+    const bpp = buffer.readUInt16LE(28);
+
+    if (bpp !== 8) throw new Error(`Only 8bpp BMP supported, got ${bpp} in ${filePath}`);
+
+    const paletteOffset = 14 + dibHeaderSize;
+    const numColors = buffer.readUInt32LE(46) || 256;
+    const palette = [];
+    for (let i = 0; i < numColors; i++) {
+        const offset = paletteOffset + i * 4;
+        palette.push({
+            b: buffer[offset],
+            g: buffer[offset + 1],
+            r: buffer[offset + 2]
+        });
+    }
+
+    const absHeight = Math.abs(height);
+    const rowSize = Math.floor((bpp * width + 31) / 32) * 4;
+    const rgba = Buffer.alloc(width * absHeight * 4);
+
+    for (let y = 0; y < absHeight; y++) {
+        const rowIdx = height > 0 ? (absHeight - 1 - y) : y;
+        const rowOffset = bitsOffset + rowIdx * rowSize;
+        for (let x = 0; x < width; x++) {
+            const paletteIdx = buffer[rowOffset + x];
+            const color = palette[paletteIdx];
+            const outOffset = (y * width + x) * 4;
+            rgba[outOffset] = color.r;
+            rgba[outOffset + 1] = color.g;
+            rgba[outOffset + 2] = color.b;
+            rgba[outOffset + 3] = 255;
+        }
+    }
+
+    return { width, height: absHeight, data: rgba, palette };
 }
 
 async function optimizeAgent(agentDir: string) {
@@ -63,10 +105,10 @@ async function optimizeAgent(agentDir: string) {
     if (!fs.existsSync(colorTablePath)) {
         colorTablePath = path.join(agentDir, 'Images', 'ColorTable.bmp');
     }
-    const colorTableBmp = await Jimp.read(colorTablePath);
+
+    const { palette } = decode8bppBmp(colorTablePath);
     const transIdx = definition.character.transparency;
-    const transColor = colorTableBmp.getPixelColor(transIdx, 0);
-    const { r, g, b } = Jimp.intToRGBA(transColor);
+    const { r, g, b } = palette[transIdx];
     console.log(`Transparency color: RGB(${r}, ${g}, ${b}) at index ${transIdx}`);
 
     // 5. Process and Trim Images
@@ -81,27 +123,25 @@ async function optimizeAgent(agentDir: string) {
         }
 
         try {
-            const img = await Jimp.read(imgPath);
-            // Apply transparency
-            img.scan(0, 0, img.bitmap.width, img.bitmap.height, function(x, y, idx) {
-                if (this.bitmap.data[idx] === r &&
-                    this.bitmap.data[idx+1] === g &&
-                    this.bitmap.data[idx+2] === b) {
-                    this.bitmap.data[idx+3] = 0;
-                } else {
-                    this.bitmap.data[idx+3] = 255;
-                }
-            });
+            const { width: w, height: h, data } = decode8bppBmp(imgPath);
 
-            const pngBuffer = await img.getBufferAsync(Jimp.MIME_PNG);
+            // Apply transparency
+            for (let i = 0; i < data.length; i += 4) {
+                if (data[i] === r && data[i + 1] === g && data[i + 2] === b) {
+                    data[i + 3] = 0;
+                } else {
+                    data[i + 3] = 255;
+                }
+            }
+
             let processed;
             try {
-                processed = await sharp(pngBuffer)
+                processed = await sharp(data, { raw: { width: w, height: h, channels: 4 } })
                     .trim()
                     .toBuffer({ resolveWithObject: true });
             } catch (trimErr) {
                 // If trim fails (e.g. image too small), use original
-                processed = await sharp(pngBuffer)
+                processed = await sharp(data, { raw: { width: w, height: h, channels: 4 } })
                     .toBuffer({ resolveWithObject: true });
             }
 
@@ -156,6 +196,11 @@ async function optimizeAgent(agentDir: string) {
 
         composites.push({
             input: img.buffer,
+            raw: {
+                width: img.width,
+                height: img.height,
+                channels: 4
+            },
             left: currentX,
             top: currentY
         });
