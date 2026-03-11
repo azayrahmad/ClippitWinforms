@@ -62,3 +62,15 @@ One of the most complex parts of MS Agent is how an animation stops.
 | **Asset Strategy** | Parses embedded binary data | Prefers optimized Sprite Sheets (Atlas) |
 
 **Conclusion:** `TripleAgent` is an excellent reference for the low-level "how it worked" logic of the original Windows binary. `ms-agent-js` is an interpretation that prioritizes "how it should feel" in a modern browser environment, adopting reactive state management over a strict sequential request queue.
+
+---
+
+## 6. Comparison with `clippy.js`
+
+[clippy.js](https://github.com/azayrahmad/clippy.js) is a popular legacy web implementation.
+
+### Logic Differences:
+*   **Queue System:** Like `TripleAgent`, `clippy.js` uses a strict sequential queue. However, it lacks a priority system. If an idle animation is playing, a user command might just be appended to the end of the queue rather than triggering an immediate exit transition.
+*   **Timing:** `clippy.js` uses `setTimeout` for its animation loop. If a frame has a duration of 0, it executes `setTimeout(..., 0)`, which still forces a small delay (minimum 4ms in modern browsers). `ms-agent-js` uses a `while` loop inside a `requestAnimationFrame` tick, making logic-only jumps truly instant.
+*   **Rendering:** `clippy.js` uses CSS `background-position` on nested `div` elements to handle frame overlays. `ms-agent-js` uses a high-performance `<canvas>` element, allowing for better scaling and smoother rendering of complex layered sprites.
+*   **Dependencies:** `clippy.js` is built on jQuery and global scope. `ms-agent-js` is a modern ESM/TypeScript library with Shadow DOM encapsulation.
