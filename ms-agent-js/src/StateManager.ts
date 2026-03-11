@@ -64,13 +64,31 @@ export class StateManager {
   public async update(deltaTime: number): Promise<void> {
     if (this.isPaused) return;
 
-    if (this.currentState === 'Playing') {
-      // If we're in playing state, just wait for the animation to complete
-      if (!this.animationManager.isAnimating) {
+    // If animation finished, handle state transitions
+    if (!this.animationManager.isAnimating) {
+      if (this.currentState === 'Playing') {
         await this.handleAnimationCompleted();
+      } else if (this.currentState === 'Showing') {
+        // After Showing completes, we start idling
+        await this.returnToIdle();
+      } else if (this.currentState === 'Hiding') {
+        // After Hiding completes, we are truly Hidden and paused
+        this.currentState = 'Hidden';
+        this.isPaused = true;
+        return;
+      } else if (this.currentState !== 'Hidden') {
+        // For other persistent states (Idling, Gesturing, etc.), loop or pick new anim immediately
+        await this.updateStateAnimation();
       }
-      // Re-check after handleAnimationCompleted because it might have changed state
-      if (this.currentState === 'Playing') return;
+    }
+
+    // If we are still in Playing/Showing/Hiding states, don't process idle level progression
+    if (
+      this.currentState === 'Playing' ||
+      this.currentState === 'Showing' ||
+      this.currentState === 'Hiding'
+    ) {
+      return;
     }
 
     this.elapsedSinceLastTick += deltaTime;
@@ -210,21 +228,29 @@ export class StateManager {
         // Ensure we are not paused while playing the visibility transition
         this.isPaused = false;
 
-        // Use the common playAnimation wrapper with useExitBranch=true
-        // to ensure it plays through to the end of the sequence once.
-        await this.playAnimation(animName, visibilityState, true);
+        // Start the animation and set the state to Showing/Hiding.
+        // We AWAIT the full animation completion here to ensure it's shown in full.
+        await this.animationManager.preloadAnimation(animName);
+        this.currentState = visibilityState;
+        await this.animationManager.playAnimation(animName, true);
+
+        // Finalize state after animation finishes
+        if (showing) {
+            await this.returnToIdle();
+        } else {
+            this.currentState = 'Hidden';
+            this.isPaused = true;
+        }
+        return;
       }
     }
 
+    // Fallback if no specific animation exists
     if (showing) {
       this.isPaused = false;
-      this.resetIdleProgression();
-      // We don't await the initial idle state because it might be a long-running loop.
-      // The "Showing" process is considered complete once the intro animation is done.
-      void this.setIdleState(1);
+      await this.returnToIdle();
     } else {
       this.isPaused = true;
-      // Ensure the animation is cleared when hidden
       this.animationManager.setAnimation('', false);
       this.currentState = 'Hidden';
     }

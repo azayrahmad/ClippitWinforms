@@ -16,6 +16,7 @@ export class AnimationManager {
   private currentAnimation: Animation | null = null;
   private currentFrameIndex: number = 0;
   private lastFrameTime: number = 0;
+  private lastRenderedFrame: FrameDefinition | null = null;
   private isExiting: boolean = false;
   private animationPromise: { resolve: (val: boolean) => void; reject: (err: any) => void } | null = null;
   private activePromise: Promise<boolean> | null = null;
@@ -51,12 +52,19 @@ export class AnimationManager {
   }
 
   public get currentFrame(): FrameDefinition | null {
-    if (!this.currentAnimation || this.currentAnimation.frames.length === 0) return null;
-    return this.currentAnimation.frames[this.currentFrameIndex];
+    if (!this.currentAnimation || this.currentAnimation.frames.length === 0) {
+      return this.lastRenderedFrame;
+    }
+    const frame = this.currentAnimation.frames[this.currentFrameIndex];
+    // Don't display frames with duration 0 (logic frames); stick to the last valid one.
+    if (frame.duration === 0) {
+      return this.lastRenderedFrame;
+    }
+    return frame;
   }
 
   public get isAnimating(): boolean {
-    return this.currentAnimation !== null && (!this.isExiting || this.animationPromise !== null);
+    return this.currentAnimation !== null && this.currentAnimation.name !== '' && (!this.isExiting || this.animationPromise !== null);
   }
 
   /**
@@ -71,13 +79,12 @@ export class AnimationManager {
       this.currentFrameIndex = 0;
       this.lastFrameTime = performance.now();
 
-      this.onFrameChanged?.();
       if (previousAnimation) {
         this.onAnimationCompleted?.(previousAnimation);
       }
 
-      // Load first frame's sound if any
-      this.checkAndPlaySound(this.currentFrame);
+      // Use update(now) to handle potential null frames at the start
+      this.update(this.lastFrameTime);
     }
   }
 
@@ -101,33 +108,75 @@ export class AnimationManager {
     // If we've completed an exit animation, don't update further
     if (this.isExiting && !this.animationPromise) return;
 
-    const currentFrame = this.currentAnimation.frames[this.currentFrameIndex];
+    let safetyCounter = 0;
+    const MAX_NULL_FRAMES = 100;
 
-    // Frame duration is in centiseconds, convert to milliseconds
-    if (currentTime - this.lastFrameTime >= currentFrame.duration * 10) {
-      const nextFrameIndex = this.getNextFrameIndex(currentFrame);
+    while (this.currentAnimation && safetyCounter <= MAX_NULL_FRAMES) {
+      let currentFrame = this.currentAnimation.frames[this.currentFrameIndex];
 
-      if (this.isExiting && currentFrame.exitBranch === undefined && nextFrameIndex === 0) {
-        this.completeAnimation();
-        return;
-      }
+      // If it's a null frame, handle it immediately
+      if (currentFrame.duration === 0) {
+        const nextIndex = this.getNextFrameIndex(currentFrame);
+        this.checkAndPlaySound(currentFrame);
+        if (this.checkAnimationCompletion(currentFrame, nextIndex)) return;
 
-      // If we are exiting and reached the end of the ExitBranch sequence
-      if (this.isExiting && currentFrame.exitBranch !== undefined && nextFrameIndex === 0) {
-        this.completeAnimation();
-        return;
-      }
-
-      this.currentFrameIndex = nextFrameIndex;
-      this.lastFrameTime = currentTime;
-
-      if (!this.isExiting && this.currentFrameIndex === 0 && this.animationPromise) {
-        this.completeAnimation();
-      } else {
+        this.currentFrameIndex = nextIndex;
+        this.lastFrameTime = currentTime;
         this.onFrameChanged?.();
         this.checkAndPlaySound(this.currentAnimation.frames[this.currentFrameIndex]);
+
+        safetyCounter++;
+        if (safetyCounter > MAX_NULL_FRAMES) {
+            console.warn(`MSAgentJS: Infinite loop detected in animation '${this.currentAnimation?.name}'. Safety break at frame ${this.currentFrameIndex}.`);
+            break;
+        }
+        continue;
+      }
+
+      // If it's a normal frame, check if it's time to move to the next
+      if (currentTime - this.lastFrameTime >= currentFrame.duration * 10) {
+        const nextFrameIndex = this.getNextFrameIndex(currentFrame);
+        this.checkAndPlaySound(currentFrame);
+
+        if (this.checkAnimationCompletion(currentFrame, nextFrameIndex)) {
+          return;
+        }
+
+        this.currentFrameIndex = nextFrameIndex;
+        this.lastFrameTime = currentTime;
+
+        this.onFrameChanged?.();
+        this.checkAndPlaySound(this.currentAnimation.frames[this.currentFrameIndex]);
+
+        // Continue the loop to potentially handle a null frame that we just moved into
+        safetyCounter++;
+        continue;
+      }
+
+      // If we reach here, it's a normal frame but not yet time to advance
+      break;
+    }
+  }
+
+  private checkAnimationCompletion(currentFrame: FrameDefinition, nextFrameIndex: number): boolean {
+    if (this.isExiting) {
+      // If we are exiting and reached the end (either by natural end or exit branch loop back)
+      if (currentFrame.exitBranch === undefined && nextFrameIndex === 0) {
+        this.completeAnimation();
+        return true;
+      }
+      if (currentFrame.exitBranch !== undefined && nextFrameIndex === 0) {
+        this.completeAnimation();
+        return true;
+      }
+    } else {
+      // Normal completion
+      if (nextFrameIndex === 0 && this.animationPromise) {
+        this.completeAnimation();
+        return true;
       }
     }
+    return false;
   }
 
   private getNextFrameIndex(currentFrame: FrameDefinition): number {
@@ -177,10 +226,14 @@ export class AnimationManager {
       this.activePromise = null;
     }
     const completedAnimation = this.currentAnimation?.name || '';
+    this.currentAnimation = null;
     this.onAnimationCompleted?.(completedAnimation);
   }
 
   private checkAndPlaySound(frame: FrameDefinition | null): void {
+    if (frame && frame.duration > 0) {
+      this.lastRenderedFrame = frame;
+    }
     if (frame?.soundEffect) {
       this.audioManager.playFrameSound(frame.soundEffect);
     }

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Agent } from '../src/Agent';
 import { CharacterParser } from '../src/CharacterParser';
+import { AnimationManager } from '../src/AnimationManager';
 
 // Mock CharacterParser.load to avoid actual network requests
 vi.mock('../src/CharacterParser', () => {
@@ -177,5 +178,52 @@ describe('Agent Directional Animations', () => {
 
         // Screen-DownLeft should trigger Agent-DownRight
         expect(agent.stateManager.playAnimation).toHaveBeenCalledWith('LookDownRight', 'Looking');
+    });
+});
+
+describe('Agent Visibility', () => {
+    let agent: Agent;
+    const mockDefinition = {
+        character: { width: 100, height: 100, colorTable: 'ColorTable.bmp' },
+        animations: {
+            'Showing': { frames: [{ duration: 100, images: [] }] },
+            'Hiding': { frames: [{ duration: 100, images: [] }] }
+        },
+        states: {
+            'IdlingLevel1': { name: 'IdlingLevel1', animations: [] },
+            'Showing': { name: 'Showing', animations: ['Showing'] },
+            'Hiding': { name: 'Hiding', animations: ['Hiding'] }
+        }
+    };
+
+    beforeEach(async () => {
+        vi.clearAllMocks();
+        (CharacterParser.load as any).mockResolvedValue(mockDefinition);
+
+        // Mock playAnimation on the prototype to avoid deadlocks during Agent.load()
+        vi.spyOn(AnimationManager.prototype, 'playAnimation').mockResolvedValue(true);
+        vi.spyOn(AnimationManager.prototype, 'preloadAnimation').mockResolvedValue(undefined);
+
+        agent = await Agent.load('Clippit');
+    });
+
+    it('should await the full Showing animation', async () => {
+        const playSpy = agent.animationManager.playAnimation;
+
+        await agent.show();
+
+        expect(playSpy).toHaveBeenCalledWith('Showing', true);
+        expect(agent.stateManager.currentStateName).toBe('IdlingLevel1');
+    });
+
+    it('should await the full Hiding animation and then set display none', async () => {
+        const playSpy = agent.animationManager.playAnimation;
+
+        await agent.hide();
+
+        expect(playSpy).toHaveBeenCalledWith('Hiding', true);
+        expect(agent.stateManager.currentStateName).toBe('Hidden');
+        // Container should be hidden after await
+        expect((agent as any).container.style.display).toBe('none');
     });
 });
