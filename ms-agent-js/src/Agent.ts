@@ -41,13 +41,13 @@ export class Agent {
   public readonly animationManager: AnimationManager;
   public readonly stateManager: StateManager;
   public readonly balloon: Balloon;
+  public readonly options: Required<AgentOptions>;
 
   private container: HTMLElement;
   private shadowRoot: ShadowRoot;
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
 
-  private options: Required<AgentOptions>;
   private isDestroyed: boolean = false;
   private lastTime: number = 0;
   private rafId: number = 0;
@@ -468,7 +468,7 @@ export class Agent {
    * Calculates the 4-way direction and sets the agent's state to the corresponding "Gesturing" state.
    */
   public async gestureAt(x: number, y: number): Promise<void> {
-    const direction = this.getDirection(x, y, 4);
+    const direction = this.toAgentPerspective(this.getDirection(x, y, 4));
     const stateName = `Gesturing${direction}`;
     if (this.definition.states[stateName]) {
       await this.setState(stateName);
@@ -486,7 +486,7 @@ export class Agent {
    * Calculates the 8-way direction and plays the corresponding "Look" animation.
    */
   public async lookAt(x: number, y: number): Promise<void> {
-    const direction = this.getDirection(x, y, 8);
+    const direction = this.toAgentPerspective(this.getDirection(x, y, 8));
     const animName = `Look${direction}`;
 
     if (
@@ -699,6 +699,13 @@ export class Agent {
 
   private emit(event: AgentEvent, ...args: any[]) {
     this.listeners.get(event)?.forEach((listener) => listener(...args));
+  }
+
+  private toAgentPerspective(direction: string): string {
+    return direction
+      .replace("Left", "TEMP")
+      .replace("Right", "Left")
+      .replace("TEMP", "Right");
   }
 
   private getDirection(

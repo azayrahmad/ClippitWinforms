@@ -119,3 +119,63 @@ describe('Agent.load', () => {
         expect(CharacterParser.load).toHaveBeenCalledWith(expectedAcdPath);
     });
 });
+
+describe('Agent Directional Animations', () => {
+    let agent: Agent;
+    const mockDefinition = {
+        character: { width: 100, height: 100, colorTable: 'ColorTable.bmp' },
+        animations: {
+            'GestureLeft': { frames: [] },
+            'GestureRight': { frames: [] },
+            'LookLeft': { frames: [] },
+            'LookRight': { frames: [] },
+            'LookDownLeft': { frames: [] },
+            'LookDownRight': { frames: [] }
+        },
+        states: {
+            'IdlingLevel1': { name: 'IdlingLevel1', animations: [] },
+            'GesturingLeft': { name: 'GesturingLeft', animations: ['GestureLeft'] },
+            'GesturingRight': { name: 'GesturingRight', animations: ['GestureRight'] }
+        }
+    };
+
+    beforeEach(async () => {
+        vi.clearAllMocks();
+        (CharacterParser.load as any).mockResolvedValue(mockDefinition);
+        agent = await Agent.load('Clippit', { x: 500, y: 500, scale: 1 });
+        vi.spyOn(agent.stateManager, 'playAnimation').mockResolvedValue(true);
+        vi.spyOn(agent.stateManager, 'setState').mockResolvedValue(undefined);
+    });
+
+    it('should use GesturingRight when gesturing at a point to the screen-left', async () => {
+        // Agent is at (500, 500) with size 100x100 -> Center is (550, 550)
+        // Target (100, 550) is to the screen-left
+        await agent.gestureAt(100, 550);
+
+        // Screen-left should trigger Agent-Right
+        expect(agent.stateManager.setState).toHaveBeenCalledWith('GesturingRight');
+    });
+
+    it('should use GesturingLeft when gesturing at a point to the screen-right', async () => {
+        // Target (900, 550) is to the screen-right
+        await agent.gestureAt(900, 550);
+
+        // Screen-right should trigger Agent-Left
+        expect(agent.stateManager.setState).toHaveBeenCalledWith('GesturingLeft');
+    });
+
+    it('should use LookRight when looking at a point to the screen-left', async () => {
+        await agent.lookAt(100, 550);
+
+        // Screen-left should trigger Agent-Right
+        expect(agent.stateManager.playAnimation).toHaveBeenCalledWith('LookRight', 'Looking');
+    });
+
+    it('should use LookDownRight when looking at a point to the screen-down-left', async () => {
+        // Target (100, 900) is screen-down and screen-left from (550, 550)
+        await agent.lookAt(100, 900);
+
+        // Screen-DownLeft should trigger Agent-DownRight
+        expect(agent.stateManager.playAnimation).toHaveBeenCalledWith('LookDownRight', 'Looking');
+    });
+});
