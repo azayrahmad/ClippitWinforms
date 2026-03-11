@@ -1,5 +1,6 @@
 import { type State } from './types';
 import { AnimationManager } from './AnimationManager';
+import { RequestQueue } from './RequestQueue';
 
 /**
  * Configuration for the StateManager, controlling idle level progression.
@@ -23,6 +24,8 @@ export class StateManager {
   private states: Record<string, State>;
   /** Reference to the animation manager for frame playback. */
   private animationManager: AnimationManager;
+  /** Reference to the request queue to suppress idles when busy. */
+  private requestQueue?: RequestQueue;
 
   /** The current behavioral state (e.g., "IdlingLevel1", "Showing", "Playing"). */
   private currentState: string = 'Hidden';
@@ -91,6 +94,13 @@ export class StateManager {
   }
 
   /**
+   * Sets the request queue reference.
+   */
+  public setRequestQueue(queue: RequestQueue) {
+    this.requestQueue = queue;
+  }
+
+  /**
    * Updates the state machine. Called once per main loop iteration.
    * Manages transitions between persistent states and handles idle progression.
    *
@@ -99,14 +109,20 @@ export class StateManager {
   public async update(deltaTime: number): Promise<void> {
     if (this.isPaused) return;
 
+    const hasRequests = this.requestQueue && !this.requestQueue.isEmpty;
+
     // Check if the current animation sequence has finished
     if (!this.animationManager.isAnimating) {
-      if (this.currentState === 'Playing') {
+      if (this.currentState === 'Playing' || this.currentState === 'Moving') {
         // After an explicit action finishes, we return to the base idling state.
-        await this.handleAnimationCompleted();
+        if (!hasRequests) {
+          await this.handleAnimationCompleted();
+        }
       } else if (this.currentState === 'Showing') {
         // After the intro animation completes, we transition to idling.
-        await this.returnToIdle();
+        if (!hasRequests) {
+          await this.returnToIdle();
+        }
       } else if (this.currentState === 'Hiding') {
         // After the outro animation completes, the agent is hidden and paused.
         this.currentState = 'Hidden';
@@ -115,16 +131,21 @@ export class StateManager {
       } else if (this.currentState !== 'Hidden') {
         // For other persistent states (e.g. "IdlingLevel1", "GesturingLeft"),
         // we loop or pick a new random animation immediately to ensure no visual gaps.
-        await this.updateStateAnimation();
+        if (!hasRequests) {
+          await this.updateStateAnimation();
+        }
       }
     }
 
-    // Skip idle progression for transient/busy states
+    // Skip idle progression for transient/busy states or if requests are pending
     if (
       this.currentState === 'Playing' ||
       this.currentState === 'Showing' ||
-      this.currentState === 'Hiding'
+      this.currentState === 'Hiding' ||
+      this.currentState === 'Moving' ||
+      hasRequests
     ) {
+      this.elapsedSinceLastTick = 0;
       return;
     }
 
@@ -262,10 +283,10 @@ export class StateManager {
   }
 
   /**
-   * Fired when an explicit "Playing" animation completes.
+   * Fired when an explicit "Playing" or "Moving" animation completes.
    */
   public async handleAnimationCompleted(): Promise<void> {
-    if (this.currentState === 'Playing') {
+    if (this.currentState === 'Playing' || this.currentState === 'Moving') {
       await this.returnToIdle();
     }
   }

@@ -81,13 +81,12 @@ To achieve full parity, the library needs to move from an "Interruption-by-defau
 | **Commands Window** | System UI | Not Implemented | 🔴 Missing |
 | **Multi-agent Wait** | Supported | Not Implemented | 🔴 Missing |
 | **Mirroring/Flipping** | Supported | Not Implemented | 🔴 Missing |
-| **Move-Animations** | Automatic | Manual `play` only | 🔴 Missing |
+| **Move-Animations** | Automatic | Implemented | 🟢 Complete |
 | **Balloon Tip** | Procedural Sliding | Procedural Sliding | 🟢 Complete |
 | **BMP Transparency** | Indexed Palette | Manual Alpha Injection | 🟢 Complete |
+| **Request Queue** | Supported (Sequential) | Implemented | 🟢 Complete |
 
 ## 6. Priority Gaps for Contributors
 
-1.  **Request Queue:** Implement a formal `Request` queue to handle sequential actions without manual `await`.
-2.  **Move-Animations:** Integration of movement logic with the "Moving" state animations.
-3.  **Advanced TTS:** Parsing SAPI-style tags in the `speak()` text and translating them to `SpeechSynthesis` parameters (or pausing).
+1.  **Advanced TTS:** Parsing SAPI-style tags in the `speak()` text and translating them to `SpeechSynthesis` parameters (or pausing).
 4.  **Mirroring:** Add a `flipped` property to the `Agent` and update `SpriteManager` to handle horizontal scaling/flipping.
