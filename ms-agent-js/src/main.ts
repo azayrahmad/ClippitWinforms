@@ -208,6 +208,7 @@ async function initDemo() {
   // Start
   updateDebug();
   await loadAgent('Clippit');
+  (window as any).agent = currentAgent;
 }
 
 initDemo();

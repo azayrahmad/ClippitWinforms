@@ -11,8 +11,11 @@ export interface Character {
 
 export const CharacterStyle = {
   None: 0,
-  VoiceNone: 1,
-  BalloonRoundRect: 2,
+  VoiceNone: 0x0001,
+  BalloonRoundRect: 0x0002,
+  BalloonSizeToText: 0x0004,
+  BalloonAutoHide: 0x0008,
+  BalloonAutoPace: 0x0010,
 } as const;
 
 export interface Balloon {

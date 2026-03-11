@@ -38,6 +38,15 @@ export class CharacterParser {
   private currentAgent: Partial<AgentCharacterDefinition> = {
     animations: {},
     states: {},
+    balloon: {
+      numLines: 0,
+      charsPerLine: 0,
+      fontName: 'Arial',
+      fontHeight: 12,
+      foreColor: '000000',
+      backColor: 'ffffff',
+      borderColor: '000000',
+    },
   };
   private currentCharacter: Character | null = null;
   private currentLanguageInfo: Info | null = null;
@@ -238,6 +247,12 @@ export class CharacterParser {
       if (trimmedPart === 'AXS_VOICE_NONE') style |= CharacterStyle.VoiceNone;
       else if (trimmedPart === 'AXS_BALLOON_ROUNDRECT')
         style |= CharacterStyle.BalloonRoundRect;
+      else if (trimmedPart === 'AXS_BALLOON_SIZE_TO_TEXT')
+        style |= CharacterStyle.BalloonSizeToText;
+      else if (trimmedPart === 'AXS_BALLOON_AUTO_HIDE')
+        style |= CharacterStyle.BalloonAutoHide;
+      else if (trimmedPart === 'AXS_BALLOON_AUTO_PACE')
+        style |= CharacterStyle.BalloonAutoPace;
     }
 
     return style;
