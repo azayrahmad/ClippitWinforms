@@ -23,7 +23,7 @@ type AgentEvent = 'click' | 'animationStart' | 'animationEnd' | 'stateChange' | 
 type AgentEventListener = (...args: any[]) => void;
 
 export interface AgentRequest {
-  type: 'play' | 'speak' | 'moveTo' | 'gestureAt' | 'lookAt' | 'wait' | 'setState';
+  type: 'play' | 'speak' | 'moveTo' | 'gestureAt' | 'lookAt' | 'wait' | 'setState' | 'show' | 'hide';
   params: any;
   resolve: (val: any) => void;
   reject: (err: any) => void;
@@ -206,6 +206,12 @@ export class Agent {
     const stateManager = this.stateManager as any;
     stateManager._executeAnimation = stateManager.playAnimation.bind(stateManager);
     stateManager.playAnimation = async (name: string, state: string, exit: boolean, timeout: number) => {
+        // If we're currently processing a high-priority request (like Show/Hide/SetState),
+        // we might already be calling playAnimation internally.
+        // In that case, we should bypass the queue to avoid deadlocks.
+        if (this.currentRequest && this.currentRequest.priority > 0) {
+            return stateManager._executeAnimation(name, state, exit, timeout);
+        }
         return this.enqueue('play', { name, state, exit, timeout }, 0);
     };
 
@@ -400,7 +406,9 @@ export class Agent {
 
     await Promise.all(initPromises);
     this.startLoop();
-    await this.show();
+    // Use skipQueue=true for the initial show to avoid enqueuing before returning the agent instance.
+    // This allows tests and initial setup to work as expected.
+    await this.show(true);
   }
 
   private startLoop() {
@@ -469,6 +477,16 @@ export class Agent {
           break;
         case 'wait':
           await new Promise(resolve => setTimeout(resolve, req.params.ms));
+          break;
+        case 'show':
+          this.container.style.display = 'block';
+          await this.stateManager.handleVisibilityChange(true);
+          this.emit('show');
+          break;
+        case 'hide':
+          await this.stateManager.handleVisibilityChange(false);
+          this.container.style.display = 'none';
+          this.emit('hide');
           break;
       }
       req.resolve(true);
@@ -713,19 +731,30 @@ export class Agent {
   /**
    * Shows the agent with the "Showing" animation.
    */
-  public async show(): Promise<void> {
-    this.container.style.display = 'block';
-    await this.stateManager.handleVisibilityChange(true);
-    this.emit('show');
+  public async show(skipQueue: boolean = false): Promise<void> {
+    if (skipQueue) {
+        this.container.style.display = 'block';
+        await this.stateManager.handleVisibilityChange(true);
+        this.emit('show');
+        return;
+    }
+    return this.enqueue('show', {});
   }
 
   /**
    * Hides the agent with the "Hiding" animation.
    */
   public async hide(): Promise<void> {
-    await this.stateManager.handleVisibilityChange(false);
-    this.container.style.display = 'none';
-    this.emit('hide');
+    return this.enqueue('hide', {});
+  }
+
+  /**
+   * Stops the current action and clears the request queue.
+   */
+  public stop(): void {
+    this.requestQueue = [];
+    this.animationManager.isExitingFlag = true;
+    this.balloon.stop();
   }
 
   /**
