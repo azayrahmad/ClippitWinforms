@@ -56,6 +56,20 @@ export class AnimationManager {
     return this.currentFrameIndex;
   }
 
+  /**
+   * Returns the duration of the current frame in units of 10ms.
+   */
+  public get currentFrameDuration(): number {
+    return this.currentAnimation?.frames[this.currentFrameIndex]?.duration || 0;
+  }
+
+  /**
+   * Returns the exit branch of the current frame, if any.
+   */
+  public get currentExitBranch(): number | undefined {
+    return this.currentAnimation?.frames[this.currentFrameIndex]?.exitBranch;
+  }
+
   /** Callback fired whenever the frame changes. */
   public onFrameChanged: (() => void) | null = null;
   /** Callback fired when an animation sequence finishes. */
@@ -205,25 +219,12 @@ export class AnimationManager {
 
   /**
    * Checks if the current animation should be marked as complete.
-   * Completions occur either at the end of the frame sequence or when an exit branch loops back.
+   * Completions occur when we reach the end of the frame sequence.
    */
-  private checkAnimationCompletion(currentFrame: FrameDefinition, nextFrameIndex: number): boolean {
-    if (this.isExiting) {
-      // If we are exiting and reached the end (either by natural end or exit branch loop back to frame 0)
-      if (currentFrame.exitBranch === undefined && nextFrameIndex === 0) {
-        this.completeAnimation();
-        return true;
-      }
-      if (currentFrame.exitBranch !== undefined && nextFrameIndex === 0) {
-        this.completeAnimation();
-        return true;
-      }
-    } else {
-      // Normal completion when we loop back to the first frame
-      if (nextFrameIndex === 0 && this.animationPromise) {
-        this.completeAnimation();
-        return true;
-      }
+  private checkAnimationCompletion(_currentFrame: FrameDefinition, nextFrameIndex: number): boolean {
+    if (nextFrameIndex >= this.currentAnimation!.frames.length || nextFrameIndex < 0) {
+      this.completeAnimation();
+      return true;
     }
     return false;
   }
@@ -234,24 +235,30 @@ export class AnimationManager {
   private getNextFrameIndex(currentFrame: FrameDefinition): number {
     // If exiting, prioritize the exit branch if it exists
     if (this.isExiting && currentFrame.exitBranch !== undefined) {
+      if (currentFrame.exitBranch === -1) {
+        return this.currentFrameIndex + 1;
+      }
+      if (currentFrame.exitBranch === -2) {
+        return -2; // Signal immediate completion
+      }
       return currentFrame.exitBranch - 1; // Frames in ACD are 1-based
     }
 
     // Normal playback handles probabilistic branching
     if (!this.isExiting && currentFrame.branching && currentFrame.branching.length > 0) {
-      const randomValue = Math.floor(Math.random() * 100);
+      const randomValue = Math.floor(Math.random() * 100) + 1;
       let cumulative = 0;
 
       for (const branch of currentFrame.branching) {
         cumulative += branch.probability;
-        if (randomValue < cumulative) {
+        if (randomValue <= cumulative) {
           return branch.branchTo - 1;
         }
       }
     }
 
-    // Default to sequential playback (wrapping around to 0)
-    return (this.currentFrameIndex + 1) % this.currentAnimation!.frames.length;
+    // Default to sequential playback
+    return this.currentFrameIndex + 1;
   }
 
   /**

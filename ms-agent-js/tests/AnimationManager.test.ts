@@ -56,26 +56,29 @@ describe('AnimationManager', () => {
     expect(animationManager.currentFrameIndexValue).toBe(2);
   });
 
-  it('should complete animation when jumping to index 0 from a null frame', async () => {
-    const animationEndingInNull: Animation = {
-        name: 'end-null',
+  it('should complete animation when reaching the end of the frame array', async () => {
+    const animationEnding: Animation = {
+        name: 'end-test',
         transitionType: 0,
         frames: [
             { duration: 10, images: [] },
-            { duration: 0, images: [] } // Duration 0, next is 0 (completion)
+            { duration: 10, images: [] }
         ]
     };
-    (animationManager as any).animations['end-null'] = animationEndingInNull;
+    (animationManager as any).animations['end-test'] = animationEnding;
 
-    const promise = animationManager.playAnimation('end-null');
+    const promise = animationManager.playAnimation('end-test');
 
     // Initial state: frame 0
     expect(animationManager.currentFrameIndexValue).toBe(0);
 
-    // Update to trigger next frame
+    // Update to frame 1
     animationManager.update(performance.now() + 200);
+    expect(animationManager.currentFrameIndexValue).toBe(1);
 
-    // Should have skipped frame 1 and completed
+    // Update to completion
+    animationManager.update(performance.now() + 400);
+
     await expect(promise).resolves.toBe(true);
     expect(animationManager.isAnimating).toBe(false);
   });
@@ -99,7 +102,31 @@ describe('AnimationManager', () => {
       animationManager.update(performance.now() + 200);
 
       // Should have jumped to frame 2 (index 1 is skipped)
-      expect(animationManager.currentFrameIndexValue).toBe(1); // Wait, exitBranch is 1-based. exitBranch: 2 means index 1.
+      expect(animationManager.currentFrameIndexValue).toBe(1);
+  });
+
+  it('should handle special exit branch markers -1 and -2', async () => {
+    const anim: Animation = {
+        name: 'markers-test',
+        transitionType: 0,
+        frames: [
+            { duration: 10, images: [], exitBranch: -1 }, // Go to next
+            { duration: 10, images: [], exitBranch: -2 }, // Complete
+            { duration: 10, images: [] }
+        ]
+    };
+    (animationManager as any).animations['markers-test'] = anim;
+
+    animationManager.playAnimation('markers-test');
+    animationManager.isExitingFlag = true;
+
+    // Frame 0 -> 1 via -1
+    animationManager.update(performance.now() + 200);
+    expect(animationManager.currentFrameIndexValue).toBe(1);
+
+    // Frame 1 -> completion via -2
+    animationManager.update(performance.now() + 400);
+    expect(animationManager.isAnimating).toBe(false);
   });
 
   it('should break out of infinite null loops', () => {
