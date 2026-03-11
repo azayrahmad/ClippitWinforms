@@ -199,6 +199,7 @@ async function initDemo() {
 
       isVisible = true;
       visibilityBtn.textContent = 'Hide';
+      (window as any).agent = currentAgent;
 
       playBtn.disabled = false;
       randomBtn.disabled = false;
@@ -216,6 +217,9 @@ async function initDemo() {
       currentAgent.on('click', () => {
           currentAgent?.stateManager.playRandomAnimation();
       });
+
+      // Expose to window for debugging
+      (window as any).agent = currentAgent;
 
     } catch (error) {
       console.error('Failed to load agent:', error);

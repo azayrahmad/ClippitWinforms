@@ -22,6 +22,14 @@ export interface AgentOptions {
 type AgentEvent = 'click' | 'animationStart' | 'animationEnd' | 'stateChange' | 'show' | 'hide' | 'dragstart' | 'drag' | 'dragend';
 type AgentEventListener = (...args: any[]) => void;
 
+export interface AgentRequest {
+  type: 'play' | 'speak' | 'moveTo' | 'gestureAt' | 'lookAt' | 'wait' | 'setState';
+  params: any;
+  resolve: (val: any) => void;
+  reject: (err: any) => void;
+  priority: number; // User requests (100) vs Idle (0)
+}
+
 /**
  * The main Agent class that serves as the entry point for the library.
  */
@@ -42,6 +50,9 @@ export class Agent {
   private isDestroyed: boolean = false;
   private lastTime: number = 0;
   private rafId: number = 0;
+
+  private requestQueue: AgentRequest[] = [];
+  private currentRequest: AgentRequest | null = null;
 
   private isDragging: boolean = false;
   private dragStartX: number = 0;
@@ -188,8 +199,15 @@ export class Agent {
     this.animationManager = new AnimationManager(this.spriteManager, this.audioManager, definition.animations);
     this.stateManager = new StateManager(definition.states, this.animationManager, {
       idleIntervalMs: options.idleIntervalMs,
-      ticksPerLevel: 3,
+      ticksPerLevel: 12,
     });
+
+    // Override StateManager's playAnimation to use our priority queue
+    const stateManager = this.stateManager as any;
+    stateManager._executeAnimation = stateManager.playAnimation.bind(stateManager);
+    stateManager.playAnimation = async (name: string, state: string, exit: boolean, timeout: number) => {
+        return this.enqueue('play', { name, state, exit, timeout }, 0);
+    };
 
     // Balloon
     this.balloon = new Balloon(this.canvas, this.shadowRoot);
@@ -396,11 +414,83 @@ export class Agent {
       this.animationManager.update(currentTime);
       this.stateManager.update(deltaTime);
 
+      this.processQueue();
       this.draw();
 
       this.rafId = requestAnimationFrame(loop);
     };
     this.rafId = requestAnimationFrame(loop);
+  }
+
+  private async processQueue() {
+    if (this.currentRequest) return;
+
+    // Handle Idle logic if queue is empty
+    if (this.requestQueue.length === 0) {
+      return;
+    }
+
+    this.currentRequest = this.requestQueue.shift()!;
+    const req = this.currentRequest;
+
+    try {
+      switch (req.type) {
+        case 'play':
+          this.emit('animationStart', req.params.name);
+          // Use the internal non-queued method to avoid recursion
+          await (this.stateManager as any)._executeAnimation(
+            req.params.name,
+            req.params.state || 'Playing',
+            req.params.exit || false,
+            req.params.timeout
+          );
+          this.emit('animationEnd', req.params.name);
+          break;
+        case 'speak':
+          this.emit('animationStart', 'Speaking');
+          await new Promise((resolve) => {
+            this.balloon.speak(resolve, req.params.text, req.params.hold, req.params.useTTS, req.params.skipTyping);
+          });
+          this.emit('animationEnd', 'Speaking');
+          break;
+        case 'moveTo':
+          this.moveToInternal(req.params.x, req.params.y);
+          break;
+        case 'gestureAt':
+          await this.gestureAtInternal(req.params.x, req.params.y);
+          break;
+        case 'lookAt':
+          await this.lookAtInternal(req.params.x, req.params.y);
+          break;
+        case 'setState':
+          const oldState = this.stateManager.currentStateName;
+          await this.stateManager.setState(req.params.name);
+          this.emit('stateChange', req.params.name, oldState);
+          break;
+        case 'wait':
+          await new Promise(resolve => setTimeout(resolve, req.params.ms));
+          break;
+      }
+      req.resolve(true);
+    } catch (e) {
+      req.reject(e);
+    } finally {
+      this.currentRequest = null;
+    }
+  }
+
+  private enqueue(type: AgentRequest['type'], params: any, priority: number = 100): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const req: AgentRequest = { type, params, resolve, reject, priority };
+
+      // If a high priority request comes in, and we are currently playing a low priority (idle) request,
+      // signal the current one to exit.
+      if (priority > 0 && this.currentRequest && this.currentRequest.priority === 0) {
+        this.animationManager.isExitingFlag = true;
+      }
+
+      this.requestQueue.push(req);
+    });
   }
 
   private draw() {
@@ -412,9 +502,7 @@ export class Agent {
    * Plays a specific animation.
    */
   public async play(animationName: string, timeoutMs?: number): Promise<void> {
-    this.emit('animationStart', animationName);
-    await this.stateManager.playAnimation(animationName, 'Playing', false, timeoutMs);
-    this.emit('animationEnd', animationName);
+    return this.enqueue('play', { name: animationName, timeout: timeoutMs });
   }
 
   /**
@@ -422,10 +510,14 @@ export class Agent {
    * Calculates the 4-way direction and sets the agent's state to the corresponding "Gesturing" state.
    */
   public async gestureAt(x: number, y: number): Promise<void> {
+    return this.enqueue('gestureAt', { x, y });
+  }
+
+  private async gestureAtInternal(x: number, y: number): Promise<void> {
     const direction = this.getDirection(x, y, 4);
     const stateName = `Gesturing${direction}`;
     if (this.definition.states[stateName]) {
-      await this.setState(stateName);
+      await this.stateManager.setState(stateName);
     } else {
       // Fallback to animation if state is missing
       const animName = `Gesture${direction}`;
@@ -440,6 +532,10 @@ export class Agent {
    * Calculates the 8-way direction and plays the corresponding "Look" animation.
    */
   public async lookAt(x: number, y: number): Promise<void> {
+    return this.enqueue('lookAt', { x, y });
+  }
+
+  private async lookAtInternal(x: number, y: number): Promise<void> {
     const direction = this.getDirection(x, y, 8);
     const animName = `Look${direction}`;
 
@@ -458,15 +554,17 @@ export class Agent {
    * Sets the agent's state.
    */
   public async setState(stateName: string): Promise<void> {
-    const oldState = this.stateManager.currentStateName;
-    await this.stateManager.setState(stateName);
-    this.emit('stateChange', stateName, oldState);
+    return this.enqueue('setState', { name: stateName });
   }
 
   /**
    * Moves the agent to a new position.
    */
   public moveTo(x: number, y: number) {
+    return this.enqueue('moveTo', { x, y });
+  }
+
+  private moveToInternal(x: number, y: number) {
     this.options.x = x;
     this.options.y = y;
     // this.container is the host of the shadow root.
@@ -480,9 +578,14 @@ export class Agent {
    */
   public speak(text: string, options: { hold?: boolean; useTTS?: boolean; skipTyping?: boolean } = {}): Promise<void> {
     const { hold = false, useTTS = true, skipTyping = false } = options;
-    return new Promise((resolve) => {
-      this.balloon.speak(resolve, text, hold, useTTS, skipTyping);
-    });
+    return this.enqueue('speak', { text, hold, useTTS, skipTyping });
+  }
+
+  /**
+   * Adds a wait request to the queue.
+   */
+  public wait(ms: number): Promise<void> {
+    return this.enqueue('wait', { ms });
   }
 
   /**

@@ -94,6 +94,7 @@ export class AnimationManager {
 
   /**
    * Updates the animation frame based on elapsed time.
+   * Handles "Null Frames" (duration 0) by advancing through them instantly.
    */
   public update(currentTime: number = performance.now()): void {
     if (!this.currentAnimation || this.currentAnimation.frames.length === 0) return;
@@ -101,32 +102,35 @@ export class AnimationManager {
     // If we've completed an exit animation, don't update further
     if (this.isExiting && !this.animationPromise) return;
 
-    const currentFrame = this.currentAnimation.frames[this.currentFrameIndex];
+    let currentFrame = this.currentAnimation.frames[this.currentFrameIndex];
+    let loopCount = 0;
+    const maxLoops = 100; // Prevent infinite loops of 0-duration frames
 
-    // Frame duration is in centiseconds, convert to milliseconds
-    if (currentTime - this.lastFrameTime >= currentFrame.duration * 10) {
+    while (currentTime - this.lastFrameTime >= currentFrame.duration * 10 && loopCount < maxLoops) {
+      loopCount++;
       const nextFrameIndex = this.getNextFrameIndex(currentFrame);
 
-      if (this.isExiting && currentFrame.exitBranch === undefined && nextFrameIndex === 0) {
+      // Handle termination
+      if (this.isExiting && nextFrameIndex === 0) {
         this.completeAnimation();
         return;
       }
 
-      // If we are exiting and reached the end of the ExitBranch sequence
-      if (this.isExiting && currentFrame.exitBranch !== undefined && nextFrameIndex === 0) {
+      if (!this.isExiting && nextFrameIndex === 0 && this.animationPromise) {
         this.completeAnimation();
         return;
       }
 
+      // Frame duration is in centiseconds, convert to milliseconds
+      this.lastFrameTime += currentFrame.duration * 10;
       this.currentFrameIndex = nextFrameIndex;
-      this.lastFrameTime = currentTime;
+      currentFrame = this.currentAnimation.frames[this.currentFrameIndex];
 
-      if (!this.isExiting && this.currentFrameIndex === 0 && this.animationPromise) {
-        this.completeAnimation();
-      } else {
-        this.onFrameChanged?.();
-        this.checkAndPlaySound(this.currentAnimation.frames[this.currentFrameIndex]);
-      }
+      this.onFrameChanged?.();
+      this.checkAndPlaySound(currentFrame);
+
+      // If we reached a frame with duration > 0, stop fast-forwarding for this tick
+      if (currentFrame.duration > 0) break;
     }
   }
 

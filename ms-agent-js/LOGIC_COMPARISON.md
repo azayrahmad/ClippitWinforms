@@ -10,11 +10,12 @@ This document provides a deep dive into the logic differences and architectural 
 *   **Execution:** The `Agent::Loop` processes one request at a time. A `Play` request must complete its animation before a `Speak` request starts.
 *   **Parity:** This is a high-fidelity recreation of the original engine's synchronous-looking API.
 
-### ms-agent-js: Reactive State Machine
-`ms-agent-js` is designed for the asynchronous, event-driven nature of the web. It uses a `StateManager` to handle high-level character behavior.
-*   **Mechanism:** A state-based update loop (`StateManager.update(deltaTime)`).
-*   **Execution:** The agent is always in a "State" (e.g., `IdlingLevel1`). Commands like `play()` are "Interruptions" that temporarily transition the agent to a `Playing` state.
-*   **Developer Experience:** Uses Promises to allow developers to `await agent.play(...)`, fitting modern JavaScript patterns.
+### ms-agent-js: Queue with Priority Interruption
+`ms-agent-js` has been updated to use a priority-based request queue while maintaining its reactive state machine for background idles.
+*   **Mechanism:** `private requestQueue: AgentRequest[]`.
+*   **Priority Logic:** User-initiated requests (e.g., `play`, `speak`) are enqueued with high priority (100). Background idles from the `StateManager` are enqueued with low priority (0).
+*   **Execution:** When a high-priority request arrives, it signals the current low-priority request (if any) to "Exit Gracefully" via its `exitBranch`.
+*   **Developer Experience:** Continues to use Promises, allowing developers to `await agent.play(...)` while the engine handles the underlying queue management.
 
 ---
 
@@ -22,8 +23,8 @@ This document provides a deep dive into the logic differences and architectural 
 
 ### Null Frames (Duration 0)
 In the original MS Agent specification, frames with a duration of 0 are used for logic branching and state transitions without being displayed.
-*   **TripleAgent Logic:** It explicitly checks `if (fp->FrameDuration != 0)`. If the duration is 0, it processes branching/exits but **skips the rendering call** and does not update the "last valid frame" buffer. This ensures the character stays frozen on the last visible frame while logic runs.
-*   **ms-agent-js Logic:** It handles duration 0 by advancing to the next frame on the very next tick. While it effectively "skips" the frame (it only stays visible for one frame-time, usually ~16ms), it doesn't currently prevent the render call, which could cause a flicker if the frame images differ significantly from the "last valid" one.
+*   **TripleAgent Logic:** It explicitly checks `if (fp->FrameDuration != 0)`. If the duration is 0, it processes branching/exits but **skips the rendering call**. This ensures the character stays frozen on the last visible frame while logic runs.
+*   **ms-agent-js Logic:** Implements a "Fast-Forward" update loop. When a frame with duration 0 is encountered, the engine processes its branching logic **instantly** within the same execution tick until it finds a frame with a duration > 0. This matches the original behavior by ensuring logic-only jumps are invisible to the user.
 
 ### Speaking Frames
 Original characters often used a specific frame loop for speaking.
