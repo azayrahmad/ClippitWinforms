@@ -47,6 +47,7 @@ export interface FrameDefinition {
 export interface Animation {
   name: string;
   transitionType: number;
+  returnAnimation?: string;
   frames: FrameDefinition[];
 }
 

@@ -76,12 +76,14 @@ export class StateManager {
     this.elapsedSinceLastTick += deltaTime;
 
     if (this.elapsedSinceLastTick >= this.idleIntervalMs) {
-      this.elapsedSinceLastTick = 0;
+      // Logic for selecting next idle handled in onTick
       await this.onTick();
     }
   }
 
   private async onTick(): Promise<void> {
+    this.elapsedSinceLastTick = 0;
+
     if (this.isIdleState(this.currentState)) {
       this.idleTickCount++;
 
@@ -162,13 +164,20 @@ export class StateManager {
   }
 
   public async playRandomAnimation(timeoutMs: number = 5000): Promise<void> {
-    const allAnimations = Object.keys((this.animationManager as any).animations); // accessing private animations for demo
+    const allAnimations = Object.keys((this.animationManager as any).animations);
     const selectableAnimations = allAnimations.filter(name => !this.isIdleState(name));
 
     if (selectableAnimations.length > 0) {
       const randomAnimation = selectableAnimations[Math.floor(Math.random() * selectableAnimations.length)];
       await this.playAnimation(randomAnimation, 'Playing', false, timeoutMs);
     }
+  }
+
+  /**
+   * Helper for the Agent class to play an animation with idle-priority.
+   */
+  public async playIdleAnimation(animationName: string): Promise<boolean> {
+    return this.playAnimation(animationName);
   }
 
   public async handleAnimationCompleted(): Promise<void> {
