@@ -1,11 +1,11 @@
-import { CharacterParser } from './CharacterParser';
-import { SpriteManager } from './SpriteManager';
-import { AnimationManager } from './AnimationManager';
-import { AudioManager } from './AudioManager';
-import { StateManager } from './StateManager';
-import { Balloon } from './Balloon';
-import type { TTSOptions } from './Balloon';
-import type { AgentCharacterDefinition } from './types';
+import { CharacterParser } from "./CharacterParser";
+import { SpriteManager } from "./SpriteManager";
+import { AnimationManager } from "./AnimationManager";
+import { AudioManager } from "./AudioManager";
+import { StateManager } from "./StateManager";
+import { Balloon } from "./Balloon";
+import type { TTSOptions } from "./Balloon";
+import type { AgentCharacterDefinition } from "./types";
 
 export interface AgentOptions {
   container?: HTMLElement;
@@ -19,7 +19,16 @@ export interface AgentOptions {
   y?: number;
 }
 
-type AgentEvent = 'click' | 'animationStart' | 'animationEnd' | 'stateChange' | 'show' | 'hide' | 'dragstart' | 'drag' | 'dragend';
+type AgentEvent =
+  | "click"
+  | "animationStart"
+  | "animationEnd"
+  | "stateChange"
+  | "show"
+  | "hide"
+  | "dragstart"
+  | "drag"
+  | "dragend";
 type AgentEventListener = (...args: any[]) => void;
 
 /**
@@ -51,25 +60,28 @@ export class Agent {
 
   private listeners: Map<AgentEvent, Set<AgentEventListener>> = new Map();
 
-  private constructor(definition: AgentCharacterDefinition, options: Required<AgentOptions>) {
+  private constructor(
+    definition: AgentCharacterDefinition,
+    options: Required<AgentOptions>,
+  ) {
     this.definition = definition;
     this.options = options;
 
     // Create container if not provided
-    this.container = options.container || document.createElement('div');
+    this.container = options.container || document.createElement("div");
     if (!options.container) {
       document.body.appendChild(this.container);
     }
 
     // Shadow DOM
-    this.shadowRoot = this.container.attachShadow({ mode: 'open' });
+    this.shadowRoot = this.container.attachShadow({ mode: "open" });
 
     // Styles
-    const style = document.createElement('style');
+    const style = document.createElement("style");
     style.textContent = `
       :host {
         display: block;
-        position: ${options.fixed ? 'fixed' : 'absolute'};
+        position: ${options.fixed ? "fixed" : "absolute"};
         left: ${options.x}px;
         top: ${options.y}px;
         z-index: 9999;
@@ -174,9 +186,9 @@ export class Agent {
     this.shadowRoot.appendChild(style);
 
     // Canvas
-    this.canvas = document.createElement('canvas');
+    this.canvas = document.createElement("canvas");
     this.shadowRoot.appendChild(this.canvas);
-    this.ctx = this.canvas.getContext('2d')!;
+    this.ctx = this.canvas.getContext("2d")!;
 
     // Managers
     this.spriteManager = new SpriteManager(options.baseUrl, definition);
@@ -185,21 +197,29 @@ export class Agent {
     if (definition.audioAtlas) {
       this.audioManager.setAudioAtlas(definition.audioAtlas);
     }
-    this.animationManager = new AnimationManager(this.spriteManager, this.audioManager, definition.animations);
-    this.stateManager = new StateManager(definition.states, this.animationManager, {
-      idleIntervalMs: options.idleIntervalMs,
-      ticksPerLevel: 3,
-    });
+    this.animationManager = new AnimationManager(
+      this.spriteManager,
+      this.audioManager,
+      definition.animations,
+    );
+    this.stateManager = new StateManager(
+      definition.states,
+      this.animationManager,
+      {
+        idleIntervalMs: options.idleIntervalMs,
+        ticksPerLevel: 3,
+      },
+    );
 
     // Balloon
     this.balloon = new Balloon(this.canvas, this.shadowRoot);
 
     // Event forwarding
-    this.canvas.addEventListener('click', (e) => {
-        // Only emit click if we didn't just finish a drag
-        if (!this.wasDragging) {
-            this.emit('click');
-        }
+    this.canvas.addEventListener("click", () => {
+      // Only emit click if we didn't just finish a drag
+      if (!this.wasDragging) {
+        this.emit("click");
+      }
     });
 
     this.setupDragging();
@@ -218,11 +238,11 @@ export class Agent {
       this.initialAgentX = this.options.x;
       this.initialAgentY = this.options.y;
 
-      window.addEventListener('pointermove', onPointerMove);
-      window.addEventListener('pointerup', onPointerUp);
-      window.addEventListener('pointercancel', onPointerUp);
+      window.addEventListener("pointermove", onPointerMove);
+      window.addEventListener("pointerup", onPointerUp);
+      window.addEventListener("pointercancel", onPointerUp);
 
-      this.emit('dragstart');
+      this.emit("dragstart");
     };
 
     const onPointerMove = (e: PointerEvent) => {
@@ -232,7 +252,7 @@ export class Agent {
       const dy = e.clientY - this.dragStartY;
 
       if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
-          this.wasDragging = true;
+        this.wasDragging = true;
       }
 
       let nx = this.initialAgentX + dx;
@@ -248,19 +268,19 @@ export class Agent {
       ny = Math.max(minY, Math.min(ny, maxY));
 
       this.moveTo(nx, ny);
-      this.emit('drag', { x: nx, y: ny });
+      this.emit("drag", { x: nx, y: ny });
     };
 
     const onPointerUp = () => {
       if (!this.isDragging) return;
       this.isDragging = false;
-      window.removeEventListener('pointermove', onPointerMove);
-      window.removeEventListener('pointerup', onPointerUp);
-      window.removeEventListener('pointercancel', onPointerUp);
-      this.emit('dragend');
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerUp);
+      this.emit("dragend");
     };
 
-    this.canvas.addEventListener('pointerdown', onPointerDown);
+    this.canvas.addEventListener("pointerdown", onPointerDown);
   }
 
   private setupCanvas() {
@@ -307,46 +327,59 @@ export class Agent {
   /**
    * Static factory method to load an agent.
    */
-  public static async load(name: string, options: AgentOptions = {}): Promise<Agent> {
+  public static async load(
+    name: string,
+    options: AgentOptions = {},
+  ): Promise<Agent> {
     const defaultBaseUrl = `https://unpkg.com/ms-agent-js@latest/dist/agents/${name}`;
-    const baseUrl = (options.baseUrl || defaultBaseUrl).replace(/\/$/, '');
+    const baseUrl = (options.baseUrl || defaultBaseUrl).replace(/\/$/, "");
 
     // Try to find the .acd file. We try the uppercase name first, but we are robust.
     const jsonPath = `${baseUrl}/agent.json`;
     let definition: AgentCharacterDefinition;
 
     try {
-        const response = await fetch(jsonPath);
-        if (!response.ok) throw new Error('No agent.json');
-        definition = await response.json();
+      const response = await fetch(jsonPath);
+      if (!response.ok) throw new Error("No agent.json");
+      definition = await response.json();
     } catch (e) {
-        // Fallback to .acd
-        const acdPath = `${baseUrl}/${name.toUpperCase()}.acd`;
+      // Fallback to .acd
+      const acdPath = `${baseUrl}/${name.toUpperCase()}.acd`;
 
-        definition = await CharacterParser.load(acdPath).catch(async (err) => {
-            // Fallback to lowercase if uppercase fails
-            try {
-                return await CharacterParser.load(`${baseUrl}/${name.toLowerCase()}.acd`);
-            } catch (innerErr) {
-                console.error(`MSAgentJS: Failed to load agent assets for '${name}' at ${baseUrl}. ` +
-                              `Please ensure the 'agents/' directory is correctly served and 'baseUrl' is correct.`);
-                throw err;
-            }
-        });
+      definition = await CharacterParser.load(acdPath).catch(async (err) => {
+        // Fallback to lowercase if uppercase fails
+        try {
+          return await CharacterParser.load(
+            `${baseUrl}/${name.toLowerCase()}.acd`,
+          );
+        } catch (innerErr) {
+          console.error(
+            `MSAgentJS: Failed to load agent assets for '${name}' at ${baseUrl}. ` +
+              `Please ensure the 'agents/' directory is correctly served and 'baseUrl' is correct.`,
+          );
+          throw err;
+        }
+      });
     }
 
     // Normalize paths in definition to be relative to baseUrl
-    if (definition.character.colorTable && !definition.character.colorTable.startsWith('http')) {
+    if (
+      definition.character.colorTable &&
+      !definition.character.colorTable.startsWith("http")
+    ) {
       // Some .acd files have ColorTable.bmp in the Images subfolder
-      definition.character.colorTable = definition.character.colorTable.replace(/\\/g, '/');
+      definition.character.colorTable = definition.character.colorTable.replace(
+        /\\/g,
+        "/",
+      );
       // We don't lowercase it here yet, SpriteManager handles it with fallback
     }
 
     // Lowercase all image filenames in animations for robustness
-    Object.values(definition.animations).forEach(animation => {
-      animation.frames.forEach(frame => {
-        frame.images.forEach(image => {
-          image.filename = image.filename.replace(/\\/g, '/').toLowerCase();
+    Object.values(definition.animations).forEach((animation) => {
+      animation.frames.forEach((frame) => {
+        frame.images.forEach((image) => {
+          image.filename = image.filename.replace(/\\/g, "/").toLowerCase();
         });
         if (frame.soundEffect) {
           frame.soundEffect = frame.soundEffect.toLowerCase();
@@ -356,15 +389,23 @@ export class Agent {
 
     // Default options
     const fullOptions: Required<AgentOptions> = {
-      container: options.container || null as any,
+      container: options.container || (null as any),
       baseUrl: baseUrl,
       scale: options.scale ?? 1,
       speed: options.speed ?? 1,
       idleIntervalMs: options.idleIntervalMs ?? 5000,
       useAudio: options.useAudio ?? true,
       fixed: options.fixed ?? true,
-      x: options.x ?? (window.innerWidth - definition.character.width * (options.scale ?? 1) - 50),
-      y: options.y ?? (window.innerHeight - definition.character.height * (options.scale ?? 1) - 50),
+      x:
+        options.x ??
+        window.innerWidth -
+          definition.character.width * (options.scale ?? 1) -
+          50,
+      y:
+        options.y ??
+        window.innerHeight -
+          definition.character.height * (options.scale ?? 1) -
+          50,
     };
 
     const agent = new Agent(definition, fullOptions);
@@ -412,9 +453,14 @@ export class Agent {
    * Plays a specific animation.
    */
   public async play(animationName: string, timeoutMs?: number): Promise<void> {
-    this.emit('animationStart', animationName);
-    await this.stateManager.playAnimation(animationName, 'Playing', false, timeoutMs);
-    this.emit('animationEnd', animationName);
+    this.emit("animationStart", animationName);
+    await this.stateManager.playAnimation(
+      animationName,
+      "Playing",
+      false,
+      timeoutMs,
+    );
+    this.emit("animationEnd", animationName);
   }
 
   /**
@@ -430,7 +476,7 @@ export class Agent {
       // Fallback to animation if state is missing
       const animName = `Gesture${direction}`;
       if (this.definition.animations[animName]) {
-        await this.stateManager.playAnimation(animName, 'Gesturing');
+        await this.stateManager.playAnimation(animName, "Gesturing");
       }
     }
   }
@@ -443,14 +489,17 @@ export class Agent {
     const direction = this.getDirection(x, y, 8);
     const animName = `Look${direction}`;
 
-    if (this.animationManager.currentAnimationName === animName && this.animationManager.isAnimating) {
+    if (
+      this.animationManager.currentAnimationName === animName &&
+      this.animationManager.isAnimating
+    ) {
       return;
     }
 
     if (this.definition.animations[animName]) {
-      this.emit('animationStart', animName);
-      await this.stateManager.playAnimation(animName, 'Looking');
-      this.emit('animationEnd', animName);
+      this.emit("animationStart", animName);
+      await this.stateManager.playAnimation(animName, "Looking");
+      this.emit("animationEnd", animName);
     }
   }
 
@@ -460,7 +509,7 @@ export class Agent {
   public async setState(stateName: string): Promise<void> {
     const oldState = this.stateManager.currentStateName;
     await this.stateManager.setState(stateName);
-    this.emit('stateChange', stateName, oldState);
+    this.emit("stateChange", stateName, oldState);
   }
 
   /**
@@ -478,7 +527,10 @@ export class Agent {
   /**
    * Speaks the given text.
    */
-  public speak(text: string, options: { hold?: boolean; useTTS?: boolean; skipTyping?: boolean } = {}): Promise<void> {
+  public speak(
+    text: string,
+    options: { hold?: boolean; useTTS?: boolean; skipTyping?: boolean } = {},
+  ): Promise<void> {
     const { hold = false, useTTS = true, skipTyping = false } = options;
     return new Promise((resolve) => {
       this.balloon.speak(resolve, text, hold, useTTS, skipTyping);
@@ -495,13 +547,15 @@ export class Agent {
   /**
    * Asks a question with an input field.
    */
-  public ask(options: {
-    title?: string;
-    placeholder?: string;
-    askButtonText?: string;
-    cancelButtonText?: string;
-    timeout?: number;
-  } = {}): Promise<string | null> {
+  public ask(
+    options: {
+      title?: string;
+      placeholder?: string;
+      askButtonText?: string;
+      cancelButtonText?: string;
+      timeout?: number;
+    } = {},
+  ): Promise<string | null> {
     const title = options.title || "What would you like to do?";
     const placeholder = options.placeholder || "Ask me anything...";
     const askButtonText = options.askButtonText || "Ask";
@@ -525,13 +579,17 @@ export class Agent {
       this.showHtml(balloonContent, true);
 
       const balloonEl = this.balloon.balloonEl;
-      const input = balloonEl.querySelector('textarea') as HTMLTextAreaElement;
-      const askButton = balloonEl.querySelector('.ask-button') as HTMLButtonElement;
-      const cancelButton = balloonEl.querySelector('.cancel-button') as HTMLButtonElement;
+      const input = balloonEl.querySelector("textarea") as HTMLTextAreaElement;
+      const askButton = balloonEl.querySelector(
+        ".ask-button",
+      ) as HTMLButtonElement;
+      const cancelButton = balloonEl.querySelector(
+        ".cancel-button",
+      ) as HTMLButtonElement;
 
       const handleKeypress = (e: KeyboardEvent) => {
         resetBalloonTimeout();
-        if (e.key === 'Enter') {
+        if (e.key === "Enter") {
           e.preventDefault();
           handleAsk();
         }
@@ -566,18 +624,18 @@ export class Agent {
 
       const cleanup = () => {
         clearBalloonTimeout();
-        input?.removeEventListener('keypress', handleKeypress);
-        askButton.removeEventListener('click', handleAsk);
-        cancelButton.removeEventListener('click', handleCancel);
+        input?.removeEventListener("keypress", handleKeypress);
+        askButton.removeEventListener("click", handleAsk);
+        cancelButton.removeEventListener("click", handleCancel);
       };
 
       if (input) {
         input.focus();
-        input.addEventListener('keypress', handleKeypress);
+        input.addEventListener("keypress", handleKeypress);
       }
 
-      askButton.addEventListener('click', handleAsk);
-      cancelButton.addEventListener('click', handleCancel);
+      askButton.addEventListener("click", handleAsk);
+      cancelButton.addEventListener("click", handleCancel);
 
       resetBalloonTimeout();
 
@@ -611,9 +669,9 @@ export class Agent {
    * Shows the agent with the "Showing" animation.
    */
   public async show(): Promise<void> {
-    this.container.style.display = 'block';
+    this.container.style.display = "block";
     await this.stateManager.handleVisibilityChange(true);
-    this.emit('show');
+    this.emit("show");
   }
 
   /**
@@ -621,8 +679,8 @@ export class Agent {
    */
   public async hide(): Promise<void> {
     await this.stateManager.handleVisibilityChange(false);
-    this.container.style.display = 'none';
-    this.emit('hide');
+    this.container.style.display = "none";
+    this.emit("hide");
   }
 
   /**
@@ -640,12 +698,20 @@ export class Agent {
   }
 
   private emit(event: AgentEvent, ...args: any[]) {
-    this.listeners.get(event)?.forEach(listener => listener(...args));
+    this.listeners.get(event)?.forEach((listener) => listener(...args));
   }
 
-  private getDirection(targetX: number, targetY: number, numDirections: 4 | 8): string {
-    const centerX = this.options.x + (this.definition.character.width * this.options.scale) / 2;
-    const centerY = this.options.y + (this.definition.character.height * this.options.scale) / 2;
+  private getDirection(
+    targetX: number,
+    targetY: number,
+    numDirections: 4 | 8,
+  ): string {
+    const centerX =
+      this.options.x +
+      (this.definition.character.width * this.options.scale) / 2;
+    const centerY =
+      this.options.y +
+      (this.definition.character.height * this.options.scale) / 2;
 
     const dx = targetX - centerX;
     const dy = targetY - centerY;
@@ -658,20 +724,20 @@ export class Agent {
 
     if (numDirections === 4) {
       // 4 directions: Right (315-45), Down (45-135), Left (135-225), Up (225-315)
-      if (degrees >= 315 || degrees < 45) return 'Right';
-      if (degrees >= 45 && degrees < 135) return 'Down';
-      if (degrees >= 135 && degrees < 225) return 'Left';
-      return 'Up';
+      if (degrees >= 315 || degrees < 45) return "Right";
+      if (degrees >= 45 && degrees < 135) return "Down";
+      if (degrees >= 135 && degrees < 225) return "Left";
+      return "Up";
     } else {
       // 8 directions
-      if (degrees >= 337.5 || degrees < 22.5) return 'Right';
-      if (degrees >= 22.5 && degrees < 67.5) return 'DownRight';
-      if (degrees >= 67.5 && degrees < 112.5) return 'Down';
-      if (degrees >= 112.5 && degrees < 157.5) return 'DownLeft';
-      if (degrees >= 157.5 && degrees < 202.5) return 'Left';
-      if (degrees >= 202.5 && degrees < 247.5) return 'UpLeft';
-      if (degrees >= 247.5 && degrees < 292.5) return 'Up';
-      return 'UpRight';
+      if (degrees >= 337.5 || degrees < 22.5) return "Right";
+      if (degrees >= 22.5 && degrees < 67.5) return "DownRight";
+      if (degrees >= 67.5 && degrees < 112.5) return "Down";
+      if (degrees >= 112.5 && degrees < 157.5) return "DownLeft";
+      if (degrees >= 157.5 && degrees < 202.5) return "Left";
+      if (degrees >= 202.5 && degrees < 247.5) return "UpLeft";
+      if (degrees >= 247.5 && degrees < 292.5) return "Up";
+      return "UpRight";
     }
   }
 
