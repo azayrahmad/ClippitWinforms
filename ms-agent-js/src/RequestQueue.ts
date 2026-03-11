@@ -131,4 +131,18 @@ export class RequestQueue {
   public get isEmpty(): boolean {
     return this.queue.length === 0 && this.currentEntry === null;
   }
+
+  /**
+   * Returns the number of requests currently in the queue (excluding the active one).
+   */
+  public get length(): number {
+    return this.queue.length;
+  }
+
+  /**
+   * Returns the ID of the currently active request, or null if none.
+   */
+  public get activeRequestId(): number | null {
+    return this.currentEntry?.request.id ?? null;
+  }
 }
