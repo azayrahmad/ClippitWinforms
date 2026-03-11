@@ -13,7 +13,8 @@ import {
 import { validate as uuidValidate } from 'uuid';
 
 /**
- * Mapping from Windows LCID to BCP 47 language tags.
+ * Mapping from Windows LCID (Language Code Identifier) to BCP 47 language tags.
+ * Used to translate legacy agent language codes to modern locale strings.
  */
 const LCID_MAP: Record<string, string> = {
   '0x0409': 'en-US', // English - United States
@@ -31,10 +32,11 @@ const LCID_MAP: Record<string, string> = {
 };
 
 /**
- * CharacterParser class for parsing .acd files into AgentCharacterDefinition.
- * Ported from C# CharacterParser.cs.
+ * CharacterParser class for parsing Microsoft Agent .acd files into AgentCharacterDefinition.
+ * This class handles the complex nested structure of the legacy text-based definition format.
  */
 export class CharacterParser {
+  /** The current agent definition being built during the parsing process. */
   private currentAgent: Partial<AgentCharacterDefinition> = {
     animations: {},
     states: {},
@@ -48,14 +50,23 @@ export class CharacterParser {
       borderColor: '000000',
     },
   };
+  /** Temporary reference to the character section being parsed. */
   private currentCharacter: Character | null = null;
+  /** Temporary reference to the language info section being parsed. */
   private currentLanguageInfo: Info | null = null;
+  /** Temporary reference to the animation section being parsed. */
   private currentAnimation: Animation | null = null;
+  /** Temporary reference to the frame section being parsed. */
   private currentFrame: FrameDefinition | null = null;
+  /** Temporary reference to the state section being parsed. */
   private currentState: State | null = null;
 
   /**
-   * Fetches an .acd file from a URL and parses it.
+   * Fetches an .acd file from a URL and parses it into a structured agent definition.
+   *
+   * @param url - The URL of the .acd file to load.
+   * @returns A promise that resolves to the parsed AgentCharacterDefinition.
+   * @throws Error if the fetch fails.
    */
   public static async load(url: string): Promise<AgentCharacterDefinition> {
     const response = await fetch(url);
@@ -68,7 +79,10 @@ export class CharacterParser {
   }
 
   /**
-   * Parses the content of an .acd file.
+   * Parses the string content of an .acd file.
+   *
+   * @param content - The raw text content of the .acd file.
+   * @returns The parsed AgentCharacterDefinition.
    */
   public parse(content: string): AgentCharacterDefinition {
     const lines = content.split(/\r?\n/);
@@ -105,6 +119,9 @@ export class CharacterParser {
     return this.currentAgent as AgentCharacterDefinition;
   }
 
+  /**
+   * Parses the main character configuration section.
+   */
   private parseCharacterSection(lines: string[], i: number): number {
     this.currentCharacter = {
       infos: [],
@@ -172,6 +189,9 @@ export class CharacterParser {
     return i;
   }
 
+  /**
+   * Parses localized character information sections.
+   */
   private parseCharacterInfo(lines: string[], i: number): number {
     const line = lines[i].trim();
     const match = line.match(/0x([0-9A-Fa-f]{4})/);
@@ -219,6 +239,10 @@ export class CharacterParser {
     return i;
   }
 
+  /**
+   * Parses extra character data like greetings and reminders.
+   * Uses legacy delimiters (^^ and ~~).
+   */
   private parseExtraData(extraData: string, languageInfo: Info): void {
     const parts = extraData.split('^^');
     // Parse greetings (before ^^)
@@ -238,6 +262,9 @@ export class CharacterParser {
     }
   }
 
+  /**
+   * Parses the character style bitmask from string labels.
+   */
   private parseStyle(value: string): number {
     let style = CharacterStyle.None;
     const styleParts = value.split('|');
@@ -258,6 +285,9 @@ export class CharacterParser {
     return style;
   }
 
+  /**
+   * Parses the speech balloon configuration section.
+   */
   private parseBalloonSection(lines: string[], i: number): number {
     const balloon: Balloon = {
       numLines: 0,
@@ -308,6 +338,9 @@ export class CharacterParser {
     return i;
   }
 
+  /**
+   * Parses an animation section, including its frames.
+   */
   private parseAnimationSection(lines: string[], i: number): number {
     const line = lines[i].trim();
     const match = line.match(/DefineAnimation\s+"([^"]+)"/);
@@ -340,6 +373,9 @@ export class CharacterParser {
     return i;
   }
 
+  /**
+   * Parses a frame within an animation, including its images and branching logic.
+   */
   private parseFrameSection(lines: string[], i: number): number {
     this.currentFrame = {
       duration: 0,
@@ -374,6 +410,9 @@ export class CharacterParser {
     return i;
   }
 
+  /**
+   * Parses an image definition (layer) within a frame.
+   */
   private parseImageSection(lines: string[], i: number): number {
     const image: ImageDefinition = {
       filename: '',
@@ -410,6 +449,9 @@ export class CharacterParser {
     return i;
   }
 
+  /**
+   * Parses branching logic within a frame, allowing for probabilistic transitions.
+   */
   private parseBranchingSection(lines: string[], i: number): number {
     const branchingList: BranchingDefinition[] = [];
     let branching: Partial<BranchingDefinition> = {};
@@ -444,6 +486,9 @@ export class CharacterParser {
     return i;
   }
 
+  /**
+   * Parses a state definition, which groups several animations.
+   */
   private parseStateSection(lines: string[], i: number): number {
     const line = lines[i].trim();
     const match = line.match(/DefineState\s+"([^"]+)"/);

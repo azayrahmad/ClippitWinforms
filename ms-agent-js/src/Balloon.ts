@@ -1,12 +1,22 @@
 import { type AgentCharacterDefinition, CharacterStyle } from "./types";
 
+/**
+ * Options for Text-to-Speech (TTS) output.
+ */
 export interface TTSOptions {
+  /** The voice to use for speech synthesis. */
   voice?: SpeechSynthesisVoice | null;
+  /** Speech rate multiplier (0.1 to 10). */
   rate?: number;
+  /** Speech pitch (0 to 2). */
   pitch?: number;
+  /** Speech volume (0 to 1). */
   volume?: number;
 }
 
+/**
+ * Enum for the quadrant where the balloon tip is located.
+ */
 const TipQuadrant = {
   Top: 0,
   Right: 1,
@@ -16,6 +26,7 @@ const TipQuadrant = {
 
 type TipQuadrant = (typeof TipQuadrant)[keyof typeof TipQuadrant];
 
+// Constants for balloon rendering and spacing
 const TIP_DEPTH = 17;
 const TIP_SPACING = 10;
 const TIP_MIDDLE = TIP_SPACING / 2;
@@ -25,12 +36,22 @@ const CORNER_SPACING_X = 9;
 const CORNER_SPACING_Y = 12;
 const BALLOON_MARGIN = 15;
 
+/**
+ * Balloon class for rendering speech bubbles using procedural SVG.
+ * Supports character-by-character typing, TTS synchronization, and automatic repositioning.
+ */
 export class Balloon {
+  /** The element the balloon is pointing to (the agent canvas). */
   private _targetEl: HTMLElement;
+  /** The main balloon container element. */
   private _balloonEl: HTMLElement;
+  /** The container for the text/HTML content. */
   private _contentEl: HTMLElement;
+  /** The SVG element used for drawing the balloon shape. */
   private _svgEl: SVGSVGElement;
+  /** The SVG path representing the balloon outline and tip. */
   private _pathEl: SVGPathElement;
+  /** The character definition for balloon styling. */
   private _definition: AgentCharacterDefinition;
 
   private _hidden: boolean = true;
@@ -54,12 +75,21 @@ export class Balloon {
   private _ttsFallbackTimer: number | null = null;
   private _mobileTTSTimer: number | null = null;
 
+  /** Time in milliseconds to wait between typing each character. */
   public CHAR_SPEAK_TIME = 50;
+  /** Delay in milliseconds before automatically closing the balloon after speech. */
   public CLOSE_BALLOON_DELAY = 2000;
 
+  /** Relative position of the tip along the balloon edge. */
   private _tipPosition: number = 0;
+  /** Which side of the balloon the tip is on. */
   private _tipType: TipQuadrant = TipQuadrant.Top as TipQuadrant;
 
+  /**
+   * @param targetEl - The element the balloon should point to.
+   * @param container - The parent container (usually a ShadowRoot).
+   * @param definition - The character definition.
+   */
   constructor(
     targetEl: HTMLElement,
     container: HTMLElement | ShadowRoot,
@@ -112,6 +142,9 @@ export class Balloon {
     container.appendChild(this._balloonEl);
   }
 
+  /**
+   * Formats a Win32 BGR color string or hex string into a standard CSS hex color.
+   */
   private _formatColor(color: string): string {
     if (color.startsWith("#")) return color;
     // MSAgent uses hex colors, usually BGR.
@@ -124,7 +157,7 @@ export class Balloon {
     }
 
     if (raw.length === 8) {
-      // Assuming AABBGGRR
+      // Assuming AABBGGRR (Alpha is usually ignored or 0x00 for opaque in this context)
       const b = raw.substring(2, 4);
       const g = raw.substring(4, 6);
       const r = raw.substring(6, 8);
@@ -140,6 +173,10 @@ export class Balloon {
     return `#${raw}`;
   }
 
+  /**
+   * Recalculates the balloon's size and position relative to the target element.
+   * Chooses the best quadrant (Top, Bottom, Left, Right) to keep the balloon on-screen.
+   */
   public reposition() {
     const rect = this._targetEl.getBoundingClientRect();
     const w = rect.width;
@@ -183,7 +220,6 @@ export class Balloon {
         const numLines = this._definition.balloon.numLines || 2;
         const minH = numLines * lineHeight + CORNER_SPACING_Y * 2;
         bH = Math.max(bH, minH);
-        // Note: TripleAgent usually keeps bW dynamic up to maxWidth even if !sizeToText
     }
 
     // Lock dimensions for typing
@@ -192,11 +228,7 @@ export class Balloon {
     this._contentEl.style.maxWidth = "none";
     this._contentEl.style.maxHeight = "none";
 
-    // Positioning algorithm:
-    // We want the balloon to be outside the agent, pointing to its center.
-    // Coordinates are relative to the agent container (which contains targetEl).
-    // targetEl is typically the canvas at (0,0).
-
+    // Positioning algorithm: choose quadrant based on available space
     const topSpace = rect.top;
     const bottomSpace = window.innerHeight - rect.bottom;
     const leftSpace = rect.left;
@@ -218,7 +250,6 @@ export class Balloon {
     this._tipType = tq;
 
     // The container represents the body plus extra space for the tip/padding.
-    // We always add TIP_DEPTH to the height for the bottom padding requested.
     let containerW = bW;
     let containerH = bH + TIP_DEPTH;
 
@@ -232,7 +263,6 @@ export class Balloon {
     let relTop = 0;
 
     // Ideal positions relative to target (0,0 is agent top-left).
-    // Use BALLOON_MARGIN for the div edge, tip will overlap by TIP_DEPTH (net 2px overlap).
     if (tq === TipQuadrant.Bottom) {
         relLeft = agentCenterX - bW / 2;
         relTop = -bH - BALLOON_MARGIN;
@@ -286,13 +316,15 @@ export class Balloon {
     this._balloonEl.style.opacity = "1";
   }
 
+  /**
+   * Draws the procedural SVG balloon shape based on calculated dimensions and tip position.
+   */
   private _drawBalloon(w: number, h: number) {
     const tq = this._tipType;
     const tp = this._tipPosition;
     const rx = CORNER_RX;
     const ry = CORNER_RY;
 
-    // Based on TripleAgent's sliding tip logic
     const tipEdgeSize =
       tq === TipQuadrant.Top || tq === TipQuadrant.Bottom ? w : h;
     const cornerSpacing =
@@ -318,7 +350,6 @@ export class Balloon {
     const getTipPath = (quadrant: TipQuadrant) => {
       if (tq !== quadrant) return "";
       if (quadrant === TipQuadrant.Top) {
-        // Peak at 0 (absolute: div_top - TIP_DEPTH), Body at TIP_DEPTH (absolute: div_top)
         return `L ${tipStart + offX} ${offY} L ${tp + offX} 0 L ${
           tipStart + TIP_SPACING + offX
         } ${offY}`;
@@ -334,13 +365,12 @@ export class Balloon {
         } L ${tipStart + offX} ${h + offY}`;
       }
       if (quadrant === TipQuadrant.Left) {
-        // Peak at 0, Body at TIP_DEPTH
         return `L ${offX} ${tipStart + TIP_SPACING + offY} L 0 ${tp + offY} L ${offX} ${tipStart + offY}`;
       }
       return "";
     };
 
-    // Construct path with offsets
+    // Construct SVG path string
     path = `M ${rx + offX} ${offY}`;
     path += getTipPath(TipQuadrant.Top);
     path += `H ${w - rx + offX} A ${rx} ${ry} 0 0 1 ${w + offX} ${ry + offY}`;
@@ -351,13 +381,11 @@ export class Balloon {
     path += getTipPath(TipQuadrant.Left);
     path += `V ${ry + offY} A ${rx} ${ry} 0 0 1 ${rx + offX} ${offY} Z`;
 
-    // Compensate for tip in SVG and content position
     this._contentEl.style.marginLeft = "0";
     this._contentEl.style.marginTop = "0";
     this._svgEl.style.top = "0";
     this._svgEl.style.left = "0";
 
-    // Standard padding + bottom tip padding for consistency
     const pX = CORNER_SPACING_X;
     const pY = CORNER_SPACING_Y;
     this._contentEl.style.padding = `${pY}px ${pX}px ${pY + TIP_DEPTH}px ${pX}px`;
@@ -371,6 +399,15 @@ export class Balloon {
     this._pathEl.setAttribute("d", path);
   }
 
+  /**
+   * Displays text in the balloon.
+   *
+   * @param complete - Callback fired when speech is finished.
+   * @param text - The text to display.
+   * @param hold - If true, the balloon won't auto-close.
+   * @param useTTS - If true, will use system Text-to-Speech.
+   * @param skipTyping - If true, displays text instantly without typing animation.
+   */
   public speak(
     complete: () => void,
     text: string,
@@ -431,6 +468,9 @@ export class Balloon {
     }
   }
 
+  /**
+   * Internal character-by-character typing logic (no TTS).
+   */
   private _sayChars(text: string, hold: boolean, complete: () => void) {
     this._active = true;
     this._hold = hold;
@@ -457,6 +497,9 @@ export class Balloon {
     this._addChar();
   }
 
+  /**
+   * Internal character-by-character typing logic synchronized with TTS boundaries.
+   */
   private _sayCharsWithTTS(text: string, hold: boolean, complete: () => void) {
     this._active = true;
     this._hold = hold;
@@ -501,6 +544,9 @@ export class Balloon {
     startFallbackTimer();
   }
 
+  /**
+   * Triggers the Web Speech API to speak the given text.
+   */
   private _speakTTS(
     text: string,
     onBoundary: ((charIndex: number) => void) | null,
@@ -527,6 +573,12 @@ export class Balloon {
     window.speechSynthesis.speak(utterance);
   }
 
+  /**
+   * Displays raw HTML in the balloon.
+   *
+   * @param html - The HTML string to render.
+   * @param hold - If true, the balloon won't auto-close.
+   */
   public showHtml(html: string, hold: boolean) {
     this.stop();
     this._hidden = false;
@@ -547,6 +599,9 @@ export class Balloon {
     });
   }
 
+  /**
+   * Makes the balloon visible.
+   */
   public show() {
     if (this._hidden) return;
     this._balloonEl.style.display = "block";
@@ -555,6 +610,11 @@ export class Balloon {
     this.reposition();
   }
 
+  /**
+   * Hides the balloon after a short delay.
+   *
+   * @param fast - If true, hides instantly without delay.
+   */
   public hide(fast: boolean = false) {
     this.stop();
     if (fast) {
@@ -575,6 +635,9 @@ export class Balloon {
     this._hidingTimeout = null;
   }
 
+  /**
+   * Stops any ongoing system speech.
+   */
   public stopTTS() {
     if (this._currentUtterance && window.speechSynthesis.speaking) {
       window.speechSynthesis.cancel();
@@ -582,22 +645,37 @@ export class Balloon {
     }
   }
 
+  /**
+   * Returns true if system TTS is enabled.
+   */
   public isTTSEnabled(): boolean {
     return this._ttsUserEnabled;
   }
 
+  /**
+   * Manually enables or disables system TTS for the balloon.
+   */
   public setTTSEnabled(enabled: boolean) {
     this._ttsUserEnabled = this._ttsEnabled && enabled;
   }
 
+  /**
+   * Sets the voice and style for system TTS.
+   */
   public setTTSOptions(options: TTSOptions) {
     this._ttsOptions = { ...this._ttsOptions, ...options };
   }
 
+  /**
+   * Returns a list of available system TTS voices.
+   */
   public getTTSVoices(): SpeechSynthesisVoice[] {
     return window.speechSynthesis.getVoices();
   }
 
+  /**
+   * Instantly stops all activity and closes the balloon.
+   */
   public close() {
     this.stop();
     this.hide(true);
@@ -605,6 +683,9 @@ export class Balloon {
     this._completeCallback = null;
   }
 
+  /**
+   * Stops all active typing animations and speech.
+   */
   public stop() {
     this._active = false;
     this._addChar = null;
@@ -627,6 +708,9 @@ export class Balloon {
     this.stopTTS();
   }
 
+  /**
+   * Pauses all active timers (used during global agent pause).
+   */
   public pause() {
     if (this._loopTimeout) clearTimeout(this._loopTimeout);
     if (this._hidingTimeout) clearTimeout(this._hidingTimeout);
@@ -634,6 +718,9 @@ export class Balloon {
     if (this._mobileTTSTimer) clearTimeout(this._mobileTTSTimer);
   }
 
+  /**
+   * Resumes active timers.
+   */
   public resume() {
     if (this._addChar) this._addChar();
     this._hidingTimeout = window.setTimeout(
@@ -642,6 +729,9 @@ export class Balloon {
     );
   }
 
+  /**
+   * Returns the main balloon container element.
+   */
   public get balloonEl() {
     return this._balloonEl;
   }
