@@ -198,6 +198,7 @@ describe('Agent Visibility', () => {
     let agent: Agent;
     const mockDefinition = {
         character: { width: 100, height: 100, colorTable: 'ColorTable.bmp' },
+        balloon: { borderColor: '000000', backColor: 'ffffff', foreColor: '000000', fontName: 'Arial', fontHeight: 12 },
         animations: {
             'Showing': { frames: [{ duration: 100, images: [] }] },
             'Hiding': { frames: [{ duration: 100, images: [] }] }

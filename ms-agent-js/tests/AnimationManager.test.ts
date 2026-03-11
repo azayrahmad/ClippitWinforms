@@ -144,4 +144,31 @@ describe('AnimationManager', () => {
     expect(animationManager.currentFrame).not.toBeNull();
     expect(animationManager.currentFrame?.images[0].filename).toBe('test.bmp');
   });
+
+  it('should respect branching even when isExiting is true if no exitBranch is present', async () => {
+    // This simulates Rocky's "Goodbye" animation where frame 9 branches but hide() sets isExiting = true
+    const branchingExitAnim: Animation = {
+        name: 'branching-exit',
+        transitionType: 0,
+        frames: [
+            {
+              duration: 10,
+              images: [],
+              branching: [{ branchTo: 3, probability: 100 }] // Jump to frame 3 (index 2)
+            },
+            { duration: 10, images: [] }, // Index 1
+            { duration: 10, images: [] }  // Index 2 (Target)
+        ]
+    };
+    (animationManager as any).animations['branching-exit'] = branchingExitAnim;
+
+    const promise = animationManager.playAnimation('branching-exit');
+    animationManager.isExitingFlag = true;
+
+    // Trigger update to next frame
+    animationManager.update(performance.now() + 200);
+
+    // Should have jumped to frame 3 (index 2) because branching was respected despite isExiting being true
+    expect(animationManager.currentFrameIndexValue).toBe(2);
+  });
 });
