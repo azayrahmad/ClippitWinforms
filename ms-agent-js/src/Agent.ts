@@ -435,7 +435,11 @@ export class Agent {
     this.startLoop();
     // Start showing the agent but don't await it, so the agent instance
     // is returned to the caller as soon as assets are ready.
-    this.show();
+    if (this.definition.states['Showing']) {
+      this.show();
+    } else {
+      this.stateManager.setState('IdlingLevel1');
+    }
   }
 
   /**

@@ -213,4 +213,34 @@ describe('AnimationManager', () => {
     expect(animationManager.currentFrame).not.toBeNull();
     expect(animationManager.currentFrame?.images[0].filename).toBe('test.bmp');
   });
+
+  it('should follow multi-step exit sequences', async () => {
+    const anim: Animation = {
+      name: 'multi-exit',
+      transitionType: 0,
+      frames: [
+        { duration: 10, images: [], exitBranch: 3 }, // Frame 1 (idx 0) -> Exit to 3
+        { duration: 10, images: [] }, // Frame 2 (idx 1)
+        { duration: 10, images: [], exitBranch: 5 }, // Frame 3 (idx 2) -> Exit to 5
+        { duration: 10, images: [] }, // Frame 4 (idx 3)
+        { duration: 10, images: [] }, // Frame 5 (idx 4)
+      ],
+    };
+    (animationManager as any).animations['multi-exit'] = anim;
+
+    animationManager.playAnimation('multi-exit');
+    expect(animationManager.currentFrameIndexValue).toBe(0);
+
+    animationManager.isExitingFlag = true;
+    // Step 1: Immediate jump to Frame 3 (index 2)
+    expect(animationManager.currentFrameIndexValue).toBe(2);
+
+    // Step 2: Progress Frame 3 to its exitBranch (Frame 5, index 4)
+    animationManager.update(performance.now() + 200);
+    expect(animationManager.currentFrameIndexValue).toBe(4);
+
+    // Step 3: Complete
+    animationManager.update(performance.now() + 400);
+    expect(animationManager.isAnimating).toBe(false);
+  });
 });
