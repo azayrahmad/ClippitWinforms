@@ -49,6 +49,13 @@ The following core components of the Microsoft Agent ecosystem are currently mis
 ### Request Priorities
 *   **Gap:** The original Agent had "High", "Normal", and "Low" priority requests. For example, a "Show" request would interrupt a "Move" request, but a "Move" wouldn't necessarily interrupt a "Speak" unless specified. `ms-agent-js` treats all API calls as high-priority interruptions.
 
+#### Implementing a Parity-Compliant Queue
+To achieve full parity, the library needs to move from an "Interruption-by-default" model to a "Queued" model:
+1.  **Chore Management:** Implement a `RequestQueue` that stores pending actions (animations, speech, movements).
+2.  **Sequential Execution:** API calls should return a `RequestID` and a promise that resolves only when the action has finished playing, after waiting its turn in the queue.
+3.  **Idle Suppression:** The `StateManager`'s idle loop must only activate when the `RequestQueue` is empty and no action is currently in progress.
+4.  **Explicit Stop:** A `.stop(RequestID?)` method is needed to clear the queue or cancel specific pending actions.
+
 ---
 
 ## 4. Rendering & Visuals
