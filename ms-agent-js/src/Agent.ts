@@ -433,7 +433,9 @@ export class Agent {
 
     await Promise.all(initPromises);
     this.startLoop();
-    await this.show();
+    // Start showing the agent but don't await it, so the agent instance
+    // is returned to the caller as soon as assets are ready.
+    this.show();
   }
 
   /**
@@ -473,7 +475,7 @@ export class Agent {
    * @returns A request object to track the operation's progress.
    */
   public play(animationName: string, timeoutMs?: number): AgentRequest {
-    return this.enqueueRequest(async () => {
+    return this.enqueueRequest(async (request) => {
       this.emit("animationStart", animationName);
       await this.stateManager.playAnimation(
         animationName,
@@ -481,7 +483,9 @@ export class Agent {
         false,
         timeoutMs,
       );
-      this.emit("animationEnd", animationName);
+      if (!request.isCancelled) {
+        this.emit("animationEnd", animationName);
+      }
     });
   }
 
@@ -494,7 +498,7 @@ export class Agent {
    * @returns A request object to track the operation's progress.
    */
   public gestureAt(x: number, y: number): AgentRequest {
-    return this.enqueueRequest(async () => {
+    return this.enqueueRequest(async (_request) => {
       const direction = this.toAgentPerspective(this.getDirection(x, y, 4));
       const stateName = `Gesturing${direction}`;
       if (this.definition.states[stateName]) {
@@ -518,7 +522,7 @@ export class Agent {
    * @returns A request object to track the operation's progress.
    */
   public lookAt(x: number, y: number): AgentRequest {
-    return this.enqueueRequest(async () => {
+    return this.enqueueRequest(async (request) => {
       const direction = this.toAgentPerspective(this.getDirection(x, y, 8));
       const animName = `Look${direction}`;
 
@@ -532,7 +536,9 @@ export class Agent {
       if (this.definition.animations[animName]) {
         this.emit("animationStart", animName);
         await this.stateManager.playAnimation(animName, "Looking");
-        this.emit("animationEnd", animName);
+        if (!request.isCancelled) {
+          this.emit("animationEnd", animName);
+        }
       }
     });
   }
@@ -557,7 +563,7 @@ export class Agent {
    * @returns A request object to track the movement.
    */
   public moveTo(x: number, y: number, speed: number = 400): AgentRequest {
-    return this.enqueueRequest(async () => {
+    return this.enqueueRequest(async (request) => {
       const startX = this.options.x;
       const startY = this.options.y;
       const dx = x - startX;
@@ -582,6 +588,13 @@ export class Agent {
 
       return new Promise<void>((resolve) => {
         const moveStep = (currentTime: number) => {
+          if (request.isCancelled) {
+            if (hasMoveAnim) {
+              this.stateManager.handleAnimationCompleted();
+            }
+            resolve();
+            return;
+          }
           const elapsed = currentTime - startTime;
           const progress = Math.min(elapsed / duration, 1);
 
@@ -628,8 +641,12 @@ export class Agent {
   ): AgentRequest {
     const { hold = false, useTTS = true, skipTyping = false } = options;
     return this.enqueueRequest(
-      () =>
+      (request) =>
         new Promise((resolve) => {
+          if (request.isCancelled) {
+            resolve();
+            return;
+          }
           this.balloon.speak(resolve, text, hold, useTTS, skipTyping);
         }),
     );
@@ -775,10 +792,12 @@ export class Agent {
    * @returns A request object to track the operation's progress.
    */
   public show(): AgentRequest {
-    return this.enqueueRequest(async () => {
+    return this.enqueueRequest(async (request) => {
       this.container.style.display = "block";
       await this.stateManager.handleVisibilityChange(true);
-      this.emit("show");
+      if (!request.isCancelled) {
+        this.emit("show");
+      }
     });
   }
 
@@ -788,10 +807,12 @@ export class Agent {
    * @returns A request object to track the operation's progress.
    */
   public hide(): AgentRequest {
-    return this.enqueueRequest(async () => {
+    return this.enqueueRequest(async (request) => {
       await this.stateManager.handleVisibilityChange(false);
-      this.container.style.display = "none";
-      this.emit("hide");
+      if (!request.isCancelled) {
+        this.container.style.display = "none";
+        this.emit("hide");
+      }
     });
   }
 
@@ -818,10 +839,12 @@ export class Agent {
   /**
    * Internal method to enqueue a task and emit events.
    */
-  private enqueueRequest(task: () => Promise<void>): AgentRequest {
+  private enqueueRequest(
+    task: (request: AgentRequest) => Promise<void>,
+  ): AgentRequest {
     return this.requestQueue.add(async (request) => {
       this.emit("requestStart", request);
-      await task();
+      await task(request);
       this.emit("requestComplete", request);
     });
   }
@@ -842,13 +865,16 @@ export class Agent {
    * @param request - Optional request object to stop.
    */
   public stop(request?: AgentRequest) {
+    const activeId = this.requestQueue.activeRequestId;
     this.requestQueue.stop(request?.id);
-    if (!request || this.animationManager.isAnimating) {
-      // If we stop all or the current request, interrupt the animation
-      this.animationManager.isExitingFlag = true;
-    }
-    if (!request) {
-      this.stopTTS();
+
+    // Only interrupt the current animation/speech if we are stopping everything,
+    // or if the request being stopped is the currently active one.
+    if (!request || (activeId !== null && request.id === activeId)) {
+      if (this.animationManager.isAnimating) {
+        this.animationManager.isExitingFlag = true;
+      }
+      this.balloon.close();
     }
   }
 

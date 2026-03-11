@@ -11,8 +11,8 @@ class InternalAgentRequest implements AgentRequest {
   public readonly id: number;
   public status: RequestStatus;
   public readonly promise: Promise<void>;
-  private resolveFn: any;
-  private rejectFn: any;
+  private resolveFn: () => void = () => {};
+  private rejectFn: (reason?: any) => void = () => {};
 
   constructor(id: number) {
     this.id = id;
@@ -54,6 +54,13 @@ class InternalAgentRequest implements AgentRequest {
   public reject(err: any) {
     this.status = RequestStatus.Failed;
     this.rejectFn(err);
+  }
+
+  public get isCancelled(): boolean {
+    return (
+      this.status === RequestStatus.Interrupted ||
+      this.status === RequestStatus.Failed
+    );
   }
 
   public interrupt() {

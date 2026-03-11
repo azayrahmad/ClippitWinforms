@@ -210,6 +210,8 @@ export interface AgentRequest {
   readonly status: RequestStatus;
   /** A promise that resolves when the request completes, fails, or is interrupted. */
   readonly promise: Promise<void>;
+  /** Whether the request has been cancelled (interrupted or failed). */
+  readonly isCancelled: boolean;
   /** Allows the request to be awaited directly. */
   then<TResult1 = void, TResult2 = never>(
     onfulfilled?:
