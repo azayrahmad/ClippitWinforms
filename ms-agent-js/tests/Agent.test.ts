@@ -48,6 +48,16 @@ describe('Agent.load', () => {
 
         // Mock document.createElement for canvas and style
         vi.stubGlobal('document', {
+            createElementNS: vi.fn().mockImplementation((ns, tag) => {
+                const el: any = {
+                    style: {},
+                    appendChild: vi.fn(),
+                    setAttribute: vi.fn(),
+                    className: '',
+                    querySelector: vi.fn(),
+                };
+                return el;
+            }),
             createElement: vi.fn().mockImplementation((tag) => {
                 const el: any = {
                     style: {},
@@ -88,6 +98,7 @@ describe('Agent.load', () => {
     it('should use unpkg CDN as default baseUrl when none is provided', async () => {
         const mockDefinition = {
             character: { width: 100, height: 100, colorTable: 'ColorTable.bmp' },
+            balloon: { borderColor: '000000', backColor: 'ffffff', foreColor: '000000', fontName: 'Arial', fontHeight: 12 },
             animations: {},
             states: { 'IdlingLevel1': { name: 'IdlingLevel1', animations: [] } }
         };
@@ -105,6 +116,7 @@ describe('Agent.load', () => {
     it('should use provided baseUrl when one is given', async () => {
         const mockDefinition = {
             character: { width: 100, height: 100, colorTable: 'ColorTable.bmp' },
+            balloon: { borderColor: '000000', backColor: 'ffffff', foreColor: '000000', fontName: 'Arial', fontHeight: 12 },
             animations: {},
             states: { 'IdlingLevel1': { name: 'IdlingLevel1', animations: [] } }
         };
@@ -124,6 +136,7 @@ describe('Agent Directional Animations', () => {
     let agent: Agent;
     const mockDefinition = {
         character: { width: 100, height: 100, colorTable: 'ColorTable.bmp' },
+        balloon: { borderColor: '000000', backColor: 'ffffff', foreColor: '000000', fontName: 'Arial', fontHeight: 12 },
         animations: {
             'GestureLeft': { frames: [] },
             'GestureRight': { frames: [] },
