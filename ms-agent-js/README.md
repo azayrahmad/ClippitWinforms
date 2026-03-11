@@ -87,6 +87,19 @@ public/
       agent.webm      (Audio spritesheet)
 ```
 
+### Adding New Agents
+Microsoft Agent characters are traditionally distributed in `.acs` files. To use them with MSAgentJS, you must first decompile them.
+
+1.  **Decompile:** Use a tool like [MS Agent Decompiler](http://www.lebeausoftware.org/software/decompile.aspx) to extract the contents of an `.acs` file.
+2.  **Organization:** Create a new folder in your project's `public/agents/` directory (e.g., `public/agents/Merlin`).
+3.  **Deployment:** Place the extracted `.acd` file, `Images/` folder, and `Audio/` folder directly into that directory. MSAgentJS can load these legacy files directly.
+4.  **Optimization (Optional but Recommended):** To improve performance and reduce network requests, you can combine the hundreds of small BMP and WAV files into a single texture atlas and audio spritesheet.
+    - Run the optimization script provided in the repository:
+      ```bash
+      npx tsx scripts/optimize-agent.ts public/agents/Merlin
+      ```
+    - Once `agent.json`, `agent.webp`, and `agent.webm` are generated, you can safely delete the original `.bmp`, `.wav`, and `.acd` files to save space.
+
 ### Custom Base URL
 You can specify exactly where to load assets from:
 
