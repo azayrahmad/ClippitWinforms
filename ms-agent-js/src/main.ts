@@ -173,10 +173,10 @@ async function initDemo() {
     }
   });
   
-  gestureLeftBtn.addEventListener('click', () => currentAgent?.setState('GesturingLeft'));
-  gestureRightBtn.addEventListener('click', () => currentAgent?.setState('GesturingRight'));
-  gestureUpBtn.addEventListener('click', () => currentAgent?.setState('GesturingUp'));
-  gestureDownBtn.addEventListener('click', () => currentAgent?.setState('GesturingDown'));
+  gestureLeftBtn.addEventListener('click', () => currentAgent?.gestureAt(currentAgent.options.x - 100, currentAgent.options.y + 50));
+  gestureRightBtn.addEventListener('click', () => currentAgent?.gestureAt(currentAgent.options.x + currentAgent.spriteManager.getSpriteWidth() * currentAgent.options.scale + 100, currentAgent.options.y + 50));
+  gestureUpBtn.addEventListener('click', () => currentAgent?.gestureAt(currentAgent.options.x + 50, currentAgent.options.y - 100));
+  gestureDownBtn.addEventListener('click', () => currentAgent?.gestureAt(currentAgent.options.x + 50, currentAgent.options.y + currentAgent.spriteManager.getSpriteHeight() * currentAgent.options.scale + 100));
 
   gestureMouseBtn.addEventListener('click', () => {
     const onMouseDown = (e: MouseEvent) => {
