@@ -341,7 +341,9 @@ export class StateManager {
         // Start the animation and wait for its full completion
         await this.animationManager.preloadAnimation(animName);
         this.currentState = visibilityState;
-        await this.animationManager.playAnimation(animName, true);
+        // For intro animations (Showing), we want to play the full sequence, not start in exiting mode.
+        // For outro animations (Hiding), we also want the full transition.
+        await this.animationManager.playAnimation(animName, false);
 
         // Transition to Hidden or Idling after animation finishes
         if (showing) {

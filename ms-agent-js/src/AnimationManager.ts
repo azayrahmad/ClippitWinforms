@@ -54,19 +54,8 @@ export class AnimationManager {
     if (value && !wasExiting && this.currentAnimation) {
       const currentFrame = this.currentAnimation.frames[this.currentFrameIndex];
       if (currentFrame) {
-        let nextIndex: number | null = null;
-
-        if (currentFrame.exitBranch !== undefined) {
-          nextIndex = currentFrame.exitBranch - 1;
-        } else if (
-          currentFrame.branching &&
-          currentFrame.branching.length > 0 &&
-          this.currentAnimation.frames.length > 1
-        ) {
-          // If we are in a loop (branching), break it by going to the next sequential frame immediately
-          nextIndex =
-            (this.currentFrameIndex + 1) % this.currentAnimation.frames.length;
-        }
+        const { index: nextIndex, isBranch } =
+          this.getNextFrameDetails(currentFrame);
 
         if (nextIndex !== null) {
           const oldFrame = currentFrame;
@@ -77,7 +66,8 @@ export class AnimationManager {
             this.currentAnimation.frames[this.currentFrameIndex],
           );
 
-          if (this.checkAnimationCompletion(oldFrame, nextIndex, true)) return;
+          if (this.checkAnimationCompletion(oldFrame, nextIndex, isBranch))
+            return;
 
           // Also call update to handle potential null (logic) frames at the new position
           this.update(this.lastFrameTime);
@@ -298,16 +288,31 @@ export class AnimationManager {
       return { index: currentFrame.exitBranch - 1, isBranch: true };
     }
 
-    // Normal playback handles probabilistic branching
+    // If exiting, we still want to follow "forward" branches that take us closer to the end
+    // (frame 0). If no forward branches exist, we ignore branching to break loops.
+    const branching = currentFrame.branching || [];
+    const useBranchingWhileExiting =
+      this.isExiting &&
+      branching.some(
+        (b) => b.branchTo - 1 > this.currentFrameIndex || b.branchTo - 1 === 0,
+      );
+
     if (
-      !this.isExiting &&
-      currentFrame.branching &&
-      currentFrame.branching.length > 0
+      branching.length > 0 &&
+      (!this.isExiting || useBranchingWhileExiting)
     ) {
       const randomValue = Math.floor(Math.random() * 100);
       let cumulative = 0;
 
-      for (const branch of currentFrame.branching) {
+      for (const branch of branching) {
+        // If exiting, only consider forward-leading branches
+        if (this.isExiting) {
+          const isForward =
+            branch.branchTo - 1 > this.currentFrameIndex ||
+            (branch.branchTo - 1 === 0 && this.currentFrameIndex > 0);
+          if (!isForward) continue;
+        }
+
         cumulative += branch.probability;
         if (randomValue < cumulative) {
           return { index: branch.branchTo - 1, isBranch: true };
