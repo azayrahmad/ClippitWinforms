@@ -154,14 +154,14 @@ export class AnimationManager {
       this.currentAnimation = animation;
       this.currentFrameIndex = 0;
       this.lastFrameTime = performance.now();
-      // Reset isExiting directly but call the setter to trigger immediate exit jumps if needed
-      this.isExiting = false;
 
       if (previousAnimation && previousAnimation !== animationName) {
         this.onAnimationCompleted?.(previousAnimation);
       }
 
-      this.isExitingFlag = useExitBranch;
+      // Set isExiting directly to allow "Play Once" behavior from the start
+      // without triggering the immediate jump logic in the setter for the first frame.
+      this.isExiting = useExitBranch;
 
       // Use update(now) to handle potential null frames at the start
       this.update(this.lastFrameTime);
@@ -193,9 +193,6 @@ export class AnimationManager {
   public update(currentTime: number = performance.now()): void {
     if (!this.currentAnimation || this.currentAnimation.frames.length === 0)
       return;
-
-    // If we've completed an exit animation, don't update further
-    if (this.isExiting && !this.animationPromise) return;
 
     let safetyCounter = 0;
     const MAX_NULL_FRAMES = 100;

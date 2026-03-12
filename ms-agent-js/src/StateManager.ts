@@ -115,14 +115,10 @@ export class StateManager {
     if (!this.animationManager.isAnimating) {
       if (this.currentState === 'Playing' || this.currentState === 'Moving') {
         // After an explicit action finishes, we return to the base idling state.
-        if (!hasRequests) {
-          await this.handleAnimationCompleted();
-        }
+        await this.handleAnimationCompleted();
       } else if (this.currentState === 'Showing') {
         // After the intro animation completes, we transition to idling.
-        if (!hasRequests) {
-          await this.returnToIdle();
-        }
+        await this.returnToIdle();
       } else if (this.currentState === 'Hiding') {
         // After the outro animation completes, the agent is hidden and paused.
         this.currentState = 'Hidden';
@@ -131,19 +127,17 @@ export class StateManager {
       } else if (this.currentState !== 'Hidden') {
         // For other persistent states (e.g. "IdlingLevel1", "GesturingLeft"),
         // we loop or pick a new random animation immediately to ensure no visual gaps.
-        if (!hasRequests) {
-          await this.updateStateAnimation();
-        }
+        await this.updateStateAnimation();
       }
     }
 
-    // Skip idle progression for transient/busy states or if requests are pending
+    // Skip idle progression for transient/busy states.
+    // We no longer skip if hasRequests is true, allowing ticks to progress during user actions if in an idle state.
     if (
       this.currentState === 'Playing' ||
       this.currentState === 'Showing' ||
       this.currentState === 'Hiding' ||
-      this.currentState === 'Moving' ||
-      hasRequests
+      this.currentState === 'Moving'
     ) {
       this.elapsedSinceLastTick = 0;
       return;
@@ -317,7 +311,21 @@ export class StateManager {
       const randomAnimation = state.animations[Math.floor(Math.random() * state.animations.length)];
       // We play the animation but don't AWAIT it here for persistent states,
       // as they should be interrupted easily and managed by the main loop.
-      await this.playAnimation(randomAnimation);
+      void this.playAnimation(randomAnimation);
+    }
+  }
+
+  /**
+   * Stops the current animation/action and returns the agent to an idle state.
+   */
+  public stop() {
+    this.animationManager.isExitingFlag = true;
+    if (
+      this.currentState !== 'Hidden' &&
+      this.currentState !== 'Hiding' &&
+      !this.isIdleState(this.currentState)
+    ) {
+      void this.returnToIdle();
     }
   }
 
@@ -338,17 +346,21 @@ export class StateManager {
         // Ensure we are not paused while playing the intro/outro transition
         this.isPaused = false;
 
-        // Start the animation and wait for its full completion
         await this.animationManager.preloadAnimation(animName);
-        this.currentState = visibilityState;
-        await this.animationManager.playAnimation(animName, true);
 
-        // Transition to Hidden or Idling after animation finishes
         if (showing) {
-            await this.returnToIdle();
+          // For Showing, we start the animation in an exiting state and immediately transition to idle
+          // so that the request completes and the idle tick starts moving promptly.
+          void this.animationManager.playAnimation(animName, true);
+          this.currentState = 'IdlingLevel1';
+          this.resetIdleProgression();
         } else {
-            this.currentState = 'Hidden';
-            this.isPaused = true;
+          // For Hiding, we still want to wait for the animation to finish so the agent doesn't
+          // disappear instantly before the animation plays.
+          this.currentState = visibilityState;
+          await this.animationManager.playAnimation(animName, true);
+          this.currentState = 'Hidden';
+          this.isPaused = true;
         }
         return;
       }
