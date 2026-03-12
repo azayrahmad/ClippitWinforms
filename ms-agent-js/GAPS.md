@@ -18,7 +18,7 @@ The following core components of the Microsoft Agent ecosystem are currently mis
 
 ### System & Lifecycle
 - **Multi-agent Coordination:** The `Wait` method allowed one agent to wait for another to finish an action. `ms-agent-js` is currently "single-agent centric" in its internal state management.
-- **Request Queueing:** The original used a sequential request queue (Chore system). `ms-agent-js` has implemented this system, allowing actions to be queued and executed in order.
+- **Request Queueing:** The original used a sequential request queue (Chore system). `ms-agent-js` uses an interruption-based promise model which can lead to "race to the bottom" behavior if multiple `play` calls are issued rapidly without awaiting.
 
 ---
 
@@ -49,12 +49,30 @@ The following core components of the Microsoft Agent ecosystem are currently mis
 ### Request Priorities
 *   **Gap:** The original Agent had "High", "Normal", and "Low" priority requests. For example, a "Show" request would interrupt a "Move" request, but a "Move" wouldn't necessarily interrupt a "Speak" unless specified. `ms-agent-js` treats all API calls as high-priority interruptions.
 
+#### Implementing a Parity-Compliant Queue
+To achieve full parity, the library needs to move from an "Interruption-by-default" model to a "Queued" model:
+1.  **Chore Management:** Implement a `RequestQueue` that stores pending actions (animations, speech, movements).
+2.  **Sequential Execution:** API calls should return a `RequestID` and a promise that resolves only when the action has finished playing, after waiting its turn in the queue.
+3.  **Idle Suppression:** The `StateManager`'s idle loop must only activate when the `RequestQueue` is empty and no action is currently in progress.
+4.  **Explicit Stop:** A `.stop(RequestID?)` method is needed to clear the queue or cancel specific pending actions.
+
+### Background vs. Chore States
+In Microsoft Agent terminology, a **Chore** (or Request) is any action triggered by a method call that returns a `Request` object. These are processed sequentially. **Background States** are managed automatically by the animation services based on timers or environment events.
+
+| State Category | Standard States | Trigger / Method | Queueing Behavior |
+| --- | --- | --- | --- |
+| **Chore (Queued)** | `Showing`, `Hiding`, `Speaking`, `Moving`, `Gesturing` | `Show`, `Hide`, `Speak`, `MoveTo`, `GestureAt` | Sequential: Must wait for the previous chore to finish. |
+| **Background** | `Idling (Level 1-3)` | Idle Timeout (No user activity) | Automatic: Played only when the queue is empty. |
+| **Reactive** | `Hearing`, `Listening` | Speech Input / Hotkey | Immediate: Interrupts background states; overlays or interrupts chores depending on character flags. |
+
+- **The Interruption Rule:** Any new Chore entering the queue immediately signals a **Background State** (like Idling) to interrupt. For example, if an agent is at Frame 1 of a 50-frame Idle animation, the arrival of a `Speak` request triggers the Idle's `ExitBranch` instantly to return the agent to a neutral pose before speech begins.
+
 ---
 
 ## 4. Rendering & Visuals
 
 ### Dynamic Positioning
-- **Move-Animations:** The original character definition often includes "MovingUp", "MovingLeft", etc. The `MoveTo` method in `ms-agent-js` automatically plays these animations while the agent container is interpolating across the screen.
+- **Move-Animations:** The original character definition often includes "MovingUp", "MovingLeft", etc. The `MoveTo` method should automatically play these animations while the agent container is interpolating across the screen.
 - **Mirroring:** The `Agent` control supported a `Connected` property and the ability to "Mirror" (flip horizontally) the character. `ms-agent-js` only supports the default orientation.
 
 ### Transparency & Palettes
@@ -74,12 +92,13 @@ The following core components of the Microsoft Agent ecosystem are currently mis
 | **Commands Window** | System UI | Not Implemented | 🔴 Missing |
 | **Multi-agent Wait** | Supported | Not Implemented | 🔴 Missing |
 | **Mirroring/Flipping** | Supported | Not Implemented | 🔴 Missing |
-| **Move-Animations** | Automatic | Implemented | 🟢 Complete |
+| **Move-Animations** | Automatic | Manual `play` only | 🔴 Missing |
 | **Balloon Tip** | Procedural Sliding | Procedural Sliding | 🟢 Complete |
 | **BMP Transparency** | Indexed Palette | Manual Alpha Injection | 🟢 Complete |
-| **Request Queue** | Supported (Sequential) | Implemented | 🟢 Complete |
 
 ## 6. Priority Gaps for Contributors
 
-1.  **Advanced TTS:** Parsing SAPI-style tags in the `speak()` text and translating them to `SpeechSynthesis` parameters (or pausing).
-2.  **Mirroring:** Add a `flipped` property to the `Agent` and update `SpriteManager` to handle horizontal scaling/flipping.
+1.  **Request Queue:** Implement a formal `Request` queue to handle sequential actions without manual `await`.
+2.  **Move-Animations:** Integration of movement logic with the "Moving" state animations.
+3.  **Advanced TTS:** Parsing SAPI-style tags in the `speak()` text and translating them to `SpeechSynthesis` parameters (or pausing).
+4.  **Mirroring:** Add a `flipped` property to the `Agent` and update `SpriteManager` to handle horizontal scaling/flipping.
