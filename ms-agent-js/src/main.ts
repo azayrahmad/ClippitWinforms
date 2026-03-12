@@ -26,6 +26,7 @@ async function initDemo() {
   const dashFrame = document.getElementById('dash-frame')!;
   const dashLevel = document.getElementById('dash-level')!;
   const dashNextTick = document.getElementById('dash-next-tick')!;
+  const dashQueue = document.getElementById('dash-queue')!;
 
   let currentAgent: Agent | null = null;
   let isVisible = true;
@@ -56,6 +57,7 @@ async function initDemo() {
     dashFrame.textContent = '-';
     dashLevel.textContent = '-';
     dashNextTick.textContent = '-';
+    dashQueue.textContent = '-';
 
     try {
       const scale = parseFloat(scaleRange.value);
@@ -201,6 +203,10 @@ async function initDemo() {
       dashFrame.textContent = currentAgent.animationManager.currentFrameIndexValue.toString();
       dashLevel.textContent = currentAgent.stateManager.idleLevel.toString();
       dashNextTick.textContent = (currentAgent.stateManager.timeUntilNextTick / 1000).toFixed(1);
+
+      const activeId = currentAgent.requestQueue.activeRequestId;
+      const length = currentAgent.requestQueue.length;
+      dashQueue.textContent = activeId ? `ID:${activeId} (+${length})` : 'Empty';
     }
     requestAnimationFrame(updateDebug);
   }
