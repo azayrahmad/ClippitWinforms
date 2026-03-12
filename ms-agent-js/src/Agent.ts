@@ -475,16 +475,29 @@ export class Agent {
    * Plays a specific animation.
    *
    * @param animationName - The name of the animation to play.
-   * @param timeoutMs - Optional time limit for the animation playback.
+   * @param optionsOrTimeout - Optional playback settings (timeout, loop) or timeout in milliseconds.
    * @returns A request object to track the operation's progress.
    */
-  public play(animationName: string, timeoutMs?: number): AgentRequest {
+  public play(
+    animationName: string,
+    optionsOrTimeout?: number | { timeoutMs?: number; loop?: boolean },
+  ): AgentRequest {
+    let timeoutMs: number | undefined;
+    let loop = false;
+
+    if (typeof optionsOrTimeout === "number") {
+      timeoutMs = optionsOrTimeout;
+    } else if (typeof optionsOrTimeout === "object") {
+      timeoutMs = optionsOrTimeout.timeoutMs;
+      loop = optionsOrTimeout.loop ?? false;
+    }
+
     return this.enqueueRequest(async (request) => {
       this.emit("animationStart", animationName);
       await this.stateManager.playAnimation(
         animationName,
         "Playing",
-        false,
+        !loop,
         timeoutMs,
       );
       if (!request.isCancelled) {
@@ -879,6 +892,11 @@ export class Agent {
         this.animationManager.isExitingFlag = true;
       }
       this.balloon.close();
+
+      // Ensure we return to idle if we were in a custom state or playing
+      if (!this.requestQueue.activeRequestId) {
+        this.stateManager.handleAnimationCompleted();
+      }
     }
   }
 
