@@ -235,6 +235,12 @@ export class StateManager {
     useExitBranch: boolean = false,
     timeoutMs?: number
   ): Promise<boolean> {
+    const hasRequests = this.requestQueue && !this.requestQueue.isEmpty;
+    // If this is an idle animation (no stateName) and we have requests, skip it.
+    if (!stateName && hasRequests) {
+      return false;
+    }
+
     if (stateName) {
       this.currentState = stateName;
     }
@@ -295,6 +301,9 @@ export class StateManager {
    * Returns the agent to the base IdlingLevel1 state and resets all timers.
    */
   private async returnToIdle(): Promise<void> {
+    const hasRequests = this.requestQueue && !this.requestQueue.isEmpty;
+    if (hasRequests) return;
+
     await this.setIdleState(1);
     this.resetIdleProgression();
   }
@@ -312,6 +321,9 @@ export class StateManager {
    * Picks a random animation from the current state's associated pool and plays it.
    */
   private async updateStateAnimation(): Promise<void> {
+    const hasRequests = this.requestQueue && !this.requestQueue.isEmpty;
+    if (hasRequests) return;
+
     const state = this.states[this.currentState];
     if (state && state.animations.length > 0) {
       const randomAnimation = state.animations[Math.floor(Math.random() * state.animations.length)];
@@ -347,7 +359,9 @@ export class StateManager {
 
         // Transition to Hidden or Idling after animation finishes
         if (showing) {
-            await this.returnToIdle();
+            // Start idle progression but don't await the non-blocking return call
+            // to ensure the visibility request resolves promptly.
+            void this.returnToIdle();
         } else {
             this.currentState = 'Hidden';
             this.isPaused = true;
