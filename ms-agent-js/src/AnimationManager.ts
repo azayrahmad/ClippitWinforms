@@ -154,13 +154,13 @@ export class AnimationManager {
       this.currentAnimation = animation;
       this.currentFrameIndex = 0;
       this.lastFrameTime = performance.now();
-      // Reset isExiting directly but call the setter to trigger immediate exit jumps if needed
-      this.isExiting = false;
 
       if (previousAnimation && previousAnimation !== animationName) {
         this.onAnimationCompleted?.(previousAnimation);
       }
 
+      // Reset isExiting first so that the setter below can trigger the jump logic if useExitBranch is true.
+      this.isExiting = false;
       this.isExitingFlag = useExitBranch;
 
       // Use update(now) to handle potential null frames at the start
@@ -191,8 +191,10 @@ export class AnimationManager {
    * @param currentTime - The current performance timestamp.
    */
   public update(currentTime: number = performance.now()): void {
-    if (!this.currentAnimation || this.currentAnimation.frames.length === 0)
+    if (!this.currentAnimation || this.currentAnimation.frames.length === 0) {
+      this.isExiting = false;
       return;
+    }
 
     // If we've completed an exit animation, don't update further
     if (this.isExiting && !this.animationPromise) return;
@@ -267,17 +269,14 @@ export class AnimationManager {
     isBranch: boolean,
   ): boolean {
     if (this.isExiting) {
-      // If we are exiting and reached the end (either by natural end or exit branch loop back to frame 0)
-      if (currentFrame.exitBranch === undefined && nextFrameIndex === 0) {
-        this.completeAnimation();
-        return true;
-      }
-      if (currentFrame.exitBranch !== undefined && nextFrameIndex === 0) {
+      // If we are exiting and reached the end (neutral frame 0)
+      if (nextFrameIndex === 0) {
         this.completeAnimation();
         return true;
       }
     } else {
       // Normal completion when we loop back to the first frame sequentially
+      // but only if there is a promise waiting for it.
       if (!isBranch && nextFrameIndex === 0 && this.animationPromise) {
         this.completeAnimation();
         return true;
@@ -362,12 +361,16 @@ export class AnimationManager {
    */
   private completeAnimation(): void {
     const completedAnimation = this.currentAnimation?.name || '';
+
+    // Reset state before resolving promises to ensure clean transition for subsequent callers
+    this.currentAnimation = null;
+    this.isExiting = false;
+
     if (this.animationPromise) {
       this.animationPromise.resolve(true);
       this.animationPromise = null;
       this.activePromise = null;
     }
-    this.currentAnimation = null;
     this.onAnimationCompleted?.(completedAnimation);
   }
 

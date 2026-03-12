@@ -7,7 +7,10 @@ async function initDemo() {
   const scaleValue = document.getElementById('scale-value') as HTMLSpanElement;
   const animationSelect = document.getElementById('animation-select') as HTMLSelectElement;
   const stateSelect = document.getElementById('state-select') as HTMLSelectElement;
-  const playBtn = document.getElementById('play-btn') as HTMLButtonElement;
+  const playOnceBtn = document.getElementById('play-once-btn') as HTMLButtonElement;
+  const play5sBtn = document.getElementById('play-5s-btn') as HTMLButtonElement;
+  const playLoopBtn = document.getElementById('play-loop-btn') as HTMLButtonElement;
+  const stopBtn = document.getElementById('stop-btn') as HTMLButtonElement;
   const randomBtn = document.getElementById('random-btn') as HTMLButtonElement;
   const visibilityBtn = document.getElementById('visibility-btn') as HTMLButtonElement;
   const speakBtn = document.getElementById('speak-btn') as HTMLButtonElement;
@@ -24,6 +27,7 @@ async function initDemo() {
   const dashState = document.getElementById('dash-state')!;
   const dashAnim = document.getElementById('dash-anim')!;
   const dashFrame = document.getElementById('dash-frame')!;
+  const dashExiting = document.getElementById('dash-exiting')!;
   const dashLevel = document.getElementById('dash-level')!;
   const dashNextTick = document.getElementById('dash-next-tick')!;
   const dashQueue = document.getElementById('dash-queue')!;
@@ -40,7 +44,10 @@ async function initDemo() {
     // Reset UI
     animationSelect.innerHTML = '';
     stateSelect.innerHTML = '';
-    playBtn.disabled = true;
+    playOnceBtn.disabled = true;
+    play5sBtn.disabled = true;
+    playLoopBtn.disabled = true;
+    stopBtn.disabled = true;
     randomBtn.disabled = true;
     visibilityBtn.disabled = true;
     speakBtn.disabled = true;
@@ -55,6 +62,7 @@ async function initDemo() {
     dashState.textContent = 'Loading...';
     dashAnim.textContent = '-';
     dashFrame.textContent = '-';
+    dashExiting.textContent = '-';
     dashLevel.textContent = '-';
     dashNextTick.textContent = '-';
     dashQueue.textContent = '-';
@@ -89,7 +97,10 @@ async function initDemo() {
       isVisible = true;
       visibilityBtn.textContent = 'Hide';
 
-      playBtn.disabled = false;
+      playOnceBtn.disabled = false;
+      play5sBtn.disabled = false;
+      playLoopBtn.disabled = false;
+      stopBtn.disabled = false;
       randomBtn.disabled = false;
       visibilityBtn.disabled = false;
       speakBtn.disabled = false;
@@ -123,8 +134,20 @@ async function initDemo() {
     currentAgent?.setScale(scale);
   });
 
-  playBtn.addEventListener('click', () => {
-    currentAgent?.play(animationSelect.value, 5000);
+  playOnceBtn.addEventListener('click', () => {
+    currentAgent?.play(animationSelect.value);
+  });
+
+  play5sBtn.addEventListener('click', () => {
+    currentAgent?.play(animationSelect.value, { timeoutMs: 5000, loop: true });
+  });
+
+  playLoopBtn.addEventListener('click', () => {
+    currentAgent?.play(animationSelect.value, { loop: true });
+  });
+
+  stopBtn.addEventListener('click', () => {
+    currentAgent?.stop();
   });
 
   randomBtn.addEventListener('click', () => {
@@ -201,6 +224,7 @@ async function initDemo() {
       dashState.textContent = currentAgent.stateManager.currentStateName;
       dashAnim.textContent = currentAgent.animationManager.currentAnimationName || '-';
       dashFrame.textContent = currentAgent.animationManager.currentFrameIndexValue.toString();
+      dashExiting.textContent = currentAgent.animationManager.isExitingFlag.toString();
       dashLevel.textContent = currentAgent.stateManager.idleLevel.toString();
       dashNextTick.textContent = (currentAgent.stateManager.timeUntilNextTick / 1000).toFixed(1);
 

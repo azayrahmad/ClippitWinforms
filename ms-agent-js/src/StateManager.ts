@@ -137,13 +137,13 @@ export class StateManager {
       }
     }
 
+    const isIdle = this.isIdleState(this.currentState);
+
     // Skip idle progression for transient/busy states or if requests are pending
     if (
       this.currentState === 'Playing' ||
-      this.currentState === 'Showing' ||
-      this.currentState === 'Hiding' ||
       this.currentState === 'Moving' ||
-      hasRequests
+      (hasRequests && !isIdle)
     ) {
       this.elapsedSinceLastTick = 0;
       return;
@@ -192,7 +192,7 @@ export class StateManager {
     const newState = `${this.idlePrefix}${level}`;
     if (this.states[newState]) {
       this.currentState = newState;
-      await this.updateStateAnimation();
+      void this.updateStateAnimation();
     }
   }
 
@@ -215,7 +215,7 @@ export class StateManager {
     this.currentState = stateName;
 
     if (stateName !== 'Playing') {
-      await this.updateStateAnimation();
+      void this.updateStateAnimation();
     }
   }
 
@@ -295,7 +295,7 @@ export class StateManager {
    * Returns the agent to the base IdlingLevel1 state and resets all timers.
    */
   private async returnToIdle(): Promise<void> {
-    await this.setIdleState(1);
+    void this.setIdleState(1);
     this.resetIdleProgression();
   }
 
@@ -317,7 +317,7 @@ export class StateManager {
       const randomAnimation = state.animations[Math.floor(Math.random() * state.animations.length)];
       // We play the animation but don't AWAIT it here for persistent states,
       // as they should be interrupted easily and managed by the main loop.
-      await this.playAnimation(randomAnimation);
+      void this.playAnimation(randomAnimation);
     }
   }
 
@@ -340,13 +340,15 @@ export class StateManager {
 
         // Start the animation and wait for its full completion
         await this.animationManager.preloadAnimation(animName);
-        this.currentState = visibilityState;
-        await this.animationManager.playAnimation(animName, true);
 
-        // Transition to Hidden or Idling after animation finishes
         if (showing) {
-            await this.returnToIdle();
+            this.currentState = 'IdlingLevel1';
+            this.resetIdleProgression();
+            await this.animationManager.playAnimation(animName, true);
+            void this.returnToIdle();
         } else {
+            this.currentState = visibilityState;
+            await this.animationManager.playAnimation(animName, true);
             this.currentState = 'Hidden';
             this.isPaused = true;
         }

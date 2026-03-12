@@ -59,12 +59,25 @@
                             <div
                                 class="field-row"
                                 style="
+                                    display: grid;
+                                    grid-template-columns: 1fr 1fr;
+                                    gap: 4px;
+                                    margin-top: 4px;
+                                "
+                            >
+                                <button id="play-once-btn" disabled>Play Once</button>
+                                <button id="play-5s-btn" disabled>Play 5s</button>
+                                <button id="play-loop-btn" disabled>Play Loop</button>
+                                <button id="stop-btn" disabled>Stop</button>
+                            </div>
+                            <div
+                                class="field-row"
+                                style="
                                     justify-content: flex-end;
                                     gap: 4px;
                                     margin-top: 4px;
                                 "
                             >
-                                <button id="play-btn" disabled>Play</button>
                                 <button id="random-btn" disabled>Random</button>
                             </div>
                             <hr />
@@ -145,6 +158,10 @@
                                 <div class="field-row">
                                     <label>Frame:</label>
                                     <span id="dash-frame">-</span>
+                                </div>
+                                <div class="field-row">
+                                    <label>Exiting:</label>
+                                    <span id="dash-exiting">-</span>
                                 </div>
                                 <div class="field-row">
                                     <label>Idle Level:</label>
