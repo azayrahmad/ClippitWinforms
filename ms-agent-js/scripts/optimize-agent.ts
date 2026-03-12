@@ -254,7 +254,7 @@ async function optimizeAgent(agentDir: string) {
             const audioPaths: string[] = [];
             try {
                 const silencePath = path.join(tempDir, 'silence.wav');
-                execSync(`ffmpeg -y -f lavfi -i anullsrc=r=44100:cl=mono -t 0.5 ${silencePath}`, { stdio: 'ignore' });
+                execSync(`ffmpeg -y -f lavfi -i anullsrc=r=44100:cl=mono -t 0.5 "${silencePath}"`, { stdio: 'ignore' });
 
                 let currentTime = 0;
                 const silenceDuration = 0.5;
@@ -271,7 +271,7 @@ async function optimizeAgent(agentDir: string) {
                     }
 
                     if (fs.existsSync(soundPath)) {
-                        const durationStr = execSync(`ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 ${soundPath}`).toString().trim();
+                        const durationStr = execSync(`ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${soundPath}"`).toString().trim();
                         const duration = parseFloat(durationStr);
 
                         audioAtlas[sound] = {
@@ -291,11 +291,11 @@ async function optimizeAgent(agentDir: string) {
                     const filterComplex = audioPaths.map((_, i) => `[${i}:a]`).join('') + `concat=n=${audioPaths.length}:v=0:a=1[a]`;
                     const inputs = audioPaths.map(p => `-i "${p}"`).join(' ');
                     const outputWebm = path.join(agentDir, 'agent.webm');
-                    execSync(`ffmpeg -y ${inputs} -filter_complex "${filterComplex}" -map "[a]" -c:a libvorbis ${outputWebm}`, { stdio: 'ignore' });
+                    execSync(`ffmpeg -y ${inputs} -filter_complex "${filterComplex}" -map "[a]" -c:a libvorbis "${outputWebm}"`, { stdio: 'ignore' });
                     console.log(`Saved audio spritesheet to ${outputWebm}`);
                 }
             } catch (e) {
-                console.warn(`Skipping audio spritesheet generation: ffmpeg not found or failed.`);
+                console.warn(`Skipping audio spritesheet generation: ${e instanceof Error ? e.message : 'ffmpeg not found or failed.'}`);
             }
             fs.rmSync(tempDir, { recursive: true, force: true });
         }
