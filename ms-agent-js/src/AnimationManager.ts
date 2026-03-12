@@ -46,7 +46,34 @@ export class AnimationManager {
   }
 
   public set isExitingFlag(value: boolean) {
+    const wasExiting = this.isExiting;
     this.isExiting = value;
+
+    // If we just started exiting, and we are currently animating,
+    // check if we can jump to an exit branch or break a loop immediately.
+    if (value && !wasExiting && this.currentAnimation) {
+      const currentFrame = this.currentAnimation.frames[this.currentFrameIndex];
+      if (currentFrame) {
+        const { index: nextIndex, isBranch } =
+          this.getNextFrameDetails(currentFrame);
+
+        if (nextIndex !== null) {
+          const oldFrame = currentFrame;
+          this.currentFrameIndex = nextIndex;
+          this.lastFrameTime = performance.now();
+          this.onFrameChanged?.();
+          this.checkAndPlaySound(
+            this.currentAnimation.frames[this.currentFrameIndex],
+          );
+
+          if (this.checkAnimationCompletion(oldFrame, nextIndex, isBranch))
+            return;
+
+          // Also call update to handle potential null (logic) frames at the new position
+          this.update(this.lastFrameTime);
+        }
+      }
+    }
   }
 
   /**
@@ -96,7 +123,7 @@ export class AnimationManager {
    * Whether an animation is currently active and updating.
    */
   public get isAnimating(): boolean {
-    return this.currentAnimation !== null && this.currentAnimation.name !== '' && (!this.isExiting || this.animationPromise !== null);
+    return this.currentAnimation !== null;
   }
 
   /**
@@ -106,18 +133,25 @@ export class AnimationManager {
    * @param animationName - The name of the animation to set.
    * @param useExitBranch - Whether to initialize the animation in an "exiting" state.
    */
-  public setAnimation(animationName: string, useExitBranch: boolean = false): void {
+  public setAnimation(
+    animationName: string,
+    useExitBranch: boolean = false,
+  ): void {
     const animation = this.animations[animationName];
     if (animation) {
       const previousAnimation = this.currentAnimation?.name || '';
-      this.isExiting = useExitBranch;
+
       this.currentAnimation = animation;
       this.currentFrameIndex = 0;
       this.lastFrameTime = performance.now();
+      // Reset isExiting directly but call the setter to trigger immediate exit jumps if needed
+      this.isExiting = false;
 
-      if (previousAnimation) {
+      if (previousAnimation && previousAnimation !== animationName) {
         this.onAnimationCompleted?.(previousAnimation);
       }
+
+      this.isExitingFlag = useExitBranch;
 
       // Use update(now) to handle potential null frames at the start
       this.update(this.lastFrameTime);
@@ -147,7 +181,8 @@ export class AnimationManager {
    * @param currentTime - The current performance timestamp.
    */
   public update(currentTime: number = performance.now()): void {
-    if (!this.currentAnimation || this.currentAnimation.frames.length === 0) return;
+    if (!this.currentAnimation || this.currentAnimation.frames.length === 0)
+      return;
 
     // If we've completed an exit animation, don't update further
     if (this.isExiting && !this.animationPromise) return;
@@ -157,41 +192,50 @@ export class AnimationManager {
 
     // We use a while loop to handle sequential null-duration (logic) frames instantly
     while (this.currentAnimation && safetyCounter <= MAX_NULL_FRAMES) {
-      let currentFrame = this.currentAnimation.frames[this.currentFrameIndex];
+      const currentFrame = this.currentAnimation.frames[this.currentFrameIndex];
 
       // If it's a null frame (duration 0), handle it immediately and move to next
       if (currentFrame.duration === 0) {
-        const nextIndex = this.getNextFrameIndex(currentFrame);
+        const { index: nextIndex, isBranch } =
+          this.getNextFrameDetails(currentFrame);
         this.checkAndPlaySound(currentFrame);
-        if (this.checkAnimationCompletion(currentFrame, nextIndex)) return;
+        if (this.checkAnimationCompletion(currentFrame, nextIndex, isBranch))
+          return;
 
         this.currentFrameIndex = nextIndex;
         this.lastFrameTime = currentTime;
         this.onFrameChanged?.();
-        this.checkAndPlaySound(this.currentAnimation.frames[this.currentFrameIndex]);
+        this.checkAndPlaySound(
+          this.currentAnimation.frames[this.currentFrameIndex],
+        );
 
         safetyCounter++;
         if (safetyCounter > MAX_NULL_FRAMES) {
-            console.warn(`MSAgentJS: Infinite loop detected in animation '${this.currentAnimation?.name}'. Safety break at frame ${this.currentFrameIndex}.`);
-            break;
+          console.warn(
+            `MSAgentJS: Infinite loop detected in animation '${this.currentAnimation?.name}'. Safety break at frame ${this.currentFrameIndex}.`,
+          );
+          break;
         }
         continue;
       }
 
       // If it's a normal frame, check if its display duration (in units of 10ms) has elapsed
       if (currentTime - this.lastFrameTime >= currentFrame.duration * 10) {
-        const nextFrameIndex = this.getNextFrameIndex(currentFrame);
+        const { index: nextIndex, isBranch } =
+          this.getNextFrameDetails(currentFrame);
         this.checkAndPlaySound(currentFrame);
 
-        if (this.checkAnimationCompletion(currentFrame, nextFrameIndex)) {
+        if (this.checkAnimationCompletion(currentFrame, nextIndex, isBranch)) {
           return;
         }
 
-        this.currentFrameIndex = nextFrameIndex;
+        this.currentFrameIndex = nextIndex;
         this.lastFrameTime = currentTime;
 
         this.onFrameChanged?.();
-        this.checkAndPlaySound(this.currentAnimation.frames[this.currentFrameIndex]);
+        this.checkAndPlaySound(
+          this.currentAnimation.frames[this.currentFrameIndex],
+        );
 
         // Continue the loop to potentially handle a null frame that we just moved into
         safetyCounter++;
@@ -207,20 +251,20 @@ export class AnimationManager {
    * Checks if the current animation should be marked as complete.
    * Completions occur either at the end of the frame sequence or when an exit branch loops back.
    */
-  private checkAnimationCompletion(currentFrame: FrameDefinition, nextFrameIndex: number): boolean {
+  private checkAnimationCompletion(
+    _currentFrame: FrameDefinition,
+    nextFrameIndex: number,
+    isBranch: boolean,
+  ): boolean {
     if (this.isExiting) {
       // If we are exiting and reached the end (either by natural end or exit branch loop back to frame 0)
-      if (currentFrame.exitBranch === undefined && nextFrameIndex === 0) {
-        this.completeAnimation();
-        return true;
-      }
-      if (currentFrame.exitBranch !== undefined && nextFrameIndex === 0) {
+      if (nextFrameIndex === 0) {
         this.completeAnimation();
         return true;
       }
     } else {
-      // Normal completion when we loop back to the first frame
-      if (nextFrameIndex === 0 && this.animationPromise) {
+      // Normal completion when we loop back to the first frame sequentially
+      if (!isBranch && nextFrameIndex === 0 && this.animationPromise) {
         this.completeAnimation();
         return true;
       }
@@ -231,27 +275,51 @@ export class AnimationManager {
   /**
    * Determines the next frame index to jump to, considering exit branches and probabilities.
    */
-  private getNextFrameIndex(currentFrame: FrameDefinition): number {
+  private getNextFrameDetails(currentFrame: FrameDefinition): {
+    index: number;
+    isBranch: boolean;
+  } {
     // If exiting, prioritize the exit branch if it exists
     if (this.isExiting && currentFrame.exitBranch !== undefined) {
-      return currentFrame.exitBranch - 1; // Frames in ACD are 1-based
+      return { index: currentFrame.exitBranch - 1, isBranch: true };
     }
 
-    // Normal playback handles probabilistic branching
-    if (!this.isExiting && currentFrame.branching && currentFrame.branching.length > 0) {
+    // If exiting, we still want to follow "forward" branches that take us closer to the end
+    // (frame 0). If no forward branches exist, we ignore branching to break loops.
+    const branching = currentFrame.branching || [];
+    const useBranchingWhileExiting =
+      this.isExiting &&
+      branching.some(
+        (b) => b.branchTo - 1 > this.currentFrameIndex || b.branchTo - 1 === 0,
+      );
+
+    if (
+      branching.length > 0 &&
+      (!this.isExiting || useBranchingWhileExiting)
+    ) {
       const randomValue = Math.floor(Math.random() * 100);
       let cumulative = 0;
 
-      for (const branch of currentFrame.branching) {
+      for (const branch of branching) {
+        // If exiting, only consider forward-leading branches
+        if (this.isExiting) {
+          const isForward =
+            branch.branchTo - 1 > this.currentFrameIndex ||
+            (branch.branchTo - 1 === 0 && this.currentFrameIndex > 0);
+          if (!isForward) continue;
+        }
+
         cumulative += branch.probability;
         if (randomValue < cumulative) {
-          return branch.branchTo - 1;
+          return { index: branch.branchTo - 1, isBranch: true };
         }
       }
     }
 
     // Default to sequential playback (wrapping around to 0)
-    return (this.currentFrameIndex + 1) % this.currentAnimation!.frames.length;
+    const next =
+      (this.currentFrameIndex + 1) % this.currentAnimation!.frames.length;
+    return { index: next, isBranch: false };
   }
 
   /**
@@ -264,14 +332,22 @@ export class AnimationManager {
    */
   public async interruptAndPlayAnimation(
     newAnimationName: string,
-    useExitBranch: boolean = false
+    useExitBranch: boolean = false,
   ): Promise<boolean> {
     if (!this.isAnimating) {
       return this.playAnimation(newAnimationName, useExitBranch);
     }
 
+    // If there is no promise to wait for (e.g. started via setAnimation/Idling),
+    // create one so we can await the exit sequence.
+    if (!this.activePromise) {
+      this.activePromise = new Promise((resolve, reject) => {
+        this.animationPromise = { resolve, reject };
+      });
+    }
+
     // Signal the current animation to interrupt and navigate towards its neutral frame via exit branches
-    this.isExiting = true;
+    this.isExitingFlag = true;
 
     // Wait for current animation to complete its exit sequence
     if (this.activePromise) {
@@ -286,12 +362,12 @@ export class AnimationManager {
    * Marks the current animation as finished and resolves any pending promises.
    */
   private completeAnimation(): void {
+    const completedAnimation = this.currentAnimation?.name || '';
     if (this.animationPromise) {
       this.animationPromise.resolve(true);
       this.animationPromise = null;
       this.activePromise = null;
     }
-    const completedAnimation = this.currentAnimation?.name || '';
     this.currentAnimation = null;
     this.onAnimationCompleted?.(completedAnimation);
   }

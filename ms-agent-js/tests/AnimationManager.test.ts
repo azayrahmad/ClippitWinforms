@@ -81,25 +81,94 @@ describe('AnimationManager', () => {
   });
 
   it('should handle exit branches correctly when exiting', async () => {
-      const anim: Animation = {
-          name: 'exit-test',
-          transitionType: 0,
-          frames: [
-              { duration: 10, images: [], exitBranch: 2 }, // If exiting, go to 2
-              { duration: 10, images: [] },
-              { duration: 10, images: [] }
-          ]
-      };
-      (animationManager as any).animations['exit-test'] = anim;
+    const anim: Animation = {
+      name: 'exit-test',
+      transitionType: 0,
+      frames: [
+        { duration: 10, images: [], exitBranch: 2 }, // If exiting, go to 2
+        { duration: 10, images: [] },
+        { duration: 10, images: [] },
+      ],
+    };
+    (animationManager as any).animations['exit-test'] = anim;
 
-      const promise = animationManager.playAnimation('exit-test');
-      animationManager.isExitingFlag = true;
+    animationManager.playAnimation('exit-test');
+    animationManager.isExitingFlag = true;
 
-      // Update to trigger next frame
-      animationManager.update(performance.now() + 200);
+    // Should have jumped to frame 2 (index 1) immediately
+    expect(animationManager.currentFrameIndexValue).toBe(1);
+  });
 
-      // Should have jumped to frame 2 (index 1 is skipped)
-      expect(animationManager.currentFrameIndexValue).toBe(1); // Wait, exitBranch is 1-based. exitBranch: 2 means index 1.
+  it('should break a branching loop and proceed to end when exiting', async () => {
+    const loopAnim: Animation = {
+      name: 'branch-loop',
+      transitionType: 0,
+      frames: [
+        {
+          duration: 10,
+          images: [],
+          branching: [{ branchTo: 1, probability: 100 }],
+        }, // Loops to self
+        { duration: 10, images: [] }, // End frame
+      ],
+    };
+    (animationManager as any).animations['branch-loop'] = loopAnim;
+
+    const promise = animationManager.playAnimation('branch-loop');
+
+    // Should be looping on frame 0
+    animationManager.update(performance.now() + 200);
+    expect(animationManager.currentFrameIndexValue).toBe(0);
+
+    // Now set exiting
+    animationManager.isExitingFlag = true;
+
+    // Should have moved to frame 1 immediately
+    expect(animationManager.currentFrameIndexValue).toBe(1);
+
+    // Next update should complete
+    animationManager.update(performance.now() + 400);
+    await expect(promise).resolves.toBe(true);
+    expect(animationManager.isAnimating).toBe(false);
+  });
+
+  it('should advance to exit sequence immediately when interrupted via interruptAndPlayAnimation', async () => {
+    const anim: Animation = {
+      name: 'long-frame',
+      transitionType: 0,
+      frames: [
+        { duration: 1000, images: [], exitBranch: 2 }, // Long frame
+        { duration: 10, images: [] },
+      ],
+    };
+    (animationManager as any).animations['long-frame'] = anim;
+    (animationManager as any).animations['target'] = {
+      name: 'target',
+      frames: [{ duration: 10, images: [] }],
+    };
+
+    animationManager.playAnimation('long-frame');
+    expect(animationManager.currentFrameIndexValue).toBe(0);
+
+    // Interruption
+    const playPromise = animationManager.interruptAndPlayAnimation('target');
+
+    // Should have jumped to frame 2 (index 1) immediately
+    expect(animationManager.currentFrameIndexValue).toBe(1);
+
+    // Drive clock to finish 'long-frame' exit sequence
+    // It should complete 'long-frame' and start 'target'
+    animationManager.update(performance.now() + 200);
+
+    // Allow async interruptAndPlayAnimation to continue
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    // Now 'target' should have started
+    expect(animationManager.currentAnimationName).toBe('target');
+
+    // Drive clock to finish 'target'
+    animationManager.update(performance.now() + 400);
+    await playPromise;
   });
 
   it('should break out of infinite null loops', () => {
@@ -143,5 +212,35 @@ describe('AnimationManager', () => {
     // But currentFrame should still return the last rendered one
     expect(animationManager.currentFrame).not.toBeNull();
     expect(animationManager.currentFrame?.images[0].filename).toBe('test.bmp');
+  });
+
+  it('should follow multi-step exit sequences', async () => {
+    const anim: Animation = {
+      name: 'multi-exit',
+      transitionType: 0,
+      frames: [
+        { duration: 10, images: [], exitBranch: 3 }, // Frame 1 (idx 0) -> Exit to 3
+        { duration: 10, images: [] }, // Frame 2 (idx 1)
+        { duration: 10, images: [], exitBranch: 5 }, // Frame 3 (idx 2) -> Exit to 5
+        { duration: 10, images: [] }, // Frame 4 (idx 3)
+        { duration: 10, images: [] }, // Frame 5 (idx 4)
+      ],
+    };
+    (animationManager as any).animations['multi-exit'] = anim;
+
+    animationManager.playAnimation('multi-exit');
+    expect(animationManager.currentFrameIndexValue).toBe(0);
+
+    animationManager.isExitingFlag = true;
+    // Step 1: Immediate jump to Frame 3 (index 2)
+    expect(animationManager.currentFrameIndexValue).toBe(2);
+
+    // Step 2: Progress Frame 3 to its exitBranch (Frame 5, index 4)
+    animationManager.update(performance.now() + 200);
+    expect(animationManager.currentFrameIndexValue).toBe(4);
+
+    // Step 3: Complete
+    animationManager.update(performance.now() + 400);
+    expect(animationManager.isAnimating).toBe(false);
   });
 });

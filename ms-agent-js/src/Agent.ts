@@ -4,8 +4,9 @@ import { AnimationManager } from "./AnimationManager";
 import { AudioManager } from "./AudioManager";
 import { StateManager } from "./StateManager";
 import { Balloon } from "./Balloon";
+import { RequestQueue } from "./RequestQueue";
 import type { TTSOptions } from "./Balloon";
-import type { AgentCharacterDefinition } from "./types";
+import type { AgentCharacterDefinition, AgentRequest } from "./types";
 
 /**
  * Configuration options for creating an Agent.
@@ -41,7 +42,9 @@ type AgentEvent =
   | "hide"
   | "dragstart"
   | "drag"
-  | "dragend";
+  | "dragend"
+  | "requestStart"
+  | "requestComplete";
 type AgentEventListener = (...args: any[]) => void;
 
 /**
@@ -68,6 +71,8 @@ export class Agent {
   public readonly stateManager: StateManager;
   /** Manager responsible for the speech balloon UI. */
   public readonly balloon: Balloon;
+  /** Manager responsible for queuing character actions. */
+  public readonly requestQueue: RequestQueue;
   /** Resolved options used to initialize the agent. */
   public readonly options: Required<AgentOptions>;
 
@@ -203,6 +208,10 @@ export class Agent {
     // Initialize Balloon
     this.balloon = new Balloon(this.canvas, this.shadowRoot, definition);
 
+    // Initialize Request Queue
+    this.requestQueue = new RequestQueue();
+    this.stateManager.setRequestQueue(this.requestQueue);
+
     // Click event handling (differentiated from drag)
     this.canvas.addEventListener("click", () => {
       if (!this.wasDragging) {
@@ -258,7 +267,7 @@ export class Agent {
       nx = Math.max(minX, Math.min(nx, maxX));
       ny = Math.max(minY, Math.min(ny, maxY));
 
-      this.moveTo(nx, ny);
+      this.setInstantPosition(nx, ny);
       this.emit("drag", { x: nx, y: ny });
     };
 
@@ -317,7 +326,7 @@ export class Agent {
     this.options.scale = scale;
     this.canvas.width = newWidth;
     this.canvas.height = newHeight;
-    this.moveTo(nx, ny);
+    this.setInstantPosition(nx, ny);
   }
 
   /**
@@ -424,8 +433,16 @@ export class Agent {
 
     await Promise.all(initPromises);
     this.startLoop();
-    await this.show();
+    // Start showing the agent but don't await it, so the agent instance
+    // is returned to the caller as soon as assets are ready.
+    if (this.definition.states['Showing']) {
+      this.show();
+    } else {
+      this.stateManager.setState('IdlingLevel1');
+    }
   }
+
+  private isUpdating: boolean = false;
 
   /**
    * Starts the internal requestAnimationFrame loop.
@@ -439,7 +456,13 @@ export class Agent {
       this.lastTime = currentTime;
 
       this.animationManager.update(currentTime);
-      this.stateManager.update(deltaTime);
+
+      if (!this.isUpdating) {
+        this.isUpdating = true;
+        this.stateManager.update(deltaTime).finally(() => {
+          this.isUpdating = false;
+        });
+      }
 
       this.draw();
 
@@ -457,21 +480,25 @@ export class Agent {
   }
 
   /**
-   * Plays a specific animation and waits for its completion.
+   * Plays a specific animation.
    *
    * @param animationName - The name of the animation to play.
    * @param timeoutMs - Optional time limit for the animation playback.
-   * @returns A promise that resolves when the animation finishes.
+   * @returns A request object to track the operation's progress.
    */
-  public async play(animationName: string, timeoutMs?: number): Promise<void> {
-    this.emit("animationStart", animationName);
-    await this.stateManager.playAnimation(
-      animationName,
-      "Playing",
-      false,
-      timeoutMs,
-    );
-    this.emit("animationEnd", animationName);
+  public play(animationName: string, timeoutMs?: number): AgentRequest {
+    return this.enqueueRequest(async (request) => {
+      this.emit("animationStart", animationName);
+      await this.stateManager.playAnimation(
+        animationName,
+        "Playing",
+        false,
+        timeoutMs,
+      );
+      if (!request.isCancelled) {
+        this.emit("animationEnd", animationName);
+      }
+    });
   }
 
   /**
@@ -480,19 +507,22 @@ export class Agent {
    *
    * @param x - Horizontal screen coordinate.
    * @param y - Vertical screen coordinate.
+   * @returns A request object to track the operation's progress.
    */
-  public async gestureAt(x: number, y: number): Promise<void> {
-    const direction = this.toAgentPerspective(this.getDirection(x, y, 4));
-    const stateName = `Gesturing${direction}`;
-    if (this.definition.states[stateName]) {
-      await this.setState(stateName);
-    } else {
-      // Fallback to direct animation if the high-level state is missing
-      const animName = `Gesture${direction}`;
-      if (this.definition.animations[animName]) {
-        await this.stateManager.playAnimation(animName, "Gesturing");
+  public gestureAt(x: number, y: number): AgentRequest {
+    return this.enqueueRequest(async (_request) => {
+      const direction = this.toAgentPerspective(this.getDirection(x, y, 4));
+      const stateName = `Gesturing${direction}`;
+      if (this.definition.states[stateName]) {
+        await this.stateManager.setState(stateName);
+      } else {
+        // Fallback to direct animation if the high-level state is missing
+        const animName = `Gesture${direction}`;
+        if (this.definition.animations[animName]) {
+          await this.stateManager.playAnimation(animName, "Gesturing");
+        }
       }
-    }
+    });
   }
 
   /**
@@ -501,23 +531,28 @@ export class Agent {
    *
    * @param x - Horizontal screen coordinate.
    * @param y - Vertical screen coordinate.
+   * @returns A request object to track the operation's progress.
    */
-  public async lookAt(x: number, y: number): Promise<void> {
-    const direction = this.toAgentPerspective(this.getDirection(x, y, 8));
-    const animName = `Look${direction}`;
+  public lookAt(x: number, y: number): AgentRequest {
+    return this.enqueueRequest(async (request) => {
+      const direction = this.toAgentPerspective(this.getDirection(x, y, 8));
+      const animName = `Look${direction}`;
 
-    if (
-      this.animationManager.currentAnimationName === animName &&
-      this.animationManager.isAnimating
-    ) {
-      return;
-    }
+      if (
+        this.animationManager.currentAnimationName === animName &&
+        this.animationManager.isAnimating
+      ) {
+        return;
+      }
 
-    if (this.definition.animations[animName]) {
-      this.emit("animationStart", animName);
-      await this.stateManager.playAnimation(animName, "Looking");
-      this.emit("animationEnd", animName);
-    }
+      if (this.definition.animations[animName]) {
+        this.emit("animationStart", animName);
+        await this.stateManager.playAnimation(animName, "Looking");
+        if (!request.isCancelled) {
+          this.emit("animationEnd", animName);
+        }
+      }
+    });
   }
 
   /**
@@ -532,13 +567,72 @@ export class Agent {
   }
 
   /**
-   * Moves the agent instantly to a new screen position.
-   * Also repositions the speech balloon if active.
+   * Moves the agent to a new screen position, playing a movement animation if available.
    *
    * @param x - New horizontal position.
    * @param y - New vertical position.
+   * @param speed - Pixels per second (default: 400).
+   * @returns A request object to track the movement.
    */
-  public moveTo(x: number, y: number) {
+  public moveTo(x: number, y: number, speed: number = 400): AgentRequest {
+    return this.enqueueRequest(async (request) => {
+      const startX = this.options.x;
+      const startY = this.options.y;
+      const dx = x - startX;
+      const dy = y - startY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance < 1) {
+        this.setInstantPosition(x, y);
+        return;
+      }
+
+      const duration = (distance / speed) * 1000;
+      const startTime = performance.now();
+
+      const direction = this.getDirection(x, y, 4);
+      const moveAnim = `Moving${direction}`;
+      const hasMoveAnim = !!this.definition.animations[moveAnim];
+
+      if (hasMoveAnim) {
+        this.stateManager.playAnimation(moveAnim, "Moving");
+      }
+
+      return new Promise<void>((resolve) => {
+        const moveStep = (currentTime: number) => {
+          if (request.isCancelled) {
+            if (hasMoveAnim) {
+              this.stateManager.handleAnimationCompleted();
+            }
+            resolve();
+            return;
+          }
+          const elapsed = currentTime - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+
+          const curX = startX + dx * progress;
+          const curY = startY + dy * progress;
+
+          this.setInstantPosition(curX, curY);
+
+          if (progress < 1) {
+            requestAnimationFrame(moveStep);
+          } else {
+            if (hasMoveAnim) {
+              this.stateManager.handleAnimationCompleted();
+            }
+            resolve();
+          }
+        };
+        requestAnimationFrame(moveStep);
+      });
+    });
+  }
+
+  /**
+   * Internal method for instant position updates without queuing.
+   */
+  private setInstantPosition(x: number, y: number) {
     this.options.x = x;
     this.options.y = y;
     this.container.style.left = `${x}px`;
@@ -551,16 +645,23 @@ export class Agent {
    *
    * @param text - The message to display.
    * @param options - Speech options (hold balloon, use TTS, skip typing animation).
-   * @returns A promise that resolves when speech is complete.
+   * @returns A request object to track the operation's progress.
    */
   public speak(
     text: string,
     options: { hold?: boolean; useTTS?: boolean; skipTyping?: boolean } = {},
-  ): Promise<void> {
+  ): AgentRequest {
     const { hold = false, useTTS = true, skipTyping = false } = options;
-    return new Promise((resolve) => {
-      this.balloon.speak(resolve, text, hold, useTTS, skipTyping);
-    });
+    return this.enqueueRequest(
+      (request) =>
+        new Promise((resolve) => {
+          if (request.isCancelled) {
+            resolve();
+            return;
+          }
+          this.balloon.speak(resolve, text, hold, useTTS, skipTyping);
+        }),
+    );
   }
 
   /**
@@ -699,20 +800,32 @@ export class Agent {
 
   /**
    * Shows the agent by playing its 'Showing' animation sequence.
+   *
+   * @returns A request object to track the operation's progress.
    */
-  public async show(): Promise<void> {
-    this.container.style.display = "block";
-    await this.stateManager.handleVisibilityChange(true);
-    this.emit("show");
+  public show(): AgentRequest {
+    return this.enqueueRequest(async (request) => {
+      this.container.style.display = "block";
+      await this.stateManager.handleVisibilityChange(true);
+      if (!request.isCancelled) {
+        this.emit("show");
+      }
+    });
   }
 
   /**
    * Hides the agent by playing its 'Hiding' animation sequence.
+   *
+   * @returns A request object to track the operation's progress.
    */
-  public async hide(): Promise<void> {
-    await this.stateManager.handleVisibilityChange(false);
-    this.container.style.display = "none";
-    this.emit("hide");
+  public hide(): AgentRequest {
+    return this.enqueueRequest(async (request) => {
+      await this.stateManager.handleVisibilityChange(false);
+      if (!request.isCancelled) {
+        this.container.style.display = "none";
+        this.emit("hide");
+      }
+    });
   }
 
   /**
@@ -733,6 +846,62 @@ export class Agent {
    */
   public off(event: AgentEvent, listener: AgentEventListener) {
     this.listeners.get(event)?.delete(listener);
+  }
+
+  /**
+   * Internal method to enqueue a task and emit events.
+   */
+  private enqueueRequest(
+    task: (request: AgentRequest) => Promise<void>,
+  ): AgentRequest {
+    return this.requestQueue.add(async (request) => {
+      this.emit("requestStart", request);
+      await task(request);
+      this.emit("requestComplete", request);
+    });
+  }
+
+  /**
+   * Causes the animation queue for the character to wait until the specified animation request completes.
+   *
+   * @param request - The request to wait for.
+   * @returns A request object to track the wait operation.
+   */
+  public wait(request: AgentRequest): AgentRequest {
+    return this.enqueueRequest(() => request.promise);
+  }
+
+  /**
+   * Stops the specified request or all requests in the queue.
+   *
+   * @param request - Optional request object to stop.
+   */
+  public stop(request?: AgentRequest) {
+    const activeId = this.requestQueue.activeRequestId;
+    this.requestQueue.stop(request?.id);
+
+    // Only interrupt the current animation/speech if we are stopping everything,
+    // or if the request being stopped is the currently active one.
+    if (!request || (activeId !== null && request.id === activeId)) {
+      if (this.animationManager.isAnimating) {
+        this.animationManager.isExitingFlag = true;
+      }
+      this.balloon.close();
+    }
+  }
+
+  /**
+   * Interrupts the current animation and plays the specified animation.
+   *
+   * @param animationName - The animation to play after interruption.
+   * @returns A request object for the new animation.
+   */
+  public interrupt(animationName: string): AgentRequest {
+    // Original Agent.Interrupt(Request) was slightly different,
+    // but in many implementations it's used to break current and start new.
+    // Here we'll just clear the queue and play the new one.
+    this.stop();
+    return this.play(animationName);
   }
 
   /**

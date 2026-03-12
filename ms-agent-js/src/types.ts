@@ -181,3 +181,46 @@ export interface AgentCharacterDefinition {
   /** Optional audio atlas mapping for optimized sound loading. */
   audioAtlas?: Record<string, AudioAtlasEntry>;
 }
+
+/**
+ * Request status codes mirroring the original Microsoft Agent implementation.
+ */
+export const RequestStatus = {
+  /** The request has completed successfully. */
+  Complete: 0,
+  /** The request failed to complete. */
+  Failed: 1,
+  /** The request is still in the queue waiting to be processed. */
+  Pending: 2,
+  /** The request was interrupted before it could complete. */
+  Interrupted: 3,
+  /** The request is currently being processed. */
+  InProgress: 4,
+} as const;
+
+export type RequestStatus = (typeof RequestStatus)[keyof typeof RequestStatus];
+
+/**
+ * Represents an asynchronous character action request.
+ */
+export interface AgentRequest {
+  /** Unique identifier for the request. */
+  readonly id: number;
+  /** The current status of the request. */
+  readonly status: RequestStatus;
+  /** A promise that resolves when the request completes, fails, or is interrupted. */
+  readonly promise: Promise<void>;
+  /** Whether the request has been cancelled (interrupted or failed). */
+  readonly isCancelled: boolean;
+  /** Allows the request to be awaited directly. */
+  then<TResult1 = void, TResult2 = never>(
+    onfulfilled?:
+      | ((value: void) => TResult1 | PromiseLike<TResult1>)
+      | undefined
+      | null,
+    onrejected?:
+      | ((reason: any) => TResult2 | PromiseLike<TResult2>)
+      | undefined
+      | null,
+  ): Promise<TResult1 | TResult2>;
+}
