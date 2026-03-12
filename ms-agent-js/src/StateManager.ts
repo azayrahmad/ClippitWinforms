@@ -295,8 +295,8 @@ export class StateManager {
    * Returns the agent to the base IdlingLevel1 state and resets all timers.
    */
   private async returnToIdle(): Promise<void> {
-    await this.setIdleState(1);
     this.resetIdleProgression();
+    await this.setIdleState(1);
   }
 
   /**
@@ -326,8 +326,9 @@ export class StateManager {
    * Plays the intro/outro animation sequence and waits for it to complete.
    *
    * @param showing - True for intro/showing, False for outro/hiding.
+   * @param useExitBranch - (Optional) Whether to use the exit branch for the visibility animation.
    */
-  public async handleVisibilityChange(showing: boolean): Promise<void> {
+  public async handleVisibilityChange(showing: boolean, useExitBranch: boolean = false): Promise<void> {
     const visibilityState = showing ? 'Showing' : 'Hiding';
 
     if (this.states[visibilityState]) {
@@ -343,11 +344,11 @@ export class StateManager {
         this.currentState = visibilityState;
         // For intro animations (Showing), we want to play the full sequence, not start in exiting mode.
         // For outro animations (Hiding), we also want the full transition.
-        await this.animationManager.playAnimation(animName, false);
+        await this.animationManager.playAnimation(animName, useExitBranch);
 
         // Transition to Hidden or Idling after animation finishes
         if (showing) {
-            await this.returnToIdle();
+            void this.returnToIdle();
         } else {
             this.currentState = 'Hidden';
             this.isPaused = true;
