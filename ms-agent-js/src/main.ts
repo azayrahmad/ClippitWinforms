@@ -7,8 +7,10 @@ async function initDemo() {
   const scaleValue = document.getElementById('scale-value') as HTMLSpanElement;
   const animationSelect = document.getElementById('animation-select') as HTMLSelectElement;
   const stateSelect = document.getElementById('state-select') as HTMLSelectElement;
-  const playBtn = document.getElementById('play-btn') as HTMLButtonElement;
-  const randomBtn = document.getElementById('random-btn') as HTMLButtonElement;
+  const playOnceBtn = document.getElementById('play-once-btn') as HTMLButtonElement;
+  const play5sBtn = document.getElementById('play-5s-btn') as HTMLButtonElement;
+  const playIndefBtn = document.getElementById('play-indef-btn') as HTMLButtonElement;
+  const stopBtn = document.getElementById('stop-btn') as HTMLButtonElement;
   const visibilityBtn = document.getElementById('visibility-btn') as HTMLButtonElement;
   const speakBtn = document.getElementById('speak-btn') as HTMLButtonElement;
   const askBtn = document.getElementById('ask-btn') as HTMLButtonElement;
@@ -40,8 +42,10 @@ async function initDemo() {
     // Reset UI
     animationSelect.innerHTML = '';
     stateSelect.innerHTML = '';
-    playBtn.disabled = true;
-    randomBtn.disabled = true;
+    playOnceBtn.disabled = true;
+    play5sBtn.disabled = true;
+    playIndefBtn.disabled = true;
+    stopBtn.disabled = true;
     visibilityBtn.disabled = true;
     speakBtn.disabled = true;
     askBtn.disabled = true;
@@ -89,8 +93,10 @@ async function initDemo() {
       isVisible = true;
       visibilityBtn.textContent = 'Hide';
 
-      playBtn.disabled = false;
-      randomBtn.disabled = false;
+      playOnceBtn.disabled = false;
+      play5sBtn.disabled = false;
+      playIndefBtn.disabled = false;
+      stopBtn.disabled = false;
       visibilityBtn.disabled = false;
       speakBtn.disabled = false;
       askBtn.disabled = false;
@@ -123,12 +129,20 @@ async function initDemo() {
     currentAgent?.setScale(scale);
   });
 
-  playBtn.addEventListener('click', () => {
-    currentAgent?.play(animationSelect.value, 5000);
+  playOnceBtn.addEventListener('click', () => {
+    currentAgent?.play(animationSelect.value, { loop: false });
   });
 
-  randomBtn.addEventListener('click', () => {
-    currentAgent?.stateManager.playRandomAnimation();
+  play5sBtn.addEventListener('click', () => {
+    currentAgent?.play(animationSelect.value, { timeoutMs: 5000 });
+  });
+
+  playIndefBtn.addEventListener('click', () => {
+    currentAgent?.play(animationSelect.value, { loop: true });
+  });
+
+  stopBtn.addEventListener('click', () => {
+    currentAgent?.stop();
   });
 
   stateSelect.addEventListener('change', () => {

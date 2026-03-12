@@ -475,16 +475,29 @@ export class Agent {
    * Plays a specific animation.
    *
    * @param animationName - The name of the animation to play.
-   * @param timeoutMs - Optional time limit for the animation playback.
+   * @param optionsOrTimeout - Optional configuration for playback (timeout, loop).
    * @returns A request object to track the operation's progress.
    */
-  public play(animationName: string, timeoutMs?: number): AgentRequest {
+  public play(
+    animationName: string,
+    optionsOrTimeout?: number | { timeoutMs?: number; loop?: boolean },
+  ): AgentRequest {
+    let timeoutMs: number | undefined;
+    let loop = true;
+
+    if (typeof optionsOrTimeout === "number") {
+      timeoutMs = optionsOrTimeout;
+    } else if (optionsOrTimeout) {
+      timeoutMs = optionsOrTimeout.timeoutMs;
+      loop = optionsOrTimeout.loop ?? true;
+    }
+
     return this.enqueueRequest(async (request) => {
       this.emit("animationStart", animationName);
       await this.stateManager.playAnimation(
         animationName,
         "Playing",
-        false,
+        !loop,
         timeoutMs,
       );
       if (!request.isCancelled) {
@@ -864,20 +877,23 @@ export class Agent {
   }
 
   /**
-   * Stops the specified request or all requests in the queue.
+   * Stops the specified request or the currently active request.
+   * Ensures the agent returns to an idle state if the active request is stopped.
    *
    * @param request - Optional request object to stop.
    */
   public stop(request?: AgentRequest) {
     const activeId = this.requestQueue.activeRequestId;
-    this.requestQueue.stop(request?.id);
 
-    // Only interrupt the current animation/speech if we are stopping everything,
-    // or if the request being stopped is the currently active one.
-    if (!request || (activeId !== null && request.id === activeId)) {
-      if (this.animationManager.isAnimating) {
-        this.animationManager.isExitingFlag = true;
+    if (request) {
+      this.requestQueue.stop(request.id);
+      if (activeId !== null && request.id === activeId) {
+        this.stateManager.stop();
+        this.balloon.close();
       }
+    } else {
+      this.requestQueue.stop(activeId ?? undefined);
+      this.stateManager.stop();
       this.balloon.close();
     }
   }
