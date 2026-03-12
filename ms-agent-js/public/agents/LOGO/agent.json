@@ -10023,15 +10023,6 @@
       ]
     }
   },
-  "balloon": {
-    "numLines": 2,
-    "charsPerLine": 28,
-    "fontName": "MS Sans Serif",
-    "fontHeight": 13,
-    "foreColor": "00000000",
-    "backColor": "00e1ffff",
-    "borderColor": "00000000"
-  },
   "character": {
     "infos": [
       {
@@ -10402,6 +10393,15 @@
     "defaultFrameDuration": 10,
     "style": 3,
     "colorTable": "Images/ColorTable.bmp"
+  },
+  "balloon": {
+    "numLines": 2,
+    "charsPerLine": 28,
+    "fontName": "MS Sans Serif",
+    "fontHeight": 13,
+    "foreColor": "00000000",
+    "backColor": "00e1ffff",
+    "borderColor": "00000000"
   },
   "atlas": {
     "images/0188.bmp": {

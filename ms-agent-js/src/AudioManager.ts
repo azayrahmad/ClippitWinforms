@@ -3,56 +3,33 @@ import type { AudioAtlasEntry } from './types';
 
 /**
  * AudioManager class for loading and playing agent sound effects.
- * Supports legacy Microsoft ADPCM (.wav) and standard PCM via the Web Audio API.
- * Also supports optimized audio spritesheets (webm) for modern agents.
+ * Support legacy MS ADPCM and standard PCM via Web Audio API.
+ * Now also supports audio spritesheets for optimized agents.
  */
 export class AudioManager {
-    /** The shared Web Audio context for this agent. */
     private audioContext: AudioContext | null = null;
-    /** Cache of individual decoded audio buffers. */
     private soundBuffers: Map<string, AudioBuffer> = new Map();
-    /** Map of sounds currently being loaded to avoid duplicate requests. */
     private loadingPromises: Map<string, Promise<void>> = new Map();
-    /** Computed path to the individual audio files. */
     private audioPath: string;
-    /** Base URL of the agent assets. */
     private baseUrl: string;
-    /** Whether audio playback is enabled. */
     private enabled: boolean = true;
-    /** Metadata mapping sound names to time ranges within the spritesheet. */
     private audioAtlas: Record<string, AudioAtlasEntry> | null = null;
-    /** The decoded audio buffer of the spritesheet, if used. */
     private spritesheetBuffer: AudioBuffer | null = null;
-    /** Promise tracking the spritesheet loading process. */
     private spritesheetLoadingPromise: Promise<void> | null = null;
 
-    /**
-     * @param baseUrl - The base URL where agent assets are located.
-     */
     constructor(baseUrl: string) {
         this.baseUrl = baseUrl.replace(/\/$/, '');
         this.audioPath = `${this.baseUrl}/Audio`;
     }
 
-    /**
-     * Enables or disables audio playback.
-     */
     public setEnabled(value: boolean): void {
         this.enabled = value;
     }
 
-    /**
-     * Sets the audio atlas for spritesheet-based sound playback.
-     *
-     * @param atlas - Mapping of sound names to start/end timestamps.
-     */
     public setAudioAtlas(atlas: Record<string, AudioAtlasEntry>): void {
         this.audioAtlas = atlas;
     }
 
-    /**
-     * Returns the lazy-initialized AudioContext.
-     */
     private getContext(): AudioContext {
         if (!this.audioContext) {
             this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -60,12 +37,6 @@ export class AudioManager {
         return this.audioContext;
     }
 
-    /**
-     * Preloads a list of sound files.
-     * If an audio atlas is present, this will load the spritesheet instead.
-     *
-     * @param filenames - List of sound names (e.g., "GREETING.WAV").
-     */
     public async loadSounds(filenames: string[]): Promise<void> {
         if (this.audioAtlas) {
             await this.loadSpritesheet();
@@ -94,10 +65,6 @@ export class AudioManager {
         await Promise.all(promises);
     }
 
-    /**
-     * Loads a single sound file and decodes it.
-     * Automatically handles MS ADPCM decoding if necessary.
-     */
     private async loadInternal(soundName: string): Promise<void> {
         const ctx = this.getContext();
         const normalizedFilename = soundName.toLowerCase().endsWith('.wav') ? soundName : `${soundName}.wav`;
@@ -135,9 +102,6 @@ export class AudioManager {
         }
     }
 
-    /**
-     * Loads the optimized audio spritesheet (agent.webm).
-     */
     private async loadSpritesheet(): Promise<void> {
         if (this.spritesheetBuffer) return;
         if (this.spritesheetLoadingPromise) return this.spritesheetLoadingPromise;
@@ -154,6 +118,7 @@ export class AudioManager {
                 }
                 const arrayBuffer = await response.arrayBuffer();
                 this.spritesheetBuffer = await ctx.decodeAudioData(arrayBuffer);
+                console.log('Audio spritesheet loaded successfully');
             } catch (error) {
                 console.error('Error loading audio spritesheet:', error);
             }
@@ -162,9 +127,6 @@ export class AudioManager {
         return this.spritesheetLoadingPromise;
     }
 
-    /**
-     * Detects if a WAV file uses the Microsoft ADPCM compression format.
-     */
     private isMSADPCM(buffer: ArrayBuffer): boolean {
         const view = new DataView(buffer);
         if (buffer.byteLength < 20) return false;
@@ -188,12 +150,6 @@ export class AudioManager {
         return false;
     }
 
-    /**
-     * Plays a sound effect associated with a specific frame.
-     * Automatically attempts to load the sound if it's not already in the cache.
-     *
-     * @param soundPath - Filename or relative path to the sound.
-     */
     public playFrameSound(soundPath: string): void {
         if (!this.enabled) return;
 
@@ -237,12 +193,6 @@ export class AudioManager {
         }
     }
 
-    /**
-     * Plays a slice of the audio spritesheet.
-     *
-     * @param start - Start time in seconds.
-     * @param end - End time in seconds.
-     */
     private playFromSpritesheet(start: number, end: number): void {
         if (!this.spritesheetBuffer) return;
 

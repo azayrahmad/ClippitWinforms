@@ -7,31 +7,18 @@ import { Balloon } from "./Balloon";
 import type { TTSOptions } from "./Balloon";
 import type { AgentCharacterDefinition } from "./types";
 
-/**
- * Configuration options for creating an Agent.
- */
 export interface AgentOptions {
-  /** The parent element for the agent. If not provided, a div will be appended to document.body. */
   container?: HTMLElement;
-  /** The base URL for the agent assets (.acd, images, audio). */
   baseUrl?: string;
-  /** The scaling factor for the agent (default: 1). */
   scale?: number;
-  /** Multiplier for animation speed (default: 1). */
   speed?: number;
-  /** Milliseconds between idle behavior checks (default: 5000). */
   idleIntervalMs?: number;
-  /** Whether to enable sound effects (default: true). */
   useAudio?: boolean;
-  /** Whether to use CSS 'fixed' (true) or 'absolute' (false) positioning (default: true). */
   fixed?: boolean;
-  /** Initial horizontal position in pixels. */
   x?: number;
-  /** Initial vertical position in pixels. */
   y?: number;
 }
 
-/** Valid event types emitted by the Agent. */
 type AgentEvent =
   | "click"
   | "animationStart"
@@ -45,30 +32,15 @@ type AgentEvent =
 type AgentEventListener = (...args: any[]) => void;
 
 /**
- * The primary Agent class, serving as the library's main entry point.
- * It coordinates the rendering loop, state management, animations, audio, and speech balloon.
- *
- * @example
- * ```typescript
- * const agent = await Agent.load('Clippit');
- * await agent.show();
- * await agent.speak('Hello, how can I help you?');
- * ```
+ * The main Agent class that serves as the entry point for the library.
  */
 export class Agent {
-  /** The full parsed character definition for this agent. */
   public readonly definition: AgentCharacterDefinition;
-  /** Manager responsible for loading and rendering sprites. */
   public readonly spriteManager: SpriteManager;
-  /** Manager responsible for playing sound effects. */
   public readonly audioManager: AudioManager;
-  /** Manager responsible for low-level animation sequences. */
   public readonly animationManager: AnimationManager;
-  /** Manager responsible for high-level behavioral states and idles. */
   public readonly stateManager: StateManager;
-  /** Manager responsible for the speech balloon UI. */
   public readonly balloon: Balloon;
-  /** Resolved options used to initialize the agent. */
   public readonly options: Required<AgentOptions>;
 
   private container: HTMLElement;
@@ -101,10 +73,10 @@ export class Agent {
       document.body.appendChild(this.container);
     }
 
-    // Encapsulate UI in Shadow DOM to prevent CSS leakage
+    // Shadow DOM
     this.shadowRoot = this.container.attachShadow({ mode: "open" });
 
-    // Component Styles
+    // Styles
     const style = document.createElement("style");
     style.textContent = `
       :host {
@@ -174,12 +146,12 @@ export class Agent {
     `;
     this.shadowRoot.appendChild(style);
 
-    // Main rendering canvas
+    // Canvas
     this.canvas = document.createElement("canvas");
     this.shadowRoot.appendChild(this.canvas);
     this.ctx = this.canvas.getContext("2d")!;
 
-    // Initialize Managers
+    // Managers
     this.spriteManager = new SpriteManager(options.baseUrl, definition);
     this.audioManager = new AudioManager(options.baseUrl);
     this.audioManager.setEnabled(options.useAudio);
@@ -200,11 +172,12 @@ export class Agent {
       },
     );
 
-    // Initialize Balloon
+    // Balloon
     this.balloon = new Balloon(this.canvas, this.shadowRoot, definition);
 
-    // Click event handling (differentiated from drag)
+    // Event forwarding
     this.canvas.addEventListener("click", () => {
+      // Only emit click if we didn't just finish a drag
       if (!this.wasDragging) {
         this.emit("click");
       }
@@ -216,12 +189,9 @@ export class Agent {
 
   private wasDragging = false;
 
-  /**
-   * Internal method to set up drag-and-drop behavior for the agent.
-   */
   private setupDragging() {
     const onPointerDown = (e: PointerEvent) => {
-      if (e.button !== 0) return; // Only left click/primary contact
+      if (e.button !== 0) return; // Only left click
       this.isDragging = true;
       this.wasDragging = false;
       this.dragStartX = e.clientX;
@@ -249,7 +219,7 @@ export class Agent {
       let nx = this.initialAgentX + dx;
       let ny = this.initialAgentY + dy;
 
-      // Constrain agent within the viewport boundaries
+      // Constrain to viewport
       const minX = 0;
       const minY = 0;
       const maxX = window.innerWidth - this.canvas.width;
@@ -274,9 +244,6 @@ export class Agent {
     this.canvas.addEventListener("pointerdown", onPointerDown);
   }
 
-  /**
-   * Sets canvas dimensions based on character definition and scaling factor.
-   */
   private setupCanvas() {
     const width = this.spriteManager.getSpriteWidth();
     const height = this.spriteManager.getSpriteHeight();
@@ -285,9 +252,7 @@ export class Agent {
   }
 
   /**
-   * Changes the scale of the agent while keeping it centered at its current position.
-   *
-   * @param scale - The new scaling factor.
+   * Sets the scale of the agent, keeping it centered.
    */
   public setScale(scale: number) {
     const oldScale = this.options.scale;
@@ -302,11 +267,11 @@ export class Agent {
     const newWidth = width * scale;
     const newHeight = height * scale;
 
-    // Calculate center point to maintain anchor
+    // Calculate center
     const cx = this.options.x + oldWidth / 2;
     const cy = this.options.y + oldHeight / 2;
 
-    // Recalculate top-left to keep center
+    // New top-left to keep center
     let nx = cx - newWidth / 2;
     let ny = cy - newHeight / 2;
 
@@ -321,12 +286,7 @@ export class Agent {
   }
 
   /**
-   * Static factory method to asynchronously load and initialize an agent.
-   * Searches for assets in the specified baseUrl, with fallbacks for naming conventions.
-   *
-   * @param name - The name of the agent to load (e.g., 'Clippit').
-   * @param options - Custom configuration for the agent.
-   * @returns A promise resolving to the initialized Agent instance.
+   * Static factory method to load an agent.
    */
   public static async load(
     name: string,
@@ -335,19 +295,20 @@ export class Agent {
     const defaultBaseUrl = `https://unpkg.com/ms-agent-js@latest/dist/agents/${name}`;
     const baseUrl = (options.baseUrl || defaultBaseUrl).replace(/\/$/, "");
 
+    // Try to find the .acd file. We try the uppercase name first, but we are robust.
+    const jsonPath = `${baseUrl}/agent.json`;
     let definition: AgentCharacterDefinition;
 
     try {
-      // Prioritize optimized agent.json (atlas-based)
-      const response = await fetch(`${baseUrl}/agent.json`);
+      const response = await fetch(jsonPath);
       if (!response.ok) throw new Error("No agent.json");
       definition = await response.json();
     } catch (e) {
-      // Fallback to legacy .acd format
+      // Fallback to .acd
       const acdPath = `${baseUrl}/${name.toUpperCase()}.acd`;
 
       definition = await CharacterParser.load(acdPath).catch(async (err) => {
-        // Fallback to lowercase acd filename
+        // Fallback to lowercase if uppercase fails
         try {
           return await CharacterParser.load(
             `${baseUrl}/${name.toLowerCase()}.acd`,
@@ -362,18 +323,20 @@ export class Agent {
       });
     }
 
-    // Asset path normalization
+    // Normalize paths in definition to be relative to baseUrl
     if (
       definition.character.colorTable &&
       !definition.character.colorTable.startsWith("http")
     ) {
+      // Some .acd files have ColorTable.bmp in the Images subfolder
       definition.character.colorTable = definition.character.colorTable.replace(
         /\\/g,
         "/",
       );
+      // We don't lowercase it here yet, SpriteManager handles it with fallback
     }
 
-    // Ensure all image and sound references are lowercased for cross-environment compatibility
+    // Lowercase all image filenames in animations for robustness
     Object.values(definition.animations).forEach((animation) => {
       animation.frames.forEach((frame) => {
         frame.images.forEach((image) => {
@@ -385,7 +348,7 @@ export class Agent {
       });
     });
 
-    // Resolve final options with defaults
+    // Default options
     const fullOptions: Required<AgentOptions> = {
       container: options.container || (null as any),
       baseUrl: baseUrl,
@@ -411,14 +374,11 @@ export class Agent {
     return agent;
   }
 
-  /**
-   * Internal initialization method. Starts the rendering loop and intro animation.
-   */
   private async init() {
     const initPromises: Promise<any>[] = [this.spriteManager.init()];
 
     if (this.options.useAudio && this.definition.audioAtlas) {
-      // Eagerly load audio spritesheet if an atlas exists
+      // Eager load audio spritesheet if available
       initPromises.push(this.audioManager.loadSounds([]));
     }
 
@@ -427,9 +387,6 @@ export class Agent {
     await this.show();
   }
 
-  /**
-   * Starts the internal requestAnimationFrame loop.
-   */
   private startLoop() {
     this.lastTime = performance.now();
     const loop = (currentTime: number) => {
@@ -448,20 +405,13 @@ export class Agent {
     this.rafId = requestAnimationFrame(loop);
   }
 
-  /**
-   * Triggers a redraw of the current animation frame onto the canvas.
-   */
   private draw() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.animationManager.draw(this.ctx, 0, 0, this.options.scale);
   }
 
   /**
-   * Plays a specific animation and waits for its completion.
-   *
-   * @param animationName - The name of the animation to play.
-   * @param timeoutMs - Optional time limit for the animation playback.
-   * @returns A promise that resolves when the animation finishes.
+   * Plays a specific animation.
    */
   public async play(animationName: string, timeoutMs?: number): Promise<void> {
     this.emit("animationStart", animationName);
@@ -475,11 +425,8 @@ export class Agent {
   }
 
   /**
-   * Makes the agent gesture at a specific screen position.
-   * Automatically calculates the 4-way direction and triggers the corresponding state.
-   *
-   * @param x - Horizontal screen coordinate.
-   * @param y - Vertical screen coordinate.
+   * Gestures at a specific position.
+   * Calculates the 4-way direction and sets the agent's state to the corresponding "Gesturing" state.
    */
   public async gestureAt(x: number, y: number): Promise<void> {
     const direction = this.toAgentPerspective(this.getDirection(x, y, 4));
@@ -487,7 +434,7 @@ export class Agent {
     if (this.definition.states[stateName]) {
       await this.setState(stateName);
     } else {
-      // Fallback to direct animation if the high-level state is missing
+      // Fallback to animation if state is missing
       const animName = `Gesture${direction}`;
       if (this.definition.animations[animName]) {
         await this.stateManager.playAnimation(animName, "Gesturing");
@@ -496,11 +443,8 @@ export class Agent {
   }
 
   /**
-   * Makes the agent look at a specific screen position.
-   * Automatically calculates the 8-way direction and plays the corresponding animation.
-   *
-   * @param x - Horizontal screen coordinate.
-   * @param y - Vertical screen coordinate.
+   * Looks at a specific position.
+   * Calculates the 8-way direction and plays the corresponding "Look" animation.
    */
   public async lookAt(x: number, y: number): Promise<void> {
     const direction = this.toAgentPerspective(this.getDirection(x, y, 8));
@@ -521,9 +465,7 @@ export class Agent {
   }
 
   /**
-   * Sets the agent's high-level behavioral state.
-   *
-   * @param stateName - The name of the state (e.g., 'IdlingLevel2', 'Searching').
+   * Sets the agent's state.
    */
   public async setState(stateName: string): Promise<void> {
     const oldState = this.stateManager.currentStateName;
@@ -532,26 +474,19 @@ export class Agent {
   }
 
   /**
-   * Moves the agent instantly to a new screen position.
-   * Also repositions the speech balloon if active.
-   *
-   * @param x - New horizontal position.
-   * @param y - New vertical position.
+   * Moves the agent to a new position.
    */
   public moveTo(x: number, y: number) {
     this.options.x = x;
     this.options.y = y;
+    // this.container is the host of the shadow root.
     this.container.style.left = `${x}px`;
     this.container.style.top = `${y}px`;
     this.balloon.reposition();
   }
 
   /**
-   * Makes the agent speak the given text using the speech balloon.
-   *
-   * @param text - The message to display.
-   * @param options - Speech options (hold balloon, use TTS, skip typing animation).
-   * @returns A promise that resolves when speech is complete.
+   * Speaks the given text.
    */
   public speak(
     text: string,
@@ -564,20 +499,14 @@ export class Agent {
   }
 
   /**
-   * Displays raw HTML inside the speech balloon.
-   *
-   * @param html - The HTML string to render.
-   * @param hold - If true, the balloon won't auto-close.
+   * Shows HTML in the balloon.
    */
   public showHtml(html: string, hold: boolean = false) {
     this.balloon.showHtml(html, hold);
   }
 
   /**
-   * Asks the user a question with a text input field in the balloon.
-   *
-   * @param options - Configuration for the input dialog (labels, placeholder, timeout).
-   * @returns A promise resolving to the user's input string, or null if cancelled.
+   * Asks a question with an input field.
    */
   public ask(
     options: {
@@ -671,34 +600,34 @@ export class Agent {
 
       resetBalloonTimeout();
 
-      // Force reposition after a short delay to account for layout rendering
+      // Force reposition after a short delay for rendering
       setTimeout(() => this.balloon.reposition(), 0);
     });
   }
 
   /**
-   * Configures global system Text-to-Speech options.
+   * Sets TTS options.
    */
   public setTTSOptions(options: TTSOptions) {
     this.balloon.setTTSOptions(options);
   }
 
   /**
-   * Returns a list of available system TTS voices.
+   * Gets available TTS voices.
    */
   public getTTSVoices(): SpeechSynthesisVoice[] {
     return this.balloon.getTTSVoices();
   }
 
   /**
-   * Instantly stops any ongoing system speech.
+   * Stops any ongoing TTS speech.
    */
   public stopTTS() {
     this.balloon.stopTTS();
   }
 
   /**
-   * Shows the agent by playing its 'Showing' animation sequence.
+   * Shows the agent with the "Showing" animation.
    */
   public async show(): Promise<void> {
     this.container.style.display = "block";
@@ -707,7 +636,7 @@ export class Agent {
   }
 
   /**
-   * Hides the agent by playing its 'Hiding' animation sequence.
+   * Hides the agent with the "Hiding" animation.
    */
   public async hide(): Promise<void> {
     await this.stateManager.handleVisibilityChange(false);
@@ -716,10 +645,7 @@ export class Agent {
   }
 
   /**
-   * Subscribes to an agent event.
-   *
-   * @param event - The event name.
-   * @param listener - Callback function.
+   * Event emitter methods.
    */
   public on(event: AgentEvent, listener: AgentEventListener) {
     if (!this.listeners.has(event)) {
@@ -728,23 +654,14 @@ export class Agent {
     this.listeners.get(event)!.add(listener);
   }
 
-  /**
-   * Unsubscribes from an agent event.
-   */
   public off(event: AgentEvent, listener: AgentEventListener) {
     this.listeners.get(event)?.delete(listener);
   }
 
-  /**
-   * Internal event emitter.
-   */
   private emit(event: AgentEvent, ...args: any[]) {
     this.listeners.get(event)?.forEach((listener) => listener(...args));
   }
 
-  /**
-   * Translates a world direction to the agent's POV (swaps Left/Right).
-   */
   private toAgentPerspective(direction: string): string {
     return direction
       .replace("Left", "TEMP")
@@ -752,9 +669,6 @@ export class Agent {
       .replace("TEMP", "Right");
   }
 
-  /**
-   * Calculates the direction from the agent to a target point.
-   */
   private getDirection(
     targetX: number,
     targetY: number,
@@ -770,16 +684,20 @@ export class Agent {
     const dx = targetX - centerX;
     const dy = targetY - centerY;
 
+    // Angle in radians
     const angle = Math.atan2(dy, dx);
+    // Convert to degrees [0, 360)
     let degrees = angle * (180 / Math.PI);
     if (degrees < 0) degrees += 360;
 
     if (numDirections === 4) {
+      // 4 directions: Right (315-45), Down (45-135), Left (135-225), Up (225-315)
       if (degrees >= 315 || degrees < 45) return "Right";
       if (degrees >= 45 && degrees < 135) return "Down";
       if (degrees >= 135 && degrees < 225) return "Left";
       return "Up";
     } else {
+      // 8 directions
       if (degrees >= 337.5 || degrees < 22.5) return "Right";
       if (degrees >= 22.5 && degrees < 67.5) return "DownRight";
       if (degrees >= 67.5 && degrees < 112.5) return "Down";
@@ -792,7 +710,7 @@ export class Agent {
   }
 
   /**
-   * Performs full cleanup: cancels animations, stops speech, and removes the agent from the DOM.
+   * Cleans up the agent and removes it from the DOM.
    */
   public destroy() {
     this.isDestroyed = true;
