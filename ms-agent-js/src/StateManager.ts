@@ -142,8 +142,6 @@ export class StateManager {
     // Skip idle progression for transient/busy states or if requests are pending
     if (
       this.currentState === 'Playing' ||
-      this.currentState === 'Showing' ||
-      this.currentState === 'Hiding' ||
       this.currentState === 'Moving' ||
       (hasRequests && !isIdle)
     ) {
@@ -342,13 +340,15 @@ export class StateManager {
 
         // Start the animation and wait for its full completion
         await this.animationManager.preloadAnimation(animName);
-        this.currentState = visibilityState;
-        await this.animationManager.playAnimation(animName, true);
 
-        // Transition to Hidden or Idling after animation finishes
         if (showing) {
-            await this.returnToIdle();
+            this.currentState = 'IdlingLevel1';
+            this.resetIdleProgression();
+            await this.animationManager.playAnimation(animName, true);
+            void this.returnToIdle();
         } else {
+            this.currentState = visibilityState;
+            await this.animationManager.playAnimation(animName, true);
             this.currentState = 'Hidden';
             this.isPaused = true;
         }
