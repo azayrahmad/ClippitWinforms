@@ -144,4 +144,93 @@ describe('AnimationManager', () => {
     expect(animationManager.currentFrame).not.toBeNull();
     expect(animationManager.currentFrame?.images[0].filename).toBe('test.bmp');
   });
+
+  it('should skip variety branching when isExiting is true', async () => {
+    // This simulates Dot's Idle1_1 where we want to avoid variety loops when interrupted
+    const varietyAnim: Animation = {
+        name: 'variety',
+        transitionType: 0,
+        frames: [
+            {
+              duration: 10,
+              images: [],
+              branching: [
+                  { branchTo: 1, probability: 90 },
+                  { branchTo: 3, probability: 10 }
+              ]
+            },
+            { duration: 10, images: [] }, // Index 1
+            { duration: 10, images: [] }  // Index 2
+        ]
+    };
+    (animationManager as any).animations['variety'] = varietyAnim;
+
+    animationManager.playAnimation('variety', true);
+    const now = performance.now();
+    (animationManager as any).lastFrameTime = now - 200;
+
+    // Advance time
+    animationManager.update(now);
+
+    // Should NOT have branched, just moved to next frame (index 1)
+    expect(animationManager.currentFrameIndexValue).toBe(1);
+  });
+
+  it('should follow 100% jump branching even when isExiting is true', async () => {
+    const jumpAnim: Animation = {
+        name: 'jump',
+        transitionType: 0,
+        frames: [
+            {
+              duration: 10,
+              images: [],
+              branching: [{ branchTo: 3, probability: 100 }]
+            },
+            { duration: 10, images: [] }, // Index 1
+            { duration: 10, images: [] }  // Index 2
+        ]
+    };
+    (animationManager as any).animations['jump'] = jumpAnim;
+
+    animationManager.playAnimation('jump', true);
+    const now = performance.now();
+    (animationManager as any).lastFrameTime = now - 200;
+
+    // Advance time
+    animationManager.update(now);
+
+    // Should HAVE branched to index 2
+    expect(animationManager.currentFrameIndexValue).toBe(2);
+  });
+
+  it('should ignore backward 100% loops when isExiting is true', async () => {
+    // This simulates Dot's Idle1_1 where we want to break out of backward loops when interrupted
+    const loopAnim: Animation = {
+        name: 'backward-loop',
+        transitionType: 0,
+        frames: [
+            { duration: 10, images: [] }, // Index 0
+            {
+              duration: 10,
+              images: [],
+              branching: [{ branchTo: 1, probability: 100 }] // Loop back to Index 0
+            },
+            { duration: 10, images: [] }  // Index 2
+        ]
+    };
+    (animationManager as any).animations['backward-loop'] = loopAnim;
+
+    // Start at index 1
+    animationManager.playAnimation('backward-loop', true);
+    (animationManager as any).currentFrameIndex = 1;
+    const now = performance.now();
+    (animationManager as any).lastFrameTime = now - 200;
+
+    // Advance time
+    animationManager.update(now);
+
+    // Should NOT have looped back to index 0, but instead moved to next sequential frame (index 2) or completed
+    // In our implementation, it should try to move to currentFrameIndex + 1
+    expect(animationManager.currentFrameIndexValue).toBe(2);
+  });
 });

@@ -4,34 +4,23 @@ import {
 } from './types';
 
 /**
- * SpriteManager class for loading, caching, and rendering agent sprites.
- * It handles both individual BMP files (legacy) and optimized texture atlases.
+ * SpriteManager class for loading and rendering agent sprites.
+ * Ported from C# SpriteManager.cs.
  */
 export class SpriteManager {
-  /** Cache for individual loaded sprites (canvases or images). */
   private sprites: Map<string, HTMLCanvasElement | HTMLImageElement> = new Map();
-  /** The RGB color to be treated as transparent during BMP processing. */
   private transparencyColor: { r: number; g: number; b: number } | null = null;
-  /** Base URL for agent assets. */
   private agentRoot: string;
-  /** The full character definition. */
   private definition: AgentCharacterDefinition;
-  /** The loaded texture atlas image, if used. */
   private spriteSheet: HTMLImageElement | null = null;
 
-  /**
-   * @param agentRoot - The base URL where agent assets are located.
-   * @param definition - The character definition containing frame and metadata info.
-   */
   constructor(agentRoot: string, definition: AgentCharacterDefinition) {
     this.agentRoot = agentRoot;
     this.definition = definition;
   }
 
   /**
-   * Initializes the SpriteManager.
-   * Loads the texture atlas if specified in the definition,
-   * otherwise loads the transparency color from the color table.
+   * Initializes the SpriteManager by loading the transparency color.
    */
   public async init(): Promise<void> {
     if (this.definition.atlas) {
@@ -41,9 +30,6 @@ export class SpriteManager {
     }
   }
 
-  /**
-   * Attempts to load the texture atlas image in WebP or PNG format.
-   */
   private async loadSpriteSheet(): Promise<void> {
     const extensions = ['webp', 'png'];
     for (const ext of extensions) {
@@ -65,10 +51,6 @@ export class SpriteManager {
     throw new Error('Failed to load sprite sheet (tried webp, png)');
   }
 
-  /**
-   * Loads the color table (BMP) to determine the transparency color.
-   * Searches multiple potential paths for robustness.
-   */
   private async loadTransparencyColor(): Promise<void> {
     const colorTablePath = this.definition.character.colorTable;
     const pathsToTry: string[] = [];
@@ -113,9 +95,6 @@ export class SpriteManager {
     this.transparencyColor = this.getPaletteColor(buffer, this.definition.character.transparency);
   }
 
-  /**
-   * Extracts an RGB color from a BMP's palette at a specific index.
-   */
   private getPaletteColor(buffer: ArrayBuffer, index: number): { r: number; g: number; b: number } {
     const view = new DataView(buffer);
     // BMP Header check: 'BM'
@@ -142,10 +121,7 @@ export class SpriteManager {
   }
 
   /**
-   * Loads a sprite BMP file, processes transparency, and caches it as a canvas.
-   * If a texture atlas is already loaded, this method does nothing.
-   *
-   * @param filename - The relative filename of the sprite to load.
+   * Loads a sprite BMP file and caches it.
    */
   public async loadSprite(filename: string): Promise<void> {
     if (this.sprites.has(filename) || this.spriteSheet) return;
@@ -190,10 +166,6 @@ export class SpriteManager {
     this.sprites.set(filename, canvas);
   }
 
-  /**
-   * Converts a BMP ArrayBuffer to a transparent HTMLCanvasElement.
-   * Processes 8-bit, 24-bit, and 32-bit BMPs.
-   */
   private bmpToCanvas(buffer: ArrayBuffer): HTMLCanvasElement {
     const view = new DataView(buffer);
     const magic = view.getUint16(0, true);
@@ -265,6 +237,8 @@ export class SpriteManager {
           const b = view.getUint8(pixelOffset);
           const g = view.getUint8(pixelOffset + 1);
           const r = view.getUint8(pixelOffset + 2);
+          // 32-bit usually has Alpha as the 4th byte, but we often ignore it for MS Agents
+          // or use it if available. Here we prioritize the transparencyColor logic.
           const targetIndex = (y * width + x) * 4;
           this.setPixel(imageData, targetIndex, r, g, b);
         }
@@ -275,9 +249,6 @@ export class SpriteManager {
     return canvas;
   }
 
-  /**
-   * Sets a pixel's color in ImageData, applying transparency if it matches the transparency color.
-   */
   private setPixel(imageData: ImageData, index: number, r: number, g: number, b: number): void {
     imageData.data[index] = r;
     imageData.data[index + 1] = g;
@@ -296,14 +267,7 @@ export class SpriteManager {
   }
 
   /**
-   * Draws a specific frame onto the provided 2D rendering context.
-   * Handles layering and scaling.
-   *
-   * @param ctx - The destination canvas context.
-   * @param frame - The definition of the frame to draw.
-   * @param x - Horizontal position to draw at.
-   * @param y - Vertical position to draw at.
-   * @param scale - Scaling factor (default 1).
+   * Draws a frame onto the provided context.
    */
   public drawFrame(
     ctx: CanvasRenderingContext2D,
@@ -314,7 +278,7 @@ export class SpriteManager {
   ): void {
     if (!frame.images) return;
 
-    // Draw images in reverse order as per the original implementation (back-to-front layering)
+    // Draw images in reverse order as per the original implementation
     for (let i = frame.images.length - 1; i >= 0; i--) {
       const imgDef = frame.images[i];
 
@@ -351,16 +315,10 @@ export class SpriteManager {
     }
   }
 
-  /**
-   * Gets the base width of the character sprite.
-   */
   public getSpriteWidth(): number {
     return this.definition.character.width;
   }
 
-  /**
-   * Gets the base height of the character sprite.
-   */
   public getSpriteHeight(): number {
     return this.definition.character.height;
   }
