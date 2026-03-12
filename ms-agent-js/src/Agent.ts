@@ -442,6 +442,8 @@ export class Agent {
     }
   }
 
+  private isUpdating: boolean = false;
+
   /**
    * Starts the internal requestAnimationFrame loop.
    */
@@ -454,7 +456,13 @@ export class Agent {
       this.lastTime = currentTime;
 
       this.animationManager.update(currentTime);
-      this.stateManager.update(deltaTime);
+
+      if (!this.isUpdating) {
+        this.isUpdating = true;
+        this.stateManager.update(deltaTime).finally(() => {
+          this.isUpdating = false;
+        });
+      }
 
       this.draw();
 
