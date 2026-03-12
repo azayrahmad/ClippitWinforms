@@ -224,7 +224,7 @@ describe('Agent Visibility', () => {
     it('should await the full Showing animation', async () => {
         const playSpy = agent.animationManager.playAnimation;
 
-        await agent.show();
+        await agent.show(true);
 
         expect(playSpy).toHaveBeenCalledWith('Showing', true);
         expect(agent.stateManager.currentStateName).toBe('IdlingLevel1');
@@ -233,7 +233,7 @@ describe('Agent Visibility', () => {
     it('should await the full Hiding animation and then set display none', async () => {
         const playSpy = agent.animationManager.playAnimation;
 
-        await agent.hide();
+        await agent.hide(true);
 
         expect(playSpy).toHaveBeenCalledWith('Hiding', true);
         expect(agent.stateManager.currentStateName).toBe('Hidden');

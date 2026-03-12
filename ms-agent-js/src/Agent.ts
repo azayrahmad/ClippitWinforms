@@ -423,7 +423,7 @@ export class Agent {
   /**
    * Internal initialization method. Starts the rendering loop and intro animation.
    */
-  private async init() {
+  public async init() {
     const initPromises: Promise<any>[] = [this.spriteManager.init()];
 
     if (this.options.useAudio && this.definition.audioAtlas) {
@@ -438,7 +438,7 @@ export class Agent {
     if (this.definition.states['Showing']) {
       this.show();
     } else {
-      this.stateManager.setState('IdlingLevel1');
+      void this.stateManager.setState('IdlingLevel1');
     }
   }
 
@@ -793,12 +793,13 @@ export class Agent {
   /**
    * Shows the agent by playing its 'Showing' animation sequence.
    *
+   * @param useExitBranch - (Optional) Whether to use the exit branch for the 'Showing' animation.
    * @returns A request object to track the operation's progress.
    */
-  public show(): AgentRequest {
+  public show(useExitBranch: boolean = false): AgentRequest {
     return this.enqueueRequest(async (request) => {
       this.container.style.display = "block";
-      await this.stateManager.handleVisibilityChange(true);
+      await this.stateManager.handleVisibilityChange(true, useExitBranch);
       if (!request.isCancelled) {
         this.emit("show");
       }
@@ -808,11 +809,12 @@ export class Agent {
   /**
    * Hides the agent by playing its 'Hiding' animation sequence.
    *
+   * @param useExitBranch - (Optional) Whether to use the exit branch for the 'Hiding' animation.
    * @returns A request object to track the operation's progress.
    */
-  public hide(): AgentRequest {
+  public hide(useExitBranch: boolean = false): AgentRequest {
     return this.enqueueRequest(async (request) => {
-      await this.stateManager.handleVisibilityChange(false);
+      await this.stateManager.handleVisibilityChange(false, useExitBranch);
       if (!request.isCancelled) {
         this.container.style.display = "none";
         this.emit("hide");
