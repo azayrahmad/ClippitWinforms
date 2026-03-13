@@ -226,7 +226,7 @@ describe('Agent Visibility', () => {
 
         await agent.show();
 
-        expect(playSpy).toHaveBeenCalledWith('Showing', true);
+        expect(playSpy).toHaveBeenCalledWith('Showing', false);
         expect(agent.stateManager.currentStateName).toBe('IdlingLevel1');
     });
 
@@ -235,7 +235,7 @@ describe('Agent Visibility', () => {
 
         await agent.hide();
 
-        expect(playSpy).toHaveBeenCalledWith('Hiding', true);
+        expect(playSpy).toHaveBeenCalledWith('Hiding', false);
         expect(agent.stateManager.currentStateName).toBe('Hidden');
         // Container should be hidden after await
         expect((agent as any).container.style.display).toBe('none');

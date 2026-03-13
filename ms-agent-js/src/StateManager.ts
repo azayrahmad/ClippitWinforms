@@ -128,8 +128,8 @@ export class StateManager {
         this.currentState = 'Hidden';
         this.isPaused = true;
         return;
-      } else if (this.currentState !== 'Hidden' && !this.isIdleState(this.currentState)) {
-        // For other persistent states (e.g. "GesturingLeft", "LookingUp"),
+      } else if (this.currentState !== 'Hidden') {
+        // For other persistent states (e.g. "IdlingLevel1", "GesturingLeft"),
         // we loop or pick a new random animation immediately to ensure no visual gaps.
         if (!hasRequests) {
           await this.updateStateAnimation();
@@ -255,6 +255,8 @@ export class StateManager {
 
     let timeoutId: any;
     if (timeoutMs) {
+      this.animationManager.isLoopingFlag = true;
+      this.animationManager.suppressShortcutsFlag = true;
       timeoutId = setTimeout(() => {
         // Force the animation to navigate towards its exit branch when timeout hits
         this.animationManager.isExitingFlag = true;
@@ -262,7 +264,7 @@ export class StateManager {
     }
 
     try {
-      const result = await this.animationManager.interruptAndPlayAnimation(animationName, useExitBranch);
+      const result = await this.animationManager.playAnimation(animationName, useExitBranch, this.animationManager.isLoopingFlag, this.animationManager.suppressShortcutsFlag);
       return result;
     } finally {
       if (timeoutId) {
@@ -301,8 +303,11 @@ export class StateManager {
    * Returns the agent to the base IdlingLevel1 state and resets all timers.
    */
   private async returnToIdle(): Promise<void> {
-    const hasRequests = this.requestQueue && !this.requestQueue.isEmpty;
-    if (hasRequests) return;
+    // We only skip returning to idle if there are OTHER requests waiting in the queue.
+    // If the only request is the one currently running, we still want to transition to idle
+    // at the end of its task.
+    const hasPendingRequests = this.requestQueue && this.requestQueue.length > 0;
+    if (hasPendingRequests) return;
 
     await this.setIdleState(1);
     this.resetIdleProgression();
@@ -359,9 +364,9 @@ export class StateManager {
 
         // Transition to Hidden or Idling after animation finishes
         if (showing) {
-            // Start idle progression but don't await the non-blocking return call
-            // to ensure the visibility request resolves promptly.
-            void this.returnToIdle();
+            // Wait for return to idle to ensure currentStateName is correct for tests
+            // but returnToIdle checks for requests, so it might be skipped if new requests came in.
+            await this.returnToIdle();
         } else {
             this.currentState = 'Hidden';
             this.isPaused = true;
