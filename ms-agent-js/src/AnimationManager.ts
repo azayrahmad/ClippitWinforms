@@ -252,21 +252,35 @@ export class AnimationManager {
    * Completions occur either at the end of the frame sequence or when an exit branch loops back.
    */
   private checkAnimationCompletion(
-    _currentFrame: FrameDefinition,
+    currentFrame: FrameDefinition,
     nextFrameIndex: number,
     isBranch: boolean,
   ): boolean {
+    const isAtLastFrame =
+      this.currentFrameIndex === this.currentAnimation!.frames.length - 1;
+    const nextIsNeutral = nextFrameIndex === 0;
+
     if (this.isExiting) {
       // If we are exiting and reached the end (either by natural end or exit branch loop back to frame 0)
-      if (nextFrameIndex === 0) {
+      if (nextIsNeutral) {
         this.completeAnimation();
         return true;
       }
-    } else {
+    } else if (this.animationPromise) {
       // Normal completion when we loop back to the first frame sequentially
-      if (!isBranch && nextFrameIndex === 0 && this.animationPromise) {
-        this.completeAnimation();
-        return true;
+      // Or if we take a branch that explicitly points back to Frame 0
+      if (nextIsNeutral) {
+        // If it's a natural wrap-around from the last frame, it's definitely completion.
+        if (isAtLastFrame) {
+          this.completeAnimation();
+          return true;
+        }
+
+        // If it's a branch to 0 from an earlier frame, it's an internal loop.
+        // TripleAgent/clippy.js often treat branching to 0 as continuation.
+        // However, if the user sees 'one frame and ends', it might be because the branch
+        // probability is very high and it's looping back to 0 (neutral pose) instantly.
+        // We will keep it as continuation for now to preserve sequence integrity.
       }
     }
     return false;

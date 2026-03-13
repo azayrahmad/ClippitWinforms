@@ -128,8 +128,8 @@ export class StateManager {
         this.currentState = 'Hidden';
         this.isPaused = true;
         return;
-      } else if (this.currentState !== 'Hidden') {
-        // For other persistent states (e.g. "IdlingLevel1", "GesturingLeft"),
+      } else if (this.currentState !== 'Hidden' && !this.isIdleState(this.currentState)) {
+        // For other persistent states (e.g. "GesturingLeft", "LookingUp"),
         // we loop or pick a new random animation immediately to ensure no visual gaps.
         if (!hasRequests) {
           await this.updateStateAnimation();
