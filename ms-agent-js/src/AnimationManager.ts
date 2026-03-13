@@ -194,6 +194,11 @@ export class AnimationManager {
 
       // Use update(now) to handle potential null frames at the start
       this.update(this.lastFrameTime);
+    } else if (animationName === '') {
+      this.currentAnimation = null;
+      this.isExiting = false;
+      this.isLooping = false;
+      this.suppressShortcuts = false;
     }
   }
 
@@ -212,6 +217,14 @@ export class AnimationManager {
     isLooping: boolean = false,
     suppressShortcuts: boolean = false,
   ): Promise<boolean> {
+    // If we are already playing an animation and it hasn't finished, resolve it now
+    // to prevent deadlocks when starting a new one.
+    if (this.animationPromise) {
+      const p = this.animationPromise;
+      this.animationPromise = null;
+      p.resolve(true);
+    }
+
     this.activePromise = new Promise((resolve, reject) => {
       this.animationPromise = { resolve, reject };
       this.setAnimation(animationName, useExitBranch, isLooping, suppressShortcuts);
@@ -406,22 +419,18 @@ export class AnimationManager {
    *
    * @param newAnimationName - The name of the animation to start.
    * @param useExitBranch - Whether the new animation should start in an exiting state.
+   * @param isLooping - Whether the new animation should loop.
+   * @param suppressShortcuts - Whether to ignore variety shortcuts in the new animation.
    * @returns A promise that resolves when the *new* animation finishes.
    */
   public async interruptAndPlayAnimation(
     newAnimationName: string,
     useExitBranch: boolean = false,
+    isLooping: boolean = false,
+    suppressShortcuts: boolean = false,
   ): Promise<boolean> {
     if (!this.isAnimating) {
-      return this.playAnimation(newAnimationName, useExitBranch);
-    }
-
-    // If there is no promise to wait for (e.g. started via setAnimation/Idling),
-    // create one so we can await the exit sequence.
-    if (!this.activePromise) {
-      this.activePromise = new Promise((resolve, reject) => {
-        this.animationPromise = { resolve, reject };
-      });
+      return this.playAnimation(newAnimationName, useExitBranch, isLooping, suppressShortcuts);
     }
 
     // Signal the current animation to interrupt and navigate towards its neutral frame via exit branches
@@ -433,7 +442,7 @@ export class AnimationManager {
     }
 
     // Play the new animation
-    return this.playAnimation(newAnimationName, useExitBranch);
+    return this.playAnimation(newAnimationName, useExitBranch, isLooping, suppressShortcuts);
   }
 
   /**

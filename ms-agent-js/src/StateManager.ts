@@ -128,12 +128,6 @@ export class StateManager {
         this.currentState = 'Hidden';
         this.isPaused = true;
         return;
-      } else if (this.currentState !== 'Hidden') {
-        // For other persistent states (e.g. "IdlingLevel1", "GesturingLeft"),
-        // we loop or pick a new random animation immediately to ensure no visual gaps.
-        if (!hasRequests) {
-          await this.updateStateAnimation();
-        }
       }
     }
 
@@ -253,10 +247,13 @@ export class StateManager {
     // Ensure all assets are loaded before starting
     await this.animationManager.preloadAnimation(animationName);
 
+    let looping = false;
+    let suppress = false;
     let timeoutId: any;
+
     if (timeoutMs) {
-      this.animationManager.isLoopingFlag = true;
-      this.animationManager.suppressShortcutsFlag = true;
+      looping = true;
+      suppress = true;
       timeoutId = setTimeout(() => {
         // Force the animation to navigate towards its exit branch when timeout hits
         this.animationManager.isExitingFlag = true;
@@ -264,7 +261,7 @@ export class StateManager {
     }
 
     try {
-      const result = await this.animationManager.playAnimation(animationName, useExitBranch, this.animationManager.isLoopingFlag, this.animationManager.suppressShortcutsFlag);
+      const result = await this.animationManager.playAnimation(animationName, useExitBranch, looping, suppress);
       return result;
     } finally {
       if (timeoutId) {
@@ -331,10 +328,28 @@ export class StateManager {
 
     const state = this.states[this.currentState];
     if (state && state.animations.length > 0) {
-      const randomAnimation = state.animations[Math.floor(Math.random() * state.animations.length)];
-      // We play the animation but don't AWAIT it here for persistent states,
-      // as they should be interrupted easily and managed by the main loop.
-      await this.playAnimation(randomAnimation);
+      const randomAnimation =
+        state.animations[Math.floor(Math.random() * state.animations.length)];
+
+      // For persistent states (Idling, Gesturing, Looking), we loop indefinitely
+      // until the next tick or state change interrupts it.
+      const isPersistent =
+        this.isIdleState(this.currentState) ||
+        this.currentState.startsWith('Gesturing') ||
+        this.currentState.startsWith('Looking');
+
+      if (isPersistent) {
+        // For persistent loops, we don't AWAIT the infinite loop, otherwise the StateManager
+        // update loop would get stuck. Instead, we trigger the transition and continue.
+        void this.animationManager.interruptAndPlayAnimation(
+          randomAnimation,
+          false,
+          true, // isLooping
+          true, // suppressShortcuts
+        );
+      } else {
+        await this.playAnimation(randomAnimation);
+      }
     }
   }
 
