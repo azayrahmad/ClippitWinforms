@@ -24,6 +24,10 @@ export class AnimationManager {
   private lastRenderedFrame: FrameDefinition | null = null;
   /** Whether the current animation is in the process of exiting via an exit branch. */
   private isExiting: boolean = false;
+  /** Whether the current animation should loop back to the beginning instead of completing. */
+  private isLooping: boolean = false;
+  /** Whether shortcut branches (leading to the end) should be ignored during playback. */
+  private suppressShortcuts: boolean = false;
   /** Internal promise controls for the currently playing animation. */
   private animationPromise: { resolve: (val: boolean) => void; reject: (err: any) => void } | null = null;
   /** The promise for the active animation playback. */
@@ -39,6 +43,13 @@ export class AnimationManager {
   }
 
   /**
+   * Whether the animation is current in a looping state.
+   */
+  public get isLoopingFlag(): boolean {
+    return this.isLooping;
+  }
+
+  /**
    * Whether the manager is currently in the process of exiting an animation.
    */
   public get isExitingFlag(): boolean {
@@ -48,6 +59,12 @@ export class AnimationManager {
   public set isExitingFlag(value: boolean) {
     const wasExiting = this.isExiting;
     this.isExiting = value;
+
+    // When exiting, we no longer want to loop or suppress shortcuts
+    if (value) {
+      this.isLooping = false;
+      this.suppressShortcuts = false;
+    }
 
     // If we just started exiting, and we are currently animating,
     // check if we can jump to an exit branch or break a loop immediately.
@@ -81,6 +98,24 @@ export class AnimationManager {
    */
   public get currentFrameIndexValue(): number {
     return this.currentFrameIndex;
+  }
+
+  /**
+   * Enables or disables continuous looping for the current animation.
+   */
+  public set isLoopingFlag(value: boolean) {
+    this.isLooping = value;
+  }
+
+  /**
+   * Enables or disables suppression of "shortcut" branches that lead to the end of the animation.
+   */
+  public set suppressShortcutsFlag(value: boolean) {
+    this.suppressShortcuts = value;
+  }
+
+  public get suppressShortcutsFlag(): boolean {
+    return this.suppressShortcuts;
   }
 
   /** Callback fired whenever the frame changes. */
@@ -136,6 +171,8 @@ export class AnimationManager {
   public setAnimation(
     animationName: string,
     useExitBranch: boolean = false,
+    isLooping: boolean = false,
+    suppressShortcuts: boolean = false,
   ): void {
     const animation = this.animations[animationName];
     if (animation) {
@@ -144,8 +181,10 @@ export class AnimationManager {
       this.currentAnimation = animation;
       this.currentFrameIndex = 0;
       this.lastFrameTime = performance.now();
-      // Reset isExiting directly but call the setter to trigger immediate exit jumps if needed
+      // Reset flags but call the setter to trigger immediate exit jumps if needed
       this.isExiting = false;
+      this.isLooping = isLooping;
+      this.suppressShortcuts = suppressShortcuts;
 
       if (previousAnimation && previousAnimation !== animationName) {
         this.onAnimationCompleted?.(previousAnimation);
@@ -155,6 +194,11 @@ export class AnimationManager {
 
       // Use update(now) to handle potential null frames at the start
       this.update(this.lastFrameTime);
+    } else if (animationName === '') {
+      this.currentAnimation = null;
+      this.isExiting = false;
+      this.isLooping = false;
+      this.suppressShortcuts = false;
     }
   }
 
@@ -163,13 +207,29 @@ export class AnimationManager {
    *
    * @param animationName - The name of the animation to play.
    * @param useExitBranch - Whether to start in an "exiting" state.
+   * @param isLooping - Whether the animation should loop continuously.
+   * @param suppressShortcuts - Whether to ignore shortcut branches during playback.
    * @returns A promise that resolves to true when the animation finishes.
    */
-  public async playAnimation(animationName: string, useExitBranch: boolean = false): Promise<boolean> {
+  public async playAnimation(
+    animationName: string,
+    useExitBranch: boolean = false,
+    isLooping: boolean = false,
+    suppressShortcuts: boolean = false,
+  ): Promise<boolean> {
+    // If we are already playing an animation and it hasn't finished, resolve it now
+    // to prevent deadlocks when starting a new one.
+    if (this.animationPromise) {
+      const p = this.animationPromise;
+      this.animationPromise = null;
+      p.resolve(true);
+    }
+
     this.activePromise = new Promise((resolve, reject) => {
       this.animationPromise = { resolve, reject };
-      this.setAnimation(animationName, useExitBranch);
+      this.setAnimation(animationName, useExitBranch, isLooping, suppressShortcuts);
     });
+
     return this.activePromise;
   }
 
@@ -252,21 +312,40 @@ export class AnimationManager {
    * Completions occur either at the end of the frame sequence or when an exit branch loops back.
    */
   private checkAnimationCompletion(
-    _currentFrame: FrameDefinition,
+    currentFrame: FrameDefinition,
     nextFrameIndex: number,
     isBranch: boolean,
   ): boolean {
+    const isAtLastFrame =
+      this.currentFrameIndex === this.currentAnimation!.frames.length - 1;
+    const nextIsNeutral = nextFrameIndex === 0;
+
     if (this.isExiting) {
       // If we are exiting and reached the end (either by natural end or exit branch loop back to frame 0)
-      if (nextFrameIndex === 0) {
+      if (nextIsNeutral) {
         this.completeAnimation();
         return true;
       }
-    } else {
+    } else if (this.animationPromise) {
       // Normal completion when we loop back to the first frame sequentially
-      if (!isBranch && nextFrameIndex === 0 && this.animationPromise) {
-        this.completeAnimation();
-        return true;
+      // Or if we take a branch that explicitly points back to Frame 0
+      if (nextIsNeutral) {
+        // If looping, we never complete naturally
+        if (this.isLooping) {
+          return false;
+        }
+
+        // If it's a natural wrap-around from the last frame, it's definitely completion.
+        if (isAtLastFrame) {
+          this.completeAnimation();
+          return true;
+        }
+
+        // If it's a branch to 0 from an earlier frame, it's an internal loop.
+        // TripleAgent/clippy.js often treat branching to 0 as continuation.
+        // However, if the user sees 'one frame and ends', it might be because the branch
+        // probability is very high and it's looping back to 0 (neutral pose) instantly.
+        // We will keep it as continuation for now to preserve sequence integrity.
       }
     }
     return false;
@@ -300,18 +379,30 @@ export class AnimationManager {
       const randomValue = Math.floor(Math.random() * 100);
       let cumulative = 0;
 
-      for (const branch of branching) {
-        // If exiting, only consider forward-leading branches
-        if (this.isExiting) {
-          const isForward =
-            branch.branchTo - 1 > this.currentFrameIndex ||
-            (branch.branchTo - 1 === 0 && this.currentFrameIndex > 0);
-          if (!isForward) continue;
+      const filteredBranches = branching.filter(branch => {
+        if (this.suppressShortcuts && !this.isExiting) {
+          const isForwardJump = branch.branchTo - 1 > this.currentFrameIndex;
+          const isLoopBack = branch.branchTo === 1;
+          return !(isLoopBack || (isForwardJump && branch.branchTo - 1 > this.currentFrameIndex + 2));
         }
+        return true;
+      });
 
-        cumulative += branch.probability;
-        if (randomValue < cumulative) {
-          return { index: branch.branchTo - 1, isBranch: true };
+      // If variety is suppressed, fall back to sequential if no valid branches left
+      if (filteredBranches.length > 0) {
+        for (const branch of filteredBranches) {
+          // If exiting, only consider forward-leading branches
+          if (this.isExiting) {
+            const isForward =
+              branch.branchTo - 1 > this.currentFrameIndex ||
+              (branch.branchTo - 1 === 0 && this.currentFrameIndex > 0);
+            if (!isForward) continue;
+          }
+
+          cumulative += branch.probability;
+          if (randomValue < cumulative) {
+            return { index: branch.branchTo - 1, isBranch: true };
+          }
         }
       }
     }
@@ -328,22 +419,18 @@ export class AnimationManager {
    *
    * @param newAnimationName - The name of the animation to start.
    * @param useExitBranch - Whether the new animation should start in an exiting state.
+   * @param isLooping - Whether the new animation should loop.
+   * @param suppressShortcuts - Whether to ignore variety shortcuts in the new animation.
    * @returns A promise that resolves when the *new* animation finishes.
    */
   public async interruptAndPlayAnimation(
     newAnimationName: string,
     useExitBranch: boolean = false,
+    isLooping: boolean = false,
+    suppressShortcuts: boolean = false,
   ): Promise<boolean> {
     if (!this.isAnimating) {
-      return this.playAnimation(newAnimationName, useExitBranch);
-    }
-
-    // If there is no promise to wait for (e.g. started via setAnimation/Idling),
-    // create one so we can await the exit sequence.
-    if (!this.activePromise) {
-      this.activePromise = new Promise((resolve, reject) => {
-        this.animationPromise = { resolve, reject };
-      });
+      return this.playAnimation(newAnimationName, useExitBranch, isLooping, suppressShortcuts);
     }
 
     // Signal the current animation to interrupt and navigate towards its neutral frame via exit branches
@@ -355,7 +442,7 @@ export class AnimationManager {
     }
 
     // Play the new animation
-    return this.playAnimation(newAnimationName, useExitBranch);
+    return this.playAnimation(newAnimationName, useExitBranch, isLooping, suppressShortcuts);
   }
 
   /**
